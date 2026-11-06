@@ -110,6 +110,38 @@ Para o Playwright, rode antes `npx playwright install chromium webkit`.
 
 ---
 
+## Publicar na Vercel
+
+O repositorio ja vem configurado: a raiz do repositorio **e** a raiz do projeto,
+entao nao ha "Root Directory" para ajustar.
+
+1. Em [vercel.com/new](https://vercel.com/new), importe
+   `SudoMaster7/history-computer`.
+2. A Vercel detecta Vite sozinha. **Nao ha variavel de ambiente para
+   configurar** — o jogo roda inteiro no navegador, sem servidor e sem chave.
+3. Deploy.
+
+Cada push na `main` publica em producao, e cada pull request ganha uma URL de
+previa.
+
+O [`vercel.json`](vercel.json) cuida de tres coisas que quebram um PWA se
+ficarem no padrao:
+
+| Caminho                                       | Cache                      | Por que                                                                                 |
+| --------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------- |
+| `sw.js`, `manifest.webmanifest`, `index.html` | sem cache, revalida sempre | service worker em cache prende o jogador numa versao velha, e nenhuma atualizacao chega |
+| `/assets/*`                                   | 1 ano, imutavel            | tem hash no nome: conteudo novo, nome novo                                              |
+| `/sprites/*`, `/fonts/*`                      | 30 dias                    | nao tem hash no nome; quem versiona esses arquivos e o service worker                   |
+
+Tambem traz o redirecionamento de rota unica (qualquer URL cai no
+`index.html`) e tres cabecalhos de seguranca basicos.
+
+> **Para testar o que vai ao ar:** `npm run build && npm run preview`. Isso
+> serve exatamente o `dist/` que a Vercel publica — e e contra ele que os 54
+> testes de ponta a ponta rodam.
+
+---
+
 ## Como funciona por dentro
 
 **React + TypeScript + Vite**, PWA instalável. O mapa é **canvas 2D com pixel art 16×16** —

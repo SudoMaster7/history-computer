@@ -89,9 +89,11 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
     setArt(null);
     const ids = world.npcs.map((npc) => npc.id);
     Promise.all([
-      loadImage(`sprites/tiles-${world.era}.png`),
-      loadImage('sprites/bit.png'),
-      ...ids.map((id) => loadImage(`sprites/npc-${id}.png`)),
+      // Caminho absoluto: relativo quebraria numa rota aninhada, porque
+      // resolveria a partir da URL atual em vez da raiz do site.
+      loadImage(`/sprites/tiles-${world.era}.png`),
+      loadImage('/sprites/bit.png'),
+      ...ids.map((id) => loadImage(`/sprites/npc-${id}.png`)),
     ])
       .then(([tiles, bit, ...people]) => {
         if (!alive || !tiles || !bit) return;

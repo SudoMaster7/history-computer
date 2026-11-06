@@ -18,10 +18,11 @@ export default defineConfig({
         description: 'RPG educacional sobre a historia da computacao.',
         lang: 'pt-BR',
         start_url: '/',
+        scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#0b1020',
-        theme_color: '#0b1020',
+        background_color: '#080c18',
+        theme_color: '#080c18',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -34,7 +35,16 @@ export default defineConfig({
       },
     }),
   ],
-  build: { target: 'es2022', sourcemap: true },
+  build: {
+    target: 'es2022',
+    sourcemap: true,
+    /*
+     * Limpa o dist a cada build. Sem isto, os bundles antigos ficam para tras
+     * com o hash velho no nome: o deploy sobe lixo e, pior, o service worker
+     * pre-carrega todos eles (o precache tinha chegado a 79 arquivos e 4 MB).
+     */
+    emptyOutDir: true,
+  },
   test: {
     environment: 'node',
     globals: true,
