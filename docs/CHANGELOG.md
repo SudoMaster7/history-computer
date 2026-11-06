@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [corrigir o build da vercel: declarar @types/node e travar dependencia fantasma](changes/2026-11-06-corrigir-o-build-da-vercel-declarar-types-node-e-travar-depe.md) — 2026-11-06
+
 - [preparar o deploy na vercel](changes/2026-11-06-preparar-o-deploy-na-vercel.md) — 2026-11-06
 
 - [reescrever o README para quem chega pelo GitHub](changes/2026-11-06-reescrever-o-readme-para-quem-chega-pelo-github.md) — 2026-11-06
