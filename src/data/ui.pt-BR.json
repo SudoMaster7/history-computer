@@ -1,0 +1,204 @@
+{
+  "app": {
+    "title": "Da Valvula a IA",
+    "subtitle": "O BUG Day 0 embaralhou a historia da computacao. Voce e o Debugger: atravesse as eras e conserte a linha do tempo.",
+    "start": "Comecar",
+    "continue": "Continuar",
+    "reset": "Apagar progresso",
+    "resetConfirm": "Apagar todo o progresso salvo?",
+    "settings": "Ajustes",
+    "back": "Voltar",
+    "offline": "Sem conexao: ranking e chefao diario ficam indisponiveis.",
+    "loading": "Carregando...",
+    "missionsDone": "missoes feitas",
+    "renderFail": "Algo falhou ao desenhar esta tela. Volte e tente de novo.",
+    "newGame": "Novo jogo",
+    "continueGame": "Continuar",
+    "menu": "Menu",
+    "backToMenu": "Voltar ao menu",
+    "credits": "Um jogo sobre a historia da computacao.",
+    "zone": "Zona",
+    "nextEra": "Proxima era"
+  },
+  "hud": {
+    "label": "Estado da maquina",
+    "hp": "Integridade",
+    "xp": "Conhecimento",
+    "level": "Nivel",
+    "levelShort": "Niv",
+    "clock": "Clock (acoes por turno)",
+    "clockShort": "Clock",
+    "year": "Ano do mundo",
+    "powers": "Poderes",
+    "powerLevel": "nivel",
+    "locked": "trancado",
+    "of": "de",
+    "open": "Ver estado da maquina",
+    "close": "Fechar o estado",
+    "yearShort": "Ano"
+  },
+  "powers": {
+    "repetir": "Repetir",
+    "decidir": "Decidir",
+    "codificar": "Codificar",
+    "conectar": "Conectar",
+    "proteger": "Proteger",
+    "aprender": "Aprender"
+  },
+  "eras": {
+    "mecanica": "Mecanica",
+    "logica": "Valvulas e Logica",
+    "codigo": "Transistor e Linguagens",
+    "redes": "Redes",
+    "seguranca": "Web, Nuvem e Seguranca",
+    "ia": "Inteligencia Artificial"
+  },
+  "eraSubtitles": {
+    "mecanica": "1642 a 1843",
+    "logica": "1936 a 1950",
+    "codigo": "1950 a 1970",
+    "redes": "1969 a 1991",
+    "seguranca": "1991 a 2010",
+    "ia": "2012 a hoje"
+  },
+  "minigames": {
+    "mecanica": "Tear de Engrenagens",
+    "logica": "Circuitos Logicos",
+    "codigo": "Mesa de Bits",
+    "redes": "Rota dos Pacotes",
+    "seguranca": "Cofre Criptografico",
+    "ia": "Treinar o Detector"
+  },
+  "mission": {
+    "locked": "Trancado: falta o poder",
+    "stars": "estrelas",
+    "bestScore": "Melhor pontuacao",
+    "play": "Jogar",
+    "retry": "Tentar de novo",
+    "submit": "Enviar solucao",
+    "exit": "Sair da missao",
+    "result": "Resultado da missao",
+    "success": "Missao concluida!",
+    "failure": "Ainda nao: o padrao nao bateu.",
+    "efficiency": "Eficiencia",
+    "score": "Pontuacao"
+  },
+  "settings": {
+    "reduceMotion": "Reduzir animacoes",
+    "vibration": "Vibracao",
+    "muted": "Som desligado"
+  },
+  "status": {
+    "coreReady": "Nucleo pronto: RPG, poderes, pontuacao, seed, portao e fases de plataforma."
+  },
+  "loom": {
+    "help": "Monte a fita igual ao padrao. Toque nas cores para adicionar e use \"repetir\" para gastar menos cartoes.",
+    "microHelp": "Reproduza o padrao curto o mais rapido que conseguir.",
+    "target": "Padrao a reproduzir",
+    "yours": "Sua fita",
+    "program": "Grupos da fita",
+    "group": "grupo",
+    "cards": "Cartoes",
+    "color": "cor",
+    "empty": "Fita vazia",
+    "addColor": "Adicionar cor",
+    "newGroup": "Novo grupo",
+    "repeat": "Repetir",
+    "erase": "Apagar",
+    "eraseShort": "Apagar"
+  },
+  "menu": {
+    "title": "Da Valvula a IA",
+    "tagline": "Atravesse seis eras da computacao e conserte a linha do tempo.",
+    "newGame": "Novo jogo",
+    "newGameWarning": "Isto apaga o progresso salvo. Comecar mesmo assim?",
+    "continueGame": "Continuar",
+    "zones": "Zonas",
+    "settings": "Ajustes",
+    "about": "Sobre",
+    "close": "Fechar",
+    "aboutText": "Jogo educacional sobre a historia da computacao, feito como TCC. Codigo sob MIT, conteudo sob CC BY 4.0.",
+    "locked": "Conclua a era anterior"
+  },
+  "world": {
+    "title": "Zona",
+    "loading": "Carregando o mapa...",
+    "help": "Toque em qualquer lugar do mapa: o Bit caminha ate la.",
+    "tapHelp": "Toque num ponto do mapa para mover o Bit",
+    "moving": "O Bit esta indo...",
+    "unreachable": "Nao da para chegar ai.",
+    "station": "Terminal",
+    "enterStation": "Usar o terminal",
+    "stationSoon": "Terminal em construcao",
+    "stationDone": "Missao ja concluida. Pode repetir para melhorar a nota.",
+    "talk": "Conversar",
+    "doorClosed": "Porta trancada: conclua as duas missoes da zona.",
+    "doorOpen": "Porta aberta: a prova da era espera do outro lado.",
+    "enterDoor": "Fazer a prova da era",
+    "backToWorld": "Voltar para a zona",
+    "missionsDone": "missoes feitas",
+    "missionsLeft": "Falta concluir"
+  },
+  "tutorial": {
+    "title": "Como jogar",
+    "skip": "Pular tutorial",
+    "next": "Entendi",
+    "done": "Tutorial concluido. Boa sorte!",
+    "step1": "Toque em qualquer ponto do mapa. O Bit caminha sozinho ate la, desviando de arvores e agua.",
+    "step2": "Agora va ate um dos terminais: os dois quadrados com tela acesa, um de cada lado do caminho.",
+    "step3": "Chegou no terminal? Toque em \"Usar o terminal\" para abrir o minijogo da missao.",
+    "step4": "Conclua as duas missoes da zona para destrancar a porta la em cima e seguir para a proxima era."
+  },
+  "quiz": {
+    "title": "Prova da era",
+    "intro": "Responda para provar que entendeu esta era. Acertando, o poder e o item sao seus.",
+    "question": "Pergunta",
+    "of": "de",
+    "correct": "Certo!",
+    "wrong": "Nao e essa.",
+    "next": "Proxima",
+    "seeResult": "Ver resultado",
+    "resultTitle": "Resultado da prova",
+    "passed": "Aprovado! O poder desta era e seu.",
+    "failed": "Ainda nao. Converse com os personagens da zona e tente de novo.",
+    "score": "Acertos",
+    "needed": "Precisa de",
+    "gotPower": "Poder desbloqueado",
+    "gotItem": "Item recebido",
+    "retry": "Refazer a prova",
+    "continue": "Seguir para a proxima era",
+    "backToWorld": "Voltar para a zona",
+    "lockedDoor": "Conclua as duas missoes da zona antes da prova."
+  },
+  "items": {
+    "title": "Mochila",
+    "empty": "Mochila vazia",
+    "use": "Usar",
+    "used": "Item usado.",
+    "cartao-perfurado": {
+      "name": "Cartao Perfurado",
+      "text": "Guarda uma instrucao fora da maquina. Revela uma dica no minijogo."
+    },
+    "valvula-reserva": {
+      "name": "Valvula Reserva",
+      "text": "Troca a valvula queimada. Restaura 40 de integridade."
+    },
+    "fita-magnetica": {
+      "name": "Fita Magnetica",
+      "text": "Guarda o programa para reusar. Revela uma dica no minijogo."
+    },
+    "pacote-roteado": {
+      "name": "Pacote Roteado",
+      "text": "Desvia pelo caminho livre. Bloqueia o proximo ataque do chefao."
+    },
+    "chave-publica": {
+      "name": "Chave Publica",
+      "text": "Fecha o canal com quem voce nunca viu. Bloqueia o proximo ataque do chefao."
+    },
+    "modelo-treinado": {
+      "name": "Modelo Treinado",
+      "text": "Aprendeu com os exemplos. Aumenta o dano do proximo ataque."
+    },
+    "held": "Guardado"
+  }
+}

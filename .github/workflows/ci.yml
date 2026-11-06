@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: game/package-lock.json
+
+      - run: npm ci
+
+      - name: Formatacao
+        run: npm run format:check
+
+      - name: Lint (inclui a regra de arquitetura do core)
+        run: npm run lint
+
+      - name: Nota de mudanca da iteracao
+        run: npm run check:changes
+
+      - name: Testes de contrato (o que nao pode quebrar)
+        run: npm run test:contract
+
+      - name: Tipos
+        run: npm run typecheck
+
+      - name: Testes de unidade + cobertura do core
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Navegadores do Playwright
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Fumaca em celular emulado (Android, iOS e desktop)
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: game/playwright-report
+          retention-days: 7

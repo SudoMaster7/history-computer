@@ -1,0 +1,121 @@
+# -*- coding: utf-8 -*-
+import io, json, collections, sys
+
+O = collections.OrderedDict
+npcs = O()
+
+
+def npc(nid, era, name, role, lines):
+    npcs[nid] = O([('era', era), ('name', name), ('role', role), ('lines', lines)])
+
+
+# ERA 1 - Mecanica
+npc('pascal', 'mecanica', 'Blaise Pascal', 'Inventor da Pascalina (1642)', [
+    'Esta maquina soma e subtrai girando engrenagens. Cada roda carrega o "vai um" para a roda seguinte, igual ao que voce faria no papel.',
+    'Mas repare no que ela nao tem: ela nao guarda nada. Terminou a conta, acabou. Nao existe memoria, nao existe programa.',
+    'Um computador, aqui em 1642, e isto: uma calculadora de metal que depende de uma pessoa girando a manivela e anotando o resultado.',
+])
+npc('jacquard', 'mecanica', 'Joseph-Marie Jacquard', 'Tear de cartoes perfurados (1804)', [
+    'Meu tear nao sabe tecer nada sozinho. Quem sabe o desenho e o cartao: cada furo deixa passar uma agulha, cada cartao e uma linha do tecido.',
+    'Trocando a pilha de cartoes, a mesma maquina tece outro padrao. A instrucao saiu da cabeca do artesao e virou objeto.',
+    'Guarde essa ideia, porque ela volta sempre: separar a maquina daquilo que a maquina deve fazer e o comeco de tudo.',
+])
+npc('ada', 'mecanica', 'Ada Lovelace', 'Notas sobre a Maquina Analitica (1843)', [
+    'Babbage projetou a Maquina Analitica com cartoes como os de Jacquard, um moinho que calcula e um armazem que guarda numeros. No papel, ela ja e um computador.',
+    'Escrevi a sequencia de operacoes para ela calcular os numeros de Bernoulli, com um trecho que se repete. E o que hoje voce chamaria de laco.',
+    'E notei uma coisa que o proprio Babbage nao disse: se os numeros representarem notas ou letras, a maquina pode compor musica ou tratar simbolos. Ela nao e so uma calculadora.',
+    'So que ela nunca foi construida inteira no meu seculo. Cara demais, e exigia uma precisao mecanica que a epoca nao alcancava.',
+])
+
+# ERA 2 - Valvulas e Logica
+npc('shannon', 'logica', 'Claude Shannon', 'Circuitos e algebra booleana (1937)', [
+    'Na minha dissertacao mostrei que um circuito de reles obedece a algebra de Boole: ligado e desligado sao verdadeiro e falso.',
+    'Ou seja: qualquer decisao logica pode virar fiacao. E, Ou e Nao deixam de ser filosofia e viram equipamento.',
+    'Daqui em diante toda maquina decide do mesmo jeito, combinando chaves que so conhecem dois estados.',
+])
+npc('turing', 'logica', 'Alan Turing', 'Maquina universal (1936) e Bletchley Park', [
+    'Em 1936 descrevi uma maquina imaginaria que le e escreve numa fita seguindo regras. Provei que uma unica maquina dessas pode imitar qualquer outra, se voce lhe der a descricao certa.',
+    'Isso e o computador de uso geral: em vez de uma maquina por tarefa, uma so maquina e um programa diferente.',
+    'Na guerra usamos maquinas eletromecanicas e, depois, o Colossus com valvulas, para quebrar cifras. Funcionavam, mas cada uma servia para um trabalho so.',
+])
+npc('jennings', 'logica', 'Jean Jennings', 'Programadora do ENIAC (1945)', [
+    'O ENIAC tem cerca de 18 mil valvulas, ocupa uma sala inteira e esquenta como uma fornalha. Quando uma valvula queima, alguem procura qual.',
+    'Nos seis programavamos ele no fio: mudando cabos e chaves por dias para resolver um problema diferente. O programa era a propria fiacao.',
+    'A saida ja esta sendo discutida: guardar o programa na mesma memoria dos dados. Ai trocar de tarefa vira carregar numeros, e nao remontar a maquina.',
+])
+
+# ERA 3 - Transistor e Linguagens
+npc('bardeen', 'codigo', 'John Bardeen', 'Transistor nos Bell Labs (1947)', [
+    'O transistor faz o que a valvula fazia: liga, desliga e amplifica. So que e solido, cabe na ponta do dedo, gasta pouco e nao queima a cada turno.',
+    'Com ele a maquina sai da sala e cabe num armario. Em vez de milhares de valvulas quentes, milhares de transistores frios.',
+    'A partir daqui o computador deixa de ser experimento e vira equipamento de empresa e de universidade.',
+])
+npc('backus', 'codigo', 'John Backus', 'Fortran (1957)', [
+    'Programar em codigo de maquina e escrever numeros que so o processador entende. Mudar uma linha no meio custa um dia.',
+    'Com o Fortran voce escreve a formula quase como no papel, e o compilador traduz. Muita gente dizia que o codigo gerado sairia lento demais para valer a pena.',
+    'Nao saiu. O tempo economizado por quem escreve passou a valer mais que o ciclo de maquina poupado.',
+])
+npc('hopper', 'codigo', 'Grace Hopper', 'Compilador e COBOL', [
+    'Escrevi o primeiro compilador porque ninguem merece falar com a maquina em numeros. Se a maquina pode traduzir, que traduza ela.',
+    'Depois veio o COBOL, com comandos parecidos com ingles, para que quem entende do negocio consiga ler o programa.',
+    'O computador desta era ja tem memoria, programa armazenado e linguagem propria. Ainda e caro, fica numa sala com ar condicionado, e voce fala com ele por cartao ou fita.',
+])
+
+# ERA 4 - Redes
+npc('kleinrock', 'redes', 'Leonard Kleinrock', 'Primeira mensagem da ARPANET (1969)', [
+    'Em outubro de 1969 tentamos mandar a palavra login daqui da UCLA para Stanford. O sistema caiu depois do lo. Foi a primeira mensagem entre dois computadores da ARPANET.',
+    'A ideia por tras e a comutacao por pacotes: a mensagem nao viaja inteira por um fio reservado, ela se parte em pedacos que seguem caminhos diferentes.',
+    'Se um trecho da rede cai, os pacotes desviam. A rede passa a ser mais resistente que qualquer maquina dentro dela.',
+])
+npc('cerf', 'redes', 'Vint Cerf', 'TCP/IP (1974)', [
+    'Havia varias redes e nenhuma falava com a outra. O TCP/IP e o acordo minimo: todo mundo concorda em como enderecar e em como remontar os pacotes.',
+    'O IP entrega o pacote, sem prometer que chega. O TCP confere o que faltou e pede de novo. Separar as duas coisas foi o que deixou a rede crescer.',
+    'Ninguem precisa de permissao para ligar uma rede nova: basta falar o mesmo protocolo.',
+])
+npc('berners-lee', 'redes', 'Tim Berners-Lee', 'World Wide Web (1989-1991)', [
+    'A internet ja existia e carregava arquivos. Faltava um jeito simples de apontar de um documento para outro, em qualquer maquina.',
+    'Propus tres pecas: um endereco (URL), um jeito de pedir (HTTP) e um jeito de escrever (HTML). Em 1991 o primeiro site entrou no ar.',
+    'O computador desta era e uma maquina pessoal ligada as outras. Deixou de ser uma ilha que calcula e virou porta para o que os outros publicaram.',
+])
+
+# ERA 5 - Web, Nuvem e Seguranca
+npc('diffie', 'seguranca', 'Whitfield Diffie', 'Criptografia de chave publica (1976)', [
+    'Ate 1976, cifrar exigia que os dois lados ja tivessem combinado uma chave em segredo. Numa rede entre desconhecidos, isso nao funciona.',
+    'Com Martin Hellman mostramos como dois estranhos combinam uma chave secreta conversando em publico, com todo mundo escutando.',
+    'Cada um passa a ter duas chaves: uma publica, que distribui, e uma privada, que nunca sai do lugar. E o que permite comprar e assinar pela rede.',
+])
+npc('goldwasser', 'seguranca', 'Shafi Goldwasser', 'Provas de conhecimento zero (1985)', [
+    'Da para provar que voce sabe um segredo sem dizer qual e. Parece contradicao, mas e matematica.',
+    'Mostramos tambem que cifrar bem exige acaso: se a mesma mensagem sempre vira o mesmo texto cifrado, quem observa aprende demais.',
+    'Seguranca aqui nao e esconder o metodo. O metodo e publico; o que se protege e a chave.',
+])
+npc('marta', 'seguranca', 'Marta', 'Operadora de datacenter', [
+    'O computador desta era nem sempre e seu. Esta aqui no galpao, dividido em maquinas virtuais, e voce aluga a fatia de que precisa, por hora.',
+    'Quando o acesso cresce, subimos mais copias; quando cai, desligamos. Voce paga pelo uso em vez de comprar o servidor.',
+    'A conta disso e que seus dados ficam na maquina de outra pessoa. Por isso cifrar deixou de ser detalhe e virou requisito.',
+])
+
+# ERA 6 - Inteligencia Artificial
+npc('fei-fei', 'ia', 'Fei-Fei Li', 'ImageNet (2009)', [
+    'A pergunta nao era so qual algoritmo usar, era com o que treinar. Montamos o ImageNet: milhoes de fotos rotuladas por pessoas.',
+    'Sem exemplo em quantidade, o melhor modelo do mundo nao aprende a diferenca entre um gato e um cachorro.',
+    'Dados deixaram de ser o que sobra do sistema e viraram o insumo principal.',
+])
+npc('hinton', 'ia', 'Geoffrey Hinton', 'Redes profundas e AlexNet (2012)', [
+    'A maquina nao recebe a regra pronta. Voce mostra exemplos, ela chuta, erra, e o erro volta ajustando os pesos de cada ligacao. Isso e retropropagacao.',
+    'Em 2012 a AlexNet ganhou o desafio do ImageNet por uma margem enorme, treinada em placas de video. O que mudou foi a escala: mais dados e mais calculo.',
+    'Repare no preco disso: o modelo acerta sem conseguir explicar por que. Ele aprendeu um padrao, nao uma justificativa.',
+])
+npc('lecun', 'ia', 'Yann LeCun', 'Redes convolucionais', [
+    'Numa imagem o que importa e o pedaco: uma borda e uma borda, no canto ou no meio. A rede convolucional procura o mesmo padrao na figura inteira.',
+    'Nos anos 1990 isso ja lia cheques bancarios nos Estados Unidos. Faltava dado e faltava maquina para ir alem.',
+    'O computador desta era aprende com exemplos e roda em paralelo em milhares de nucleos. Acerta muito, erra de um jeito estranho, e nunca sabe que errou.',
+])
+
+io.open('src/data/npcs.pt-BR.json', 'w', encoding='utf-8').write(
+    json.dumps(npcs, indent=2, ensure_ascii=False) + '\n')
+
+print('npcs:', len(npcs))
+for era in ['mecanica', 'logica', 'codigo', 'redes', 'seguranca', 'ia']:
+    got = [k for k, v in npcs.items() if v['era'] == era]
+    print(' ', era, len(got), got)

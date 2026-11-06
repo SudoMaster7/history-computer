@@ -1,0 +1,38 @@
+[
+  {
+    "id": "mecanica-A",
+    "era": "mecanica",
+    "letter": "A",
+    "difficulty": 1,
+    "seed": "mecanica-A-v1"
+  },
+  {
+    "id": "mecanica-B",
+    "era": "mecanica",
+    "letter": "B",
+    "difficulty": 2,
+    "seed": "mecanica-B-v1"
+  },
+  { "id": "logica-A", "era": "logica", "letter": "A", "difficulty": 1, "seed": "logica-A-v1" },
+  { "id": "logica-B", "era": "logica", "letter": "B", "difficulty": 2, "seed": "logica-B-v1" },
+  { "id": "codigo-A", "era": "codigo", "letter": "A", "difficulty": 1, "seed": "codigo-A-v1" },
+  { "id": "codigo-B", "era": "codigo", "letter": "B", "difficulty": 2, "seed": "codigo-B-v1" },
+  { "id": "redes-A", "era": "redes", "letter": "A", "difficulty": 1, "seed": "redes-A-v1" },
+  { "id": "redes-B", "era": "redes", "letter": "B", "difficulty": 2, "seed": "redes-B-v1" },
+  {
+    "id": "seguranca-A",
+    "era": "seguranca",
+    "letter": "A",
+    "difficulty": 1,
+    "seed": "seguranca-A-v1"
+  },
+  {
+    "id": "seguranca-B",
+    "era": "seguranca",
+    "letter": "B",
+    "difficulty": 2,
+    "seed": "seguranca-B-v1"
+  },
+  { "id": "ia-A", "era": "ia", "letter": "A", "difficulty": 1, "seed": "ia-A-v1" },
+  { "id": "ia-B", "era": "ia", "letter": "B", "difficulty": 2, "seed": "ia-B-v1" }
+]

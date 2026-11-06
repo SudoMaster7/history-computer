@@ -1,0 +1,362 @@
+[
+  {
+    "id": "mecanica-q1",
+    "era": "mecanica",
+    "prompt": "O que a Pascalina, de 1642, era capaz de fazer?",
+    "options": [
+      "Somar e subtrair girando engrenagens, sem guardar programa nem resultado",
+      "Rodar programas gravados em fita magnetica",
+      "Multiplicar usando valvulas eletronicas",
+      "Guardar dados em disco para usar depois"
+    ],
+    "explain": "A Pascalina e uma calculadora mecanica: faz a conta na hora e esquece. Memoria e programa armazenado so aparecem tres seculos depois."
+  },
+  {
+    "id": "mecanica-q2",
+    "era": "mecanica",
+    "prompt": "Para que serviam os cartoes perfurados no tear de Jacquard (1804)?",
+    "options": [
+      "Guardavam o padrao a ser tecido, fora da maquina",
+      "Guardavam o resultado dos calculos do tear",
+      "Serviam para contar quantos metros foram tecidos",
+      "Eram o combustivel que movia o tear"
+    ],
+    "explain": "Trocando os cartoes, o mesmo tear faz outro desenho. E a primeira vez que a instrucao vira um objeto separado da maquina."
+  },
+  {
+    "id": "mecanica-q3",
+    "era": "mecanica",
+    "prompt": "O que Ada Lovelace percebeu nas notas de 1843 que Babbage nao escreveu?",
+    "options": [
+      "Que a maquina poderia tratar simbolos, como notas musicais, e nao so numeros",
+      "Que a maquina seria mais rapida com eletricidade",
+      "Que o calculo poderia ser feito por valvulas",
+      "Que a maquina conseguiria aprender com exemplos"
+    ],
+    "explain": "Lovelace viu que, se os numeros representassem outras coisas, a Maquina Analitica deixaria de ser calculadora e viraria maquina de manipular simbolos."
+  },
+  {
+    "id": "mecanica-q4",
+    "era": "mecanica",
+    "prompt": "Por que a Maquina Analitica nunca foi construida por inteiro no seculo XIX?",
+    "options": [
+      "Custava caro demais e exigia precisao mecanica que a epoca nao alcancava",
+      "Porque Babbage nao conseguiu descrever o projeto",
+      "Porque a eletricidade ainda nao tinha sido descoberta",
+      "Porque ninguem sabia que programa escrever para ela"
+    ],
+    "explain": "O projeto estava no papel e era coerente; faltaram dinheiro e usinagem precisa o bastante para as milhares de pecas."
+  },
+  {
+    "id": "mecanica-q5",
+    "era": "mecanica",
+    "prompt": "O que o poder Repetir resolve, nesta era?",
+    "options": [
+      "Descrever um padrao longo com poucas instrucoes, em vez de escrever cada passo",
+      "Fazer a maquina calcular mais rapido",
+      "Guardar o resultado do calculo na memoria",
+      "Permitir que duas maquinas conversem"
+    ],
+    "explain": "Repetir e compressao de instrucao: em vez de um cartao por linha igual, um grupo e a ordem de repetir."
+  },
+  {
+    "id": "logica-q1",
+    "era": "logica",
+    "prompt": "O que Claude Shannon mostrou em 1937?",
+    "options": [
+      "Que circuitos de reles obedecem a algebra de Boole, entao logica vira fiacao",
+      "Que a informacao pode ser comprimida sem perda",
+      "Que toda maquina pode imitar qualquer outra",
+      "Que o transistor substituiria a valvula"
+    ],
+    "explain": "Ligado e desligado viram verdadeiro e falso: E, Ou e Nao passam a ser construidos com chaves. E a base de todo hardware digital."
+  },
+  {
+    "id": "logica-q2",
+    "era": "logica",
+    "prompt": "O que a maquina universal de Turing (1936) estabeleceu?",
+    "options": [
+      "Que uma unica maquina pode imitar qualquer outra, bastando trocar o programa",
+      "Que nenhum problema matematico pode ser resolvido por maquina",
+      "Que o calculo precisa de valvulas para ser rapido",
+      "Que a memoria precisa ser separada dos dados"
+    ],
+    "explain": "E a ideia do computador de uso geral: nao se constroi uma maquina por tarefa, troca-se a descricao que ela segue."
+  },
+  {
+    "id": "logica-q3",
+    "era": "logica",
+    "prompt": "Como o ENIAC (1945) era programado?",
+    "options": [
+      "Mudando cabos e chaves na propria maquina, o que levava dias",
+      "Digitando comandos em um teclado ligado a uma tela",
+      "Carregando um programa guardado na memoria junto com os dados",
+      "Perfurando cartoes que a maquina lia automaticamente"
+    ],
+    "explain": "No ENIAC o programa era a fiacao. Trocar de problema era remontar a maquina; foi isso que empurrou a ideia de programa armazenado."
+  },
+  {
+    "id": "logica-q4",
+    "era": "logica",
+    "prompt": "Qual era o maior problema pratico das valvulas?",
+    "options": [
+      "Eram muitas, esquentavam muito e queimavam com frequencia",
+      "Nao conseguiam representar verdadeiro e falso",
+      "Eram pequenas demais para serem fabricadas",
+      "So funcionavam ligadas a uma rede de computadores"
+    ],
+    "explain": "O ENIAC tinha cerca de 18 mil valvulas. Manutencao e calor eram o limite real do tamanho da maquina."
+  },
+  {
+    "id": "logica-q5",
+    "era": "logica",
+    "prompt": "O que significa guardar o programa na mesma memoria dos dados?",
+    "options": [
+      "Trocar de tarefa vira carregar numeros, em vez de remontar a maquina",
+      "O programa passa a rodar sem precisar de processador",
+      "Os dados ficam protegidos contra erros de calculo",
+      "A maquina passa a escrever os proprios programas"
+    ],
+    "explain": "E a arquitetura de programa armazenado: a mesma memoria guarda instrucao e dado, e carregar um programa vira uma operacao comum."
+  },
+  {
+    "id": "codigo-q1",
+    "era": "codigo",
+    "prompt": "Que vantagem o transistor (1947) trouxe sobre a valvula?",
+    "options": [
+      "Solido, pequeno, gasta pouca energia e nao queima a toda hora",
+      "Conseguia representar tres estados em vez de dois",
+      "Dispensava o uso de memoria na maquina",
+      "Permitia que a maquina se conectasse a internet"
+    ],
+    "explain": "Mesma funcao logica, custo e tamanho muito menores. E o que tira o computador da sala inteira e o coloca num armario."
+  },
+  {
+    "id": "codigo-q2",
+    "era": "codigo",
+    "prompt": "Para que serve um compilador?",
+    "options": [
+      "Traduzir um programa escrito por pessoas para o codigo que o processador executa",
+      "Conectar dois computadores pela rede",
+      "Guardar os dados do programa em disco",
+      "Corrigir sozinho os erros de logica do programa"
+    ],
+    "explain": "Grace Hopper defendeu que a traducao e trabalho de maquina. O compilador e o que torna viavel programar em linguagem de alto nivel."
+  },
+  {
+    "id": "codigo-q3",
+    "era": "codigo",
+    "prompt": "Qual foi a grande objecao ao Fortran (1957), e o que aconteceu?",
+    "options": [
+      "Diziam que o codigo gerado seria lento demais; o ganho de tempo de quem escreve compensou",
+      "Diziam que ninguem entenderia a sintaxe; ela foi abandonada",
+      "Diziam que nao funcionaria com transistores; precisou de valvulas",
+      "Diziam que exigiria rede; ficou restrito a um laboratorio"
+    ],
+    "explain": "A critica era de desempenho. Na pratica, programar em dias em vez de meses passou a valer mais que o ciclo economizado."
+  },
+  {
+    "id": "codigo-q4",
+    "era": "codigo",
+    "prompt": "Por que o COBOL usava comandos parecidos com ingles?",
+    "options": [
+      "Para que quem entende do negocio conseguisse ler o programa",
+      "Porque o processador so entendia palavras em ingles",
+      "Para que o programa ocupasse menos memoria",
+      "Porque era obrigatorio nos computadores da epoca"
+    ],
+    "explain": "A aposta era de legibilidade: aproximar o texto do programa da linguagem de quem define a regra."
+  },
+  {
+    "id": "codigo-q5",
+    "era": "codigo",
+    "prompt": "Como voce falava com o computador desta era?",
+    "options": [
+      "Por cartoes perfurados ou fita, numa sala com ar condicionado",
+      "Por teclado e mouse, em casa",
+      "Por comandos de voz",
+      "Pela rede, de qualquer lugar do mundo"
+    ],
+    "explain": "A maquina e cara e compartilhada: voce entrega o trabalho e espera a vez. O uso pessoal e interativo so chega depois."
+  },
+  {
+    "id": "redes-q1",
+    "era": "redes",
+    "prompt": "O que e comutacao por pacotes?",
+    "options": [
+      "A mensagem se parte em pedacos que seguem caminhos diferentes e sao remontados no destino",
+      "Um fio exclusivo e reservado entre as duas maquinas durante a conversa",
+      "Todas as mensagens passam por um computador central que as distribui",
+      "A mensagem e enviada inteira e, se falhar, se perde"
+    ],
+    "explain": "Sem caminho reservado, a rede aproveita melhor os enlaces e sobrevive a queda de trechos: os pacotes desviam."
+  },
+  {
+    "id": "redes-q2",
+    "era": "redes",
+    "prompt": "O que aconteceu na primeira mensagem da ARPANET, em 1969?",
+    "options": [
+      "Tentaram enviar login e o sistema caiu depois das duas primeiras letras",
+      "A mensagem chegou completa e sem erro na primeira tentativa",
+      "A conexao durou tres dias seguidos sem falha",
+      "A mensagem foi enviada por satelite entre dois paises"
+    ],
+    "explain": "O sistema caiu depois do lo. O episodio virou simbolo de como a rede comecou: funcionando mal, mas funcionando."
+  },
+  {
+    "id": "redes-q3",
+    "era": "redes",
+    "prompt": "Qual a diferenca entre IP e TCP?",
+    "options": [
+      "O IP entrega o pacote sem garantia; o TCP confere o que faltou e pede de novo",
+      "O IP cifra os dados; o TCP os comprime",
+      "O IP e usado em redes locais; o TCP so na internet",
+      "O IP guarda os dados; o TCP os apaga depois do uso"
+    ],
+    "explain": "Separar entrega de confiabilidade foi o que deixou a rede crescer: cada camada resolve um problema e so um."
+  },
+  {
+    "id": "redes-q4",
+    "era": "redes",
+    "prompt": "Quais as tres pecas que Tim Berners-Lee propos para a Web?",
+    "options": [
+      "Um endereco (URL), um jeito de pedir (HTTP) e um jeito de escrever (HTML)",
+      "Um cabo, um roteador e um servidor",
+      "Um navegador, um e-mail e um buscador",
+      "Um protocolo, uma senha e um certificado"
+    ],
+    "explain": "A Web nao substituiu a internet: ela e uma aplicacao em cima dela, feita de endereco, pedido e formato."
+  },
+  {
+    "id": "redes-q5",
+    "era": "redes",
+    "prompt": "Por que uma rede de pacotes resiste melhor a falhas?",
+    "options": [
+      "Se um trecho cai, os pacotes seguem por outro caminho ate o destino",
+      "Porque cada maquina guarda uma copia de toda a rede",
+      "Porque a mensagem e enviada varias vezes de proposito",
+      "Porque um computador central refaz a conexao"
+    ],
+    "explain": "Nao ha caminho unico nem centro obrigatorio: a decisao de rota acontece salto a salto."
+  },
+  {
+    "id": "seguranca-q1",
+    "era": "seguranca",
+    "prompt": "Que problema a criptografia de chave publica (1976) resolveu?",
+    "options": [
+      "Dois desconhecidos combinarem uma chave secreta conversando em canal aberto",
+      "Deixar a mensagem menor para caber na rede",
+      "Impedir que a mensagem se perca no caminho",
+      "Fazer o computador decifrar mais rapido"
+    ],
+    "explain": "Antes era preciso ja ter combinado a chave em segredo. Numa rede entre estranhos, isso era inviavel."
+  },
+  {
+    "id": "seguranca-q2",
+    "era": "seguranca",
+    "prompt": "Para que serve a chave privada?",
+    "options": [
+      "Fica so com o dono e nunca e distribuida; e o que prova que e ele",
+      "E enviada junto com a mensagem para o destinatario conferir",
+      "E publicada para qualquer um poder cifrar",
+      "E trocada a cada mensagem enviada"
+    ],
+    "explain": "O par e assimetrico: a publica circula e cifra, a privada fica guardada e decifra ou assina."
+  },
+  {
+    "id": "seguranca-q3",
+    "era": "seguranca",
+    "prompt": "Por que cifrar bem exige acaso?",
+    "options": [
+      "Se a mesma mensagem sempre virar o mesmo texto cifrado, quem observa aprende demais",
+      "Porque o computador precisa de numeros aleatorios para ligar",
+      "Porque o acaso deixa a cifragem mais rapida",
+      "Porque sem acaso a chave fica grande demais"
+    ],
+    "explain": "Repeticao vaza informacao mesmo sem quebrar a cifra. Por isso a mesma mensagem precisa cifrar diferente a cada vez."
+  },
+  {
+    "id": "seguranca-q4",
+    "era": "seguranca",
+    "prompt": "O que caracteriza a computacao em nuvem?",
+    "options": [
+      "Voce aluga por hora a fatia de uma maquina que esta num datacenter de outra pessoa",
+      "Cada usuario tem o proprio servidor em casa",
+      "Os dados ficam guardados apenas no navegador",
+      "Os programas rodam sem precisar de nenhum computador"
+    ],
+    "explain": "Capacidade sob demanda: sobe quando o acesso cresce, desce quando cai, e a conta e pelo uso."
+  },
+  {
+    "id": "seguranca-q5",
+    "era": "seguranca",
+    "prompt": "Em seguranca, o que deve ser secreto?",
+    "options": [
+      "A chave; o metodo de cifragem e publico e revisado por todos",
+      "O metodo de cifragem, que nunca deve ser divulgado",
+      "O endereco do servidor que guarda os dados",
+      "O tamanho da mensagem enviada"
+    ],
+    "explain": "Metodo secreto nao e testado por ninguem. Algoritmo aberto e chave guardada e o que resiste ao tempo."
+  },
+  {
+    "id": "ia-q1",
+    "era": "ia",
+    "prompt": "Como uma rede neural aprende?",
+    "options": [
+      "Ve exemplos, erra, e o erro volta ajustando os pesos das ligacoes",
+      "Recebe de um especialista a regra pronta e a executa",
+      "Procura a resposta num banco de dados de respostas certas",
+      "Testa todas as respostas possiveis ate achar a certa"
+    ],
+    "explain": "E a retropropagacao: o erro na saida e distribuido para tras, corrigindo cada peso um pouco."
+  },
+  {
+    "id": "ia-q2",
+    "era": "ia",
+    "prompt": "Por que o ImageNet foi importante?",
+    "options": [
+      "Deu milhoes de exemplos rotulados, sem os quais o modelo nao aprende",
+      "Foi o primeiro algoritmo de rede neural",
+      "Substituiu a necessidade de placas de video",
+      "Provou que o computador pensa como uma pessoa"
+    ],
+    "explain": "A virada de 2012 nao foi so de algoritmo: foi de dado em quantidade e de calculo em paralelo."
+  },
+  {
+    "id": "ia-q3",
+    "era": "ia",
+    "prompt": "O que a rede convolucional explora numa imagem?",
+    "options": [
+      "Que o mesmo padrao local, como uma borda, importa em qualquer parte da figura",
+      "Que toda imagem tem o mesmo tamanho",
+      "Que as cores sao mais importantes que as formas",
+      "Que a imagem precisa estar em preto e branco"
+    ],
+    "explain": "Procurar o mesmo filtro pela figura inteira reduz muito o numero de pesos e aproveita a estrutura da imagem."
+  },
+  {
+    "id": "ia-q4",
+    "era": "ia",
+    "prompt": "Qual e o preco do modelo que aprende por exemplos?",
+    "options": [
+      "Ele acerta sem conseguir explicar por que, e erra sem saber que errou",
+      "Ele fica lento conforme recebe mais dados",
+      "Ele so funciona com dados em texto",
+      "Ele precisa ser reescrito a cada nova tarefa"
+    ],
+    "explain": "O modelo aprendeu um padrao estatistico, nao uma justificativa. Explicar a decisao e um problema em aberto."
+  },
+  {
+    "id": "ia-q5",
+    "era": "ia",
+    "prompt": "O que mudou em 2012 com a AlexNet?",
+    "options": [
+      "Uma rede profunda treinada em placas de video venceu o desafio por margem enorme",
+      "Foi inventada a primeira rede neural da historia",
+      "Os computadores passaram a dispensar dados de treino",
+      "As redes neurais deixaram de ser usadas"
+    ],
+    "explain": "A combinacao de rede profunda, muitos dados e GPU mostrou que a escala resolvia o que o algoritmo sozinho nao resolvia."
+  }
+]
