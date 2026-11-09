@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [corrige workflow verify para rodar na raiz do repositorio](changes/2026-11-09-corrige-workflow-verify-para-rodar-na-raiz-do-repositorio.md) — 2026-11-09
+
 - [Explicar e dar dica em todo minijogo](changes/2026-11-09-explicar-e-dar-dica-em-todo-minijogo.md) — 2026-11-09
 
 - [Minijogo da Era 2: Circuitos Logicos](changes/2026-11-09-minijogo-da-era-2-circuitos-logicos.md) — 2026-11-09
