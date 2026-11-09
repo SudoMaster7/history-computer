@@ -3,6 +3,7 @@ import type { MinigameScreenProps } from '@/core/types';
 import type { LoomGroup, LoomInstance, LoomSolution } from './logic';
 import { expand, solutionCost } from './logic';
 import { LOOM } from '@/core/constants';
+import MinigameHelp from '@/ui/MinigameHelp';
 import ui from '@/data/ui.pt-BR.json';
 
 type Props = MinigameScreenProps<LoomInstance, LoomSolution>;
@@ -69,6 +70,8 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
         <h2>{ui.minigames.mecanica}</h2>
         <p className="loom__help">{mode === 'micro' ? t.microHelp : t.help}</p>
       </header>
+
+      <MinigameHelp era="mecanica" mode={mode} />
 
       <div className="loom__block">
         <h3>{t.target}</h3>

@@ -32,6 +32,7 @@ describe('contrato: superficie publica do nucleo', () => {
   it('core/constants', () => {
     expect(exported(constants)).toEqual([
       'BOSS',
+      'CIRCUIT',
       'ERA_YEARS',
       'ITEMS',
       'LOOM',

@@ -255,3 +255,101 @@ paleta roxo neon. O jogo e 2D em pixel art, o projeto proibe WebGL (D13) e a
 identidade de cor ja estava firmada. Aproveitamos dela apenas a tipografia, que
 combina com pixel art por ser angulosa. **Resultado de ferramenta e sugestao,
 nao ordem** — vale o mesmo para quem usar a skill depois.
+
+## 2026-11-09 — Era 2: Circuitos Logicos
+
+### D36. O menor circuito e calculado, nao escrito a mao
+
+`reference()` nao guarda uma expressao sorteada: ele resolve o menor circuito de
+**todas** as funcoes booleanas daquele tamanho de cofre de uma vez, por
+relaxamento sucessivo (parte das entradas com custo 0 e vai combinando NAO, E e
+OU ate nenhum custo melhorar). Com 3 entradas sao 8 linhas, ou seja 256 funcoes
+— pequeno o bastante para a tabela inteira caber em milissegundos, e memoizada
+por numero de entradas.
+
+Motivo: se a referencia fosse a expressao que o gerador sorteou, a eficiencia
+mediria "quanto voce se parece com o sorteio", e um jogador que achasse circuito
+melhor passaria de 1,0 sem merito proprio. Assim 1,0 significa literalmente
+"tao enxuto quanto da para ser".
+
+O custo conta a **arvore** (porta reaproveitada conta duas vezes), que e
+exatamente o que `gates.length` mede numa solucao montada em arvore. Quem
+reaproveitar uma porta pode fechar com menos portas que a referencia e passar de
+1,0 — o teto de `SCORING.EFFICIENCY_MAX` segue valendo.
+
+### D37. Uma porta so liga em entradas ou em portas montadas antes dela
+
+O briefing exige grafo aciclico. Em vez de procurar ciclo, `{ gate: n }` so vale
+se `n` for menor que o indice da porta que esta ligando. Aciclico por
+construcao, e a regra da interface fica dizivel em uma frase: "da para puxar fio
+do que ja existe". Apagar uma porta desliga os fios que apontavam para ela em vez
+de deixar referencia podre.
+
+### D38. O fio se liga em dois toques, encaixe primeiro
+
+O briefing sugeria tocar na origem e depois no destino. Ficou o contrario:
+tocar no encaixe vazio e depois na origem. Assim a lista de origens mostrada e
+so a **valida para aquele encaixe** (entradas e portas anteriores), em vez de o
+jogador escolher uma origem e descobrir que nao havia onde encaixar. Continua
+dois toques e nenhum arrasto.
+
+### D39. A tabela sorteada tem de usar todas as chaves do cofre
+
+Uma funcao de 3 entradas pode ignorar uma delas. O cofre ficaria com chave
+decorativa e o jogador acharia que entendeu a tabela errado. `generate` exige que
+cada entrada mude a resposta em alguma linha, e ha teste exigindo isso em todas
+as dificuldades.
+
+### D40. A faixa de portas e por dificuldade, com folga decrescente
+
+`CIRCUIT.MIN_GATES`/`TOP_GATES` dizem quantas portas a tabela sorteada pode
+exigir, e `CIRCUIT.SLACK` quanta folga a solucao tem sobre a referencia: micro e
+missao A sorteiam alvos pequenos e dao folga (fechar e facil, 3 estrelas nao),
+a missao B aperta, e a dificuldade 3 nao da folga nenhuma — so o circuito minimo
+fecha. Se o sorteio nao achar tabela na faixa em `GEN_ATTEMPTS` tentativas, ha
+varredura deterministica das funcoes: a instancia nunca sai insoluvel.
+
+## 2026-11-09 — Explicacao e dica em todo minijogo
+
+### D41. Todo minijogo explica o que representa e da dica, e isso e contrato
+
+A pedido do grupo: um minijogo sem explicacao vira quebra-cabeca solto — o
+jogador fecha a missao sem saber o que aquilo tinha a ver com a historia da
+computacao, que e o assunto do jogo. E quem trava num minijogo sem dica so tem a
+saida de abandonar a missao.
+
+Entao cada era com minijogo registrado tem, em `src/data/minigames.pt-BR.json`,
+quatro textos e uma lista de dicas:
+
+| campo        | o que responde                                          |
+| ------------ | ------------------------------------------------------- |
+| `machine`    | que maquina real aquilo imita, com nome e ano           |
+| `represents` | o que ela fazia, para quem nunca viu                    |
+| `power`      | a funcionalidade da era, ligada ao poder que a missao da |
+| `lesson`     | por que o desafio e esse, e nao outro                   |
+| `hints`      | dicas em ordem, da mais geral a mais concreta           |
+
+`tests/contract/content.test.ts` cobra isso de **toda era com minijogo
+registrado**, com minimo de 2 dicas. Quem implementar o minijogo da Era 3 esbarra
+no contrato antes de entregar sem os textos — era esse o ponto de fazer contrato
+em vez de convencao.
+
+### D42. A ajuda fica recolhida, e a dica sai uma por toque
+
+Mesma escolha do HUD (D31): a explicacao mora atras de um botao, nao numa faixa
+permanente, porque a tela do minijogo e onde o jogo acontece. As dicas saem uma
+por toque, da mais geral a mais concreta, para que quem travou numa coisa pequena
+nao leve a resposta inteira na cara.
+
+### D43. Dica nao custa pontos
+
+A dica nao mexe em estrela, eficiencia nem pontuacao. O jogo e educacional e o
+publico e adolescente curioso: cobrar pela ajuda ensina a nao pedir ajuda. Quem
+quiser 3 estrelas ainda precisa da solucao enxuta, com dica ou sem.
+
+### D44. A explicacao e componente unico, nao copia por era
+
+`src/ui/MinigameHelp.tsx` serve todas as eras e le o texto por `EraId`. Um
+minijogo novo ganha a ajuda com uma linha (`<MinigameHelp era="..." mode={mode} />`)
+e o texto no JSON — nao reescrevendo o painel. No modo `micro` (chefao) o campo
+`lesson` fica de fora, que e onde o espaco e mais curto.

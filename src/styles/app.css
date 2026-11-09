@@ -206,6 +206,212 @@
   font-weight: 700;
 }
 
+/* ---------- Ajuda do minijogo ---------- */
+.help {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.help__actions {
+  flex-wrap: wrap;
+}
+
+.help__toggle,
+.help__hint {
+  flex: 1;
+  min-width: 120px;
+}
+
+.help__hint {
+  border-color: var(--accent);
+}
+
+.help__panel {
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+.help__panel h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.help__panel h4 {
+  margin: 12px 0 4px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.help__panel p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.help__machine {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.help__hints {
+  margin: 0;
+  padding: 10px 10px 10px 28px;
+  background: var(--bg-soft);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help__hintsEnd {
+  list-style: none;
+  margin-left: -16px;
+  color: var(--text-dim);
+}
+
+/* ---------- Circuitos Logicos ---------- */
+.circuit {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.circuit__head h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.circuit__help {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.circuit__block h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.circuit__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-soft);
+  border-radius: 10px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.circuit__table th,
+.circuit__table td {
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.circuit__table th {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.circuit__wanted {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.circuit__row--wrong td {
+  color: var(--danger);
+}
+
+.circuit__gates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.circuit__gate {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  background: var(--bg-soft);
+  border-radius: 10px;
+  padding: 6px;
+  flex-wrap: wrap;
+}
+
+.circuit__gateName {
+  font-weight: 700;
+  min-width: 56px;
+}
+
+.circuit__slots {
+  display: flex;
+  gap: var(--gap);
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.circuit__slot {
+  border: 2px dashed var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.85rem;
+  padding: 0 10px;
+}
+
+.circuit__slot--waiting {
+  border-style: solid;
+  background: var(--accent);
+  color: #06121b;
+}
+
+.circuit__empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  padding: 4px;
+}
+
+.circuit__outRow {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.circuit__sources,
+.circuit__palette {
+  padding: 8px;
+  background: var(--bg-soft);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.circuit__source--current {
+  border-color: var(--accent);
+}
+
+.circuit__status {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.circuit__submit {
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
 /* ---------- Resultado ---------- */
 .result__stars {
   font-size: 2rem;

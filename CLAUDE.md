@@ -131,11 +131,11 @@ personagem sem sprite, porque sem isso ele some do mapa em silêncio.
 Não diga que algo funciona sem ter rodado. Se um teste falha, mostre a saída.
 Se uma parte ficou de fora, diga qual e por quê.
 
-Hoje, especificamente: **só a Era 1 fecha o ciclo completo** (minijogo Tear de
-Engrenagens). As eras 2 a 6 têm mapa, personagens, prova e item, mas os
-terminais mostram "Terminal em construção". O chefão não existe. Os itens de
-combate estão na mochila sem efeito. Está escrito assim no `README.md` e deve
-continuar assim até deixar de ser verdade.
+Hoje, especificamente: **as Eras 1 e 2 fecham o ciclo completo** (Tear de
+Engrenagens e Circuitos Lógicos). As eras 3 a 6 têm mapa, personagens, prova e
+item, mas os terminais mostram "Terminal em construção". O chefão não existe. Os
+itens de combate estão na mochila sem efeito. Está escrito assim no `README.md` e
+deve continuar assim até deixar de ser verdade.
 
 ---
 

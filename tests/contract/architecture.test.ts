@@ -51,6 +51,7 @@ describe('contrato: o nucleo e puro', () => {
     expect(files.length).toBeGreaterThan(5);
     expect(files).toContain('src/core/world.ts');
     expect(files).toContain('src/minigames/mecanica/logic.ts');
+    expect(files).toContain('src/minigames/logica/logic.ts');
   });
 
   it('nao importa React, Three.js, Zustand nem camadas de cima', () => {

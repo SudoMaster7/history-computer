@@ -1,5 +1,6 @@
 import { registerMinigame } from '@/core/registry';
 import mecanicaModule from './mecanica';
+import logicaModule from './logica';
 
 /**
  * Registra os minijogos implementados. Importado uma vez pelo App.
@@ -11,5 +12,6 @@ let done = false;
 export function registerMinigames(): void {
   if (done) return;
   registerMinigame(mecanicaModule);
+  registerMinigame(logicaModule);
   done = true;
 }
