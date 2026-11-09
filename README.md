@@ -36,6 +36,9 @@ simples, sem arrastar**.
    o que ela já consegue fazer e o que ainda não consegue — é esse "ainda não" que prepara a
    era seguinte.
 3. **Use os dois terminais.** Cada um abre um minijogo que ensina o poder da era na prática.
+   Dentro dele, "O que é isto?" conta qual máquina de verdade aquilo imita e qual
+   funcionalidade da era está em jogo, e "Dica" libera ajudas uma a uma — da mais geral à mais
+   concreta — sem custo nenhum na pontuação.
 4. **Atravesse a porta.** Ela só destranca com as duas missões concluídas, e leva à **prova da
    era**: quatro perguntas, três acertos para passar. Errar não tira vida, e cada resposta vem
    com a explicação — errar também ensina.
@@ -59,19 +62,19 @@ Nada aqui é promessa: só está marcado como pronto o que já roda.
 |                         | Zona, personagens e prova |  Minijogo  |
 | ----------------------- | :-----------------------: | :--------: |
 | **Mecânica**            |          pronto           | **pronto** |
-| Válvulas e Lógica       |          pronto           |   falta    |
+| **Válvulas e Lógica**   |          pronto           | **pronto** |
 | Transistor e Linguagens |          pronto           |   falta    |
 | Redes                   |          pronto           |   falta    |
 | Web, Nuvem e Segurança  |          pronto           |   falta    |
 | Inteligência Artificial |          pronto           |   falta    |
 | **Chefão BUG Day 0**    |             —             |   falta    |
 
-Ou seja: **a Era 1 fecha o ciclo completo**. Nas outras cinco você anda pelo mapa, conversa
-com os personagens e faz a prova, mas os terminais mostram "Terminal em construção".
+Ou seja: **as Eras 1 e 2 fecham o ciclo completo**. Nas outras quatro você anda pelo mapa,
+conversa com os personagens e faz a prova, mas os terminais mostram "Terminal em construção".
 
 Também falta: o efeito dos itens de combate (hoje só a Válvula Reserva faz algo), o ranking no
 Supabase, o áudio, e o acabamento visual da tela dos minijogos — o mapa e o menu já passaram
-por ele, a tela do Tear ainda não.
+por ele, as telas do Tear e dos Circuitos ainda não.
 
 ---
 

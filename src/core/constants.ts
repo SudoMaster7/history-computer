@@ -117,6 +117,20 @@ export const WORLD = {
   FRAME_MS: 130,
 } as const;
 
+export const CIRCUIT = {
+  /** Portas disponiveis na paleta dos Circuitos Logicos. */
+  TYPES: ['NOT', 'AND', 'OR'] as readonly string[],
+  /** Chaves de entrada do cofre, por dificuldade. */
+  INPUTS: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Faixa de portas que a tabela sorteada pode exigir, por dificuldade. */
+  MIN_GATES: { micro: 2, 1: 2, 2: 3, 3: 4 } as Record<string, number>,
+  TOP_GATES: { micro: 2, 1: 3, 2: 5, 3: 6 } as Record<string, number>,
+  /** Folga de portas acima da referencia que a solucao ainda aceita. */
+  SLACK: { micro: 1, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
+  /** Sorteios de tabela antes de cair na varredura deterministica. */
+  GEN_ATTEMPTS: 40,
+} as const;
+
 export const LOOM = {
   /** Cores disponiveis na paleta do Tear de Engrenagens. */
   COLORS: ['a', 'b', 'c'] as readonly string[],

@@ -1,0 +1,26 @@
+{
+  "mecanica": {
+    "machine": "Tear de cartões perfurados (Jacquard, 1804)",
+    "represents": "O tear de Jacquard era programado por cartões de papelão furados: cada cartão mandava uma linha do desenho, e o rolo de cartões passava de novo e de novo para repetir o desenho no tecido inteiro. Foi a primeira máquina a seguir um programa guardado fora dela — e é por isso que Ada Lovelace olhou para esse tear quando escreveu, em 1843, o primeiro programa da história.",
+    "power": "A funcionalidade desta era é REPETIR. A máquina não escolhe nada: ela executa uma sequência gravada e volta ao começo quantas vezes mandarem. O cartão \"repetir xN\" é exatamente isso, e é o avô do laço de repetição de qualquer linguagem de hoje.",
+    "lesson": "Repetir é o que torna um programa mais curto que o resultado dele. Escrever 16 células na mão e mandar \"este par, 8 vezes\" dão o mesmo tecido — só que o segundo cabe numa pilha de cartões que a máquina aguenta.",
+    "hints": [
+      "Olhe o padrão pedido e procure um trecho que volta igual. Por exemplo, em A-B-A-B-A-B o trecho que volta é A-B, três vezes.",
+      "Para montar um grupo: toque nas cores do trecho e depois toque no \"x1\" dele até chegar ao número de voltas. Um grupo repetido custa só 1 cartão a mais, não 1 por volta.",
+      "Se os cartões não estão cabendo, é sinal de que falta repetição. Escrever 8 células na mão custa 8 cartões; as mesmas 8 como \"grupo de 2, x4\" custam 3.",
+      "Terminou um trecho e o próximo é diferente? Toque em \"Novo grupo\" antes de continuar, senão as cores entram no grupo anterior."
+    ]
+  },
+  "logica": {
+    "machine": "Cofre de válvulas e relés (Shannon 1937, ENIAC 1945)",
+    "represents": "Nas máquinas de válvula não havia programa gravado para cada decisão: a decisão era o próprio circuito, montado com peças que só sabem ligar e desligar. Em 1937 Claude Shannon mostrou que a álgebra de verdadeiro e falso cabia inteira num arranjo de relés, e foi com portas NÃO, E e OU que o Colossus e o ENIAC passaram a decidir — inclusive dentro de Bletchley Park, onde o trabalho de Turing dependia disso.",
+    "power": "A funcionalidade desta era é DECIDIR. A resposta não vem de uma ordem gravada, vem da combinação das entradas: ligar A e B dá um resultado, ligar só A dá outro. É a origem do \"se... então\" de qualquer programa.",
+    "lesson": "A tabela do cofre é o que um projetista daquela época recebia para trabalhar: a resposta certa para cada combinação de chaves. O trabalho era achar o arranjo de portas mais enxuto que respondesse a todas as linhas — cada válvula a menos era uma válvula que não queimava no meio da madrugada.",
+    "hints": [
+      "Leia a tabela por linhas: em quais combinações o cofre tem de responder 1? São essas as linhas que o seu circuito precisa acertar.",
+      "As três portas, em uma frase cada: E responde 1 só quando as duas entradas são 1; OU responde 1 quando pelo menos uma é 1; NÃO troca 1 por 0.",
+      "Se o cofre responde 1 em quase todas as linhas, descreva o contrário — quando ele responde 0 — e inverta o resultado com um NÃO no fim. Costuma sair mais barato.",
+      "Monte a porta primeiro e ligue os fios depois: toque no encaixe vazio e a lista mostra só as origens válidas. No fim, aponte a Saída para a porta que fecha a conta."
+    ]
+  }
+}

@@ -40,6 +40,51 @@ async function solveLoomByHand(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Missao concluida!' })).toBeVisible();
 }
 
+/**
+ * Save com a Era 1 concluida: a zona de Valvulas e Logica fica aberta e e para
+ * onde "Continuar" leva.
+ */
+async function seedEraTwoOpen(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const done = { stars: 3, bestScore: 1000 };
+    localStorage.setItem(
+      'davalvulaaia:save:v1',
+      JSON.stringify({
+        version: 1,
+        state: {
+          player: {
+            level: 2,
+            xp: 0,
+            hp: 120,
+            hpMax: 120,
+            clock: 2,
+            powers: {
+              repetir: 3,
+              decidir: 0,
+              codificar: 0,
+              conectar: 0,
+              proteger: 0,
+              aprender: 0,
+            },
+            missions: { 'mecanica-A': done, 'mecanica-B': done },
+            year: 1936,
+            items: { 'cartao-perfurado': 1 },
+          },
+          clearedEras: ['mecanica'],
+          settings: { reduceMotion: false, vibration: true, muted: true },
+          tutorialDone: true,
+        },
+      }),
+    );
+  });
+}
+
+/** Liga um encaixe a uma origem: toca no encaixe, toca na origem. */
+async function wire(page: Page, slot: string, source: string): Promise<void> {
+  await page.getByRole('button', { name: new RegExp(`^Ligar fio em ${slot}:`) }).click();
+  await page.getByRole('button', { name: source, exact: true }).click();
+}
+
 /** Fecha a caixa de fala, que tem varias partes. */
 async function closeDialogue(page: Page): Promise<void> {
   const box = page.locator('.dialogue');
@@ -222,6 +267,156 @@ test('o minijogo e jogavel por toque e da estrelas', async ({ page }) => {
   await expect(
     page.locator('.hudPanel').getByRole('meter', { name: /Conhecimento 0 de/ }),
   ).toBeHidden();
+});
+
+test('o minijogo da Era 2 e jogavel por toque e fecha com 3 estrelas', async ({ page }) => {
+  await seedEraTwoOpen(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.locator('.world__canvas')).toBeVisible();
+
+  // Terminal da missao A da zona de Logica.
+  await tapCell(page, 2, 7);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('2,7');
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+  await expect(page.getByRole('heading', { name: 'Circuitos Logicos' })).toBeVisible();
+
+  /*
+   * A seed `logica-A-v1` pede NAO (A E B). Se a seed ou o gerador mudarem, esta
+   * leitura falha aqui dizendo qual tabela veio -- e o circuito abaixo e que
+   * precisa ser refeito, nao a assercao apagada.
+   */
+  const pedido = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.circuit__wanted')).map((cell) => cell.textContent),
+  );
+  expect(pedido).toEqual(['1', '1', '1', '0']);
+
+  await page.getByRole('button', { name: 'Adicionar porta E' }).click();
+  await wire(page, 'porta 1, encaixe 1', 'entrada A');
+  await wire(page, 'porta 1, encaixe 2', 'entrada B');
+  await page.getByRole('button', { name: 'Adicionar porta NAO' }).click();
+  await wire(page, 'porta 2, encaixe 1', 'porta 1');
+  await wire(page, 'Saida', 'porta 2');
+
+  await expect(page.getByText('A tabela inteira bate. Pode enviar.')).toBeVisible();
+  await page.getByRole('button', { name: /Enviar solucao/ }).click();
+
+  // Duas portas, o mesmo da referencia: eficiencia 1, tres estrelas.
+  await expect(page.getByRole('heading', { name: 'Missao concluida!' })).toBeVisible();
+  await expect(page.getByLabel('3 estrelas')).toBeVisible();
+});
+
+test('apagar uma porta desliga os fios que apontavam para ela', async ({ page }) => {
+  await seedEraTwoOpen(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await tapCell(page, 2, 7);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('2,7');
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+
+  await page.getByRole('button', { name: 'Adicionar porta E' }).click();
+  await wire(page, 'porta 1, encaixe 1', 'entrada A');
+  await page.getByRole('button', { name: 'Adicionar porta NAO' }).click();
+  await wire(page, 'porta 2, encaixe 1', 'porta 1');
+
+  // Apagar a porta 1 deixa a porta que era 2 sem origem, e nao com fio solto.
+  await page.getByRole('button', { name: 'Apagar porta 1' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Ligar fio em porta 1, encaixe 1: ligar' }),
+  ).toBeVisible();
+  await expect(page.getByText('Falta ligar algum fio.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Enviar solucao/ })).toBeDisabled();
+});
+
+test('a tela dos Circuitos cabe no celular: 44 px e sem rolagem lateral', async ({ page }) => {
+  await seedEraTwoOpen(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await tapCell(page, 2, 7);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('2,7');
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+
+  // Com o quadro cheio de portas e a ajuda aberta, que e quando mais aperta.
+  for (let i = 0; i < 3; i += 1) {
+    await page.getByRole('button', { name: 'Adicionar porta OU' }).click();
+  }
+  await expect(page.locator('.circuit__gate')).toHaveCount(3);
+  await page.getByRole('button', { name: 'O que e isto?' }).click();
+  await page.getByRole('button', { name: 'Dica', exact: true }).click();
+  await expect(page.locator('.help__panel')).toBeVisible();
+  await expect(page.locator('.help__hints li').first()).toBeVisible();
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+  );
+  expect(overflow).toBe(false);
+
+  const buttons = page.locator('.circuit button');
+  const count = await buttons.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i += 1) {
+    const box = await buttons.nth(i).boundingBox();
+    if (!box) continue;
+    expect(box.width, `botao ${i} estreito`).toBeGreaterThanOrEqual(43.5);
+    expect(box.height, `botao ${i} baixo`).toBeGreaterThanOrEqual(43.5);
+  }
+});
+
+test('o minijogo diz o que representa e libera dicas uma a uma', async ({ page }) => {
+  await enterFirstZone(page);
+  await tapCell(page, 3, 7);
+  await expect.poll(async () => bitCell(page), { timeout: 10000 }).toBe('3,7');
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+
+  // A explicacao comeca recolhida: quem quer jogar nao perde a tela.
+  await expect(page.locator('.help__panel')).toBeHidden();
+  await page.getByRole('button', { name: 'O que e isto?' }).click();
+
+  const painel = page.locator('.help__panel');
+  await expect(
+    painel.getByRole('heading', { name: 'O que este desafio representa' }),
+  ).toBeVisible();
+  await expect(painel).toContainText('Jacquard');
+  // A funcionalidade da era, que e o que a missao entrega como poder.
+  await expect(painel).toContainText('REPETIR');
+
+  await page.getByRole('button', { name: 'Fechar explicacao' }).click();
+  await expect(painel).toBeHidden();
+
+  // As dicas saem uma por toque, nao todas de uma vez.
+  const dicas = page.locator('.help__hints li');
+  await expect(dicas).toHaveCount(0);
+  await page.getByRole('button', { name: 'Dica', exact: true }).click();
+  await expect(dicas).toHaveCount(1);
+  await page.getByRole('button', { name: /^Dica 2 de/ }).click();
+  await expect(dicas).toHaveCount(2);
+
+  // Ate acabarem, e ai o botao para de oferecer.
+  for (let i = 3; i < 9; i += 1) {
+    const botao = page.getByRole('button', { name: /^Dica \d+ de/ });
+    if (await botao.isDisabled()) break;
+    await botao.click();
+  }
+  await expect(page.getByText('Essas eram todas as dicas.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Dica \d+ de/ })).toBeDisabled();
+});
+
+test('a ajuda dos Circuitos explica a funcionalidade da Era 2', async ({ page }) => {
+  await seedEraTwoOpen(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await tapCell(page, 2, 7);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('2,7');
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+
+  await page.getByRole('button', { name: 'O que e isto?' }).click();
+  const painel = page.locator('.help__panel');
+  await expect(painel).toContainText('Shannon');
+  await expect(painel).toContainText('DECIDIR');
+
+  // E a primeira dica ensina a ler a tabela, nao entrega a resposta.
+  await page.getByRole('button', { name: 'Dica', exact: true }).click();
+  await expect(page.locator('.help__hints li').first()).toContainText('tabela');
 });
 
 test('fala com um personagem historico da zona', async ({ page }) => {

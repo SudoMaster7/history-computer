@@ -9,6 +9,9 @@ import { WORLDS, worldOfEra } from '@/data/worlds';
 import { NPCS, npcProfile } from '@/data/npcs';
 import { QUIZ_BANK } from '@/data/quizzes';
 import missions from '@/data/missions.json';
+import { MINIGAME_BRIEFS } from '@/data/minigameBriefs';
+import { registerMinigames } from '@/minigames';
+import { registeredEras } from '@/core/registry';
 import ui from '@/data/ui.pt-BR.json';
 
 /**
@@ -247,5 +250,44 @@ describe('contrato: textos em pt-BR', () => {
     };
     varre('ui', ui);
     expect(vazios).toEqual([]);
+  });
+});
+
+describe('contrato: todo minijogo explica e ajuda', () => {
+  /*
+   * Um minijogo sem explicacao e sem dica vira quebra-cabeca solto: o jogador
+   * fecha a missao sem saber o que aquilo tinha a ver com a historia da
+   * computacao, que e o assunto do jogo. E quem trava nao tem para onde ir --
+   * so sair da missao.
+   *
+   * Entao: era com minijogo registrado tem de ter o texto. Quem implementar o
+   * minijogo da era 3 vai esbarrar aqui ANTES de entregar sem isso.
+   */
+  registerMinigames();
+  const eras = registeredEras();
+
+  it('ha minijogo registrado para checar', () => {
+    expect(eras.length).toBeGreaterThan(0);
+  });
+
+  it.each(eras)('a era %s explica o que o minijogo representa', (era) => {
+    const brief = MINIGAME_BRIEFS[era];
+    expect(brief, `falta o texto do minijogo da era ${era} em minigames.pt-BR.json`).toBeDefined();
+    for (const campo of ['machine', 'represents', 'power', 'lesson'] as const) {
+      const texto = brief?.[campo];
+      expect({ era, campo, tipo: typeof texto }).toEqual({ era, campo, tipo: 'string' });
+      // Frase de verdade, nao rotulo de uma palavra.
+      expect(String(texto).length, `${era}.${campo} curto demais`).toBeGreaterThan(40);
+    }
+  });
+
+  it.each(eras)('a era %s tem dicas em ordem, da mais geral a mais concreta', (era) => {
+    const hints = MINIGAME_BRIEFS[era]?.hints;
+    expect(Array.isArray(hints)).toBe(true);
+    expect(hints?.length ?? 0, `era ${era} com menos de 2 dicas`).toBeGreaterThanOrEqual(2);
+    for (const hint of hints ?? []) {
+      expect(typeof hint).toBe('string');
+      expect(hint.length, `dica curta demais na era ${era}`).toBeGreaterThan(30);
+    }
   });
 });

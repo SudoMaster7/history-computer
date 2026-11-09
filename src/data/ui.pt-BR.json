@@ -79,9 +79,20 @@
     "exit": "Sair da missao",
     "result": "Resultado da missao",
     "success": "Missao concluida!",
-    "failure": "Ainda nao: o padrao nao bateu.",
+    "failure": "Ainda nao: o resultado nao bateu.",
     "efficiency": "Eficiencia",
     "score": "Pontuacao"
+  },
+  "help": {
+    "what": "O que e isto?",
+    "close": "Fechar explicacao",
+    "whatTitle": "O que este desafio representa",
+    "powerTitle": "A funcionalidade desta era",
+    "lessonTitle": "Por que o desafio e esse",
+    "hint": "Dica",
+    "of": "de",
+    "hintsLabel": "Dicas liberadas",
+    "noMoreHints": "Essas eram todas as dicas."
   },
   "settings": {
     "reduceMotion": "Reduzir animacoes",
@@ -106,6 +117,40 @@
     "repeat": "Repetir",
     "erase": "Apagar",
     "eraseShort": "Apagar"
+  },
+  "circuit": {
+    "help": "Monte o circuito que responde igual a tabela. Toque num encaixe vazio e depois na origem do fio.",
+    "microHelp": "Feche o cofre: ligue as portas ate a tabela bater.",
+    "table": "Tabela do cofre",
+    "board": "Portas montadas",
+    "palette": "Portas disponiveis",
+    "gates": {
+      "NOT": "NAO",
+      "AND": "E",
+      "OR": "OU"
+    },
+    "inputNames": ["A", "B", "C"],
+    "input": "entrada",
+    "gate": "porta",
+    "slot": "encaixe",
+    "out": "Saida",
+    "wanted": "Pedido",
+    "yours": "Seu",
+    "gatesUsed": "Portas",
+    "addGate": "Adicionar porta",
+    "erase": "Apagar",
+    "eraseShort": "Apagar",
+    "emptySlot": "ligar",
+    "emptyBoard": "Nenhuma porta montada ainda.",
+    "wireInto": "Ligar fio em",
+    "pickSource": "De onde vem o fio",
+    "noSources": "Nada para ligar aqui ainda: monte uma porta antes.",
+    "incomplete": "Falta ligar algum fio.",
+    "allRowsOk": "A tabela inteira bate. Pode enviar.",
+    "rowsWrong": "Linhas erradas",
+    "rowOk": "linha certa",
+    "rowWrong": "linha errada",
+    "pending": "sem resposta ainda"
   },
   "menu": {
     "title": "Da Valvula a IA",
