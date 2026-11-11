@@ -12,6 +12,7 @@ Assets de terceiros apenas CC0 ou compativeis.
 | `public/sprites/tiles-<era>.png`                | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | tiles das zonas           |
 | `public/sprites/bit.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o jogador, 4 direcoes     |
 | `public/sprites/npc-<pessoa>.png`               | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | 18 personagens historicos |
+| `public/sprites/bug.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o BUG Day 0, 3 quadros    |
 | Fonte                                           | pilha do sistema (`system-ui`)       | n/a       | toda a UI                 |
 
 ## Fonte

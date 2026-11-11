@@ -58,6 +58,7 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
   const player = useGameStore((s) => s.player);
   const reduceMotion = useGameStore((s) => s.settings.reduceMotion);
   const vibration = useGameStore((s) => s.settings.vibration);
+  const devMode = useGameStore((s) => s.settings.devMode);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [art, setArt] = useState<Art | null>(null);
@@ -81,7 +82,8 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
     () => Object.fromEntries(Object.entries(player.missions).map(([id, m]) => [id, m.stars])),
     [player.missions],
   );
-  const doorOpen = isDoorOpen(world, stars);
+  /* No modo desenvolvedor a porta nao cobra as missoes: da para ir direto a prova. */
+  const doorOpen = devMode || isDoorOpen(world, stars);
 
   // Carrega a arte da zona: um tileset por era e um sprite por personagem.
   useEffect(() => {

@@ -321,13 +321,13 @@ saida de abandonar a missao.
 Entao cada era com minijogo registrado tem, em `src/data/minigames.pt-BR.json`,
 quatro textos e uma lista de dicas:
 
-| campo        | o que responde                                          |
-| ------------ | ------------------------------------------------------- |
-| `machine`    | que maquina real aquilo imita, com nome e ano           |
-| `represents` | o que ela fazia, para quem nunca viu                    |
+| campo        | o que responde                                           |
+| ------------ | -------------------------------------------------------- |
+| `machine`    | que maquina real aquilo imita, com nome e ano            |
+| `represents` | o que ela fazia, para quem nunca viu                     |
 | `power`      | a funcionalidade da era, ligada ao poder que a missao da |
-| `lesson`     | por que o desafio e esse, e nao outro                   |
-| `hints`      | dicas em ordem, da mais geral a mais concreta           |
+| `lesson`     | por que o desafio e esse, e nao outro                    |
+| `hints`      | dicas em ordem, da mais geral a mais concreta            |
 
 `tests/contract/content.test.ts` cobra isso de **toda era com minijogo
 registrado**, com minimo de 2 dicas. Quem implementar o minijogo da Era 3 esbarra
@@ -353,3 +353,179 @@ quiser 3 estrelas ainda precisa da solucao enxuta, com dica ou sem.
 minijogo novo ganha a ajuda com uma linha (`<MinigameHelp era="..." mode={mode} />`)
 e o texto no JSON — nao reescrevendo o painel. No modo `micro` (chefao) o campo
 `lesson` fica de fora, que e onde o espaco e mais curto.
+
+## 2026-11-10 — Eras 3 a 6, chefao e itens de combate
+
+### D45. Cada minijogo novo imita o algoritmo classico da era, e a referencia e o otimo
+
+Mesa de Bits e Huffman (1952), Rota dos Pacotes e caminho minimo (Dijkstra,
+1959), Cofre Criptografico e corte minimo (Menger/Ford-Fulkerson), Treinar o
+Detector e selecao de atributos. Nao foi enfeite historico: a eficiencia do jogo
+compara a solucao do jogador com a **referencia**, e referencia que nao e o otimo
+de verdade mentiria na estrela — daria 3 estrelas para quem nao chegou ao melhor,
+ou nunca daria 3 a ninguem.
+
+Consequencia pratica: `reference()` de cada minijogo e um algoritmo exato, nao
+uma heuristica. Isso cabe porque as instancias sao pequenas de proposito (3 a 5
+simbolos, 6 a 10 maquinas, 6 sinais) — e o tamanho esta em `constants.ts`, nao
+espalhado na regra.
+
+### D46. A Era 5 e a Era 4 de tras para frente, de proposito
+
+As duas telas sao a mesma gramatica (uma rede, ligacoes, um orcamento), e a licao
+e oposta: na Era 4 o jogador **abre um caminho** (basta um que chegue), na Era 5
+ele **fecha todos** (basta um aberto para o invasor entrar). Deixar as duas
+parecidas e o que faz a inversao aparecer; se cada era tivesse uma tela
+completamente diferente, o jogador nao notaria que e o mesmo grafo visto do outro
+lado.
+
+### D47. A Era 6 esconde exemplos e planta um sinal-armadilha
+
+O conjunto de treino e visivel, o de teste nao — e so conferido no envio. Alem
+disso, `generate` escolhe um sinal que no treino coincide **exatamente** com o
+rotulo e no teste faz o contrario.
+
+E o unico jeito de a era ensinar o que ela tem para ensinar: um detector que
+acerta tudo o que ja viu pode nao ter aprendido nada. Quem pega o atalho acerta o
+treino inteiro, envia confiante e reprova — e a mensagem da tela explica por que.
+Sem a armadilha, "Aprender" viraria so mais um quebra-cabeca de logica.
+
+### D48. O chefao nao traz mecanica nova: ele e a versao `micro` dos seis minijogos
+
+O BUG Day 0 anuncia o ataque, e cada ataque e neutralizado por um poder. Responder
+e jogar o minijogo daquela era na dificuldade `'micro'` (a versao curta, que ja
+existia no tipo `Difficulty` desde o inicio).
+
+A alternativa seria um combate com regras proprias. Foi recusada por dois
+motivos: o jogo e educacional e o chefao e o lugar de **cobrar o que foi
+ensinado**, nao de ensinar uma setima coisa; e um combate novo seria um sistema
+novo para testar, enquanto este reusa seis logicas que ja tem centenas de testes.
+
+### D49. A regra do combate mora no nucleo, nao na tela
+
+`src/core/boss.ts` e pura: `strike`, `endTurn`, `patchStep`, `armShield`,
+`armBonus`, `armAuto`. `BossScreen.tsx` nao calcula dano, nao decide bloqueio e
+nao sabe quando a luta acabou — ela chama a funcao e desenha o que voltou.
+
+Por isso da para testar a luta inteira sem navegador, inclusive "um veterano
+respondendo sempre certo derruba o chefao" e "quem nao responde nada perde", que
+sao as duas pontas do balanceamento.
+
+### D50. Os itens de dica viraram itens de combate
+
+O briefing dava ao Cartao Perfurado e a Fita Magnetica o papel de "revelar uma
+dica no minijogo". Isso perdeu sentido com D43 (dica e de graca, ilimitada): o
+item nao teria efeito nenhum.
+
+Entao os dois passaram a resolver **um micro-desafio do chefao** com eficiencia
+cheia. Os seis itens ficaram assim:
+
+| item             | efeito no BUG Day 0                         |
+| ---------------- | ------------------------------------------- |
+| Cartao Perfurado | resolve um micro-desafio                    |
+| Valvula Reserva  | cura 40 de integridade (ja funcionava)      |
+| Fita Magnetica   | resolve um micro-desafio                    |
+| Pacote Roteado   | bloqueia o ataque do turno, sem gastar acao |
+| Chave Publica    | bloqueia o ataque do turno, sem gastar acao |
+| Modelo Treinado  | +50% de dano no proximo golpe               |
+
+O `kind` do item (`hint`, `heal`, `shield`, `power`) nao mudou — mudou o que
+`hint` faz, e os textos em `ui.pt-BR.json` dizem o efeito novo. Fora do combate,
+o HUD lista os itens de combate como guardados para o BUG Day 0.
+
+### D51. O item guardado nao e gasto por jogar na mao
+
+`strike` nao zera a resposta pronta (`auto`); quem gasta e `spendAuto`, chamado
+so quando o jogador toca em "Usar a resposta pronta". Assim, ter o item na
+mochila nunca pune quem resolve o micro-desafio sozinho — o que seria o pior tipo
+de surpresa, perder um item por ter jogado bem.
+
+O bonus de dano, ao contrario, e consumido pelo golpe: foi aplicado, foi gasto.
+
+### D52. A campanha do contrato passou a ser jogada pelos minijogos de verdade
+
+Antes, `progression.test.ts` fingia missao perfeita (`{ ok: true, efficiency: 1 }`).
+Agora ele chama `generate` + `reference` + `evaluate` de cada era, nas seeds reais
+das missoes, e no fim vence o chefao respondendo cada ataque com o micro-desafio
+certo.
+
+Com isso o contrato "o jogo e zeravel" passou a cobrir tambem: minijogo cuja
+referencia nao fecha a propria missao, minijogo que nao fecha na versao `micro`
+(que e o que o chefao usa) e chefao invencivel. O teste diz em qual era travou.
+
+## 2026-11-10 — Modo desenvolvedor
+
+### D53. O modo desenvolvedor destranca telas, e nao concede progresso
+
+`Settings.devMode` (botao no painel de Ajustes) faz `isEraUnlocked` e
+`canFaceBoss` devolverem `true`, abre a porta da prova sem cobrar as duas missoes
+e, no chefao, poe os seis poderes no nivel maximo — porque sem poder nenhum a
+tela do combate nao teria resposta para oferecer.
+
+O que ele **nao** faz: marcar era como concluida, dar estrela, dar XP ou encher a
+mochila. Progresso inventado mentiria no `clearedEras` e em `player.missions`, e
+o save passaria a contar uma historia que nao aconteceu — inclusive para quem
+pegasse aquele save depois para revisar balanceamento. Ha teste de ponta a ponta
+exigindo que o save continue zerado depois de abrir o combate pelo modo.
+
+Consequencia aceita: item de combate nao da para testar so ligando o modo, porque
+a mochila segue vazia. Quem precisar disso joga a era que entrega o item, ou cola
+o save de teste do `seedCleared` em `tests/e2e/smoke.spec.ts`.
+
+Tambem ficou decidido que ele e um ajuste visivel, com texto dizendo o que abre, e
+nao um atalho escondido: o jogo e de celular e nao pode depender de teclado
+(secao 5 do CLAUDE.md), e parametro de URL ninguem do grupo lembraria na hora de
+testar.
+
+Quem precisar da regra **pura** de liberacao continua chamando `eraUnlocked` do
+`core/powers` — ela nao sabe que o modo existe, e os contratos cobram ela. Quem
+quiser a regra **com** o atalho usa `isEraUnlocked` do store.
+
+## 2026-11-10 — Acentuacao dos textos e a arena do chefao
+
+### D54. Texto de jogador e portugues escrito certo, com acento e cedilha
+
+Ate aqui `ui.pt-BR.json`, as falas dos personagens e o banco de perguntas eram
+ASCII puro ("Da Valvula a IA", "Missao concluida"). Num jogo educacional isso
+pesa duas vezes: ensina historia da computacao com portugues errado, e a banca le
+antes de qualquer jogador.
+
+Entao: **todo texto visivel ao jogador leva acento**. Comentario de codigo,
+identificador, nome de arquivo e id de dado continuam sem acento — ali o risco de
+codificacao e real e o ganho e zero.
+
+Antes de converter, conferimos o que de fato impedia: a fonte. `Chakra Petch`
+esta no projeto em subconjunto latino, nos tres pesos, e tem todos os glifos
+acentuados do portugues (á é í ó ú â ê ô ã õ ç à ü, maiusculas inclusive). Era o
+unico motivo tecnico plausivel para o ASCII, e ele nao se sustenta.
+
+Consequencia para quem mexer: os textos de NPC e de prova sao **gerados**
+(`tools/make-npcs.py`, `tools/make-quizzes.py`). Acentuar ali, nao no JSON. E os
+testes de ponta a ponta casam por rotulo — mudou texto, atualiza
+`tests/e2e/smoke.spec.ts` na mesma iteracao.
+
+### D55. O chefao tem arena, e ela nao sabe nada da regra
+
+O combate mostrava so numeros. Agora `BossScreen` abre com uma arena: o Bit de um
+lado, o BUG do outro, as duas integridades, e uma frase do que acabou de
+acontecer.
+
+Tres escolhas dentro disso:
+
+- **A arena e leitura pura.** Ela recebe `boss`, `player` e um efeito (`fx`) e
+  desenha. Nao calcula dano, nao decide bloqueio, nao guarda estado de combate —
+  isso continua todo em `core/boss.ts` (D49). O `fx` so existe na tela e volta
+  para `idle` sozinho depois de 900 ms.
+- **Sem canvas e sem WebGL.** Os dois sprites sao PNG gerados por
+  `tools/make-sprites.mjs` (`bit.png` e o novo `bug.png`, 3 quadros de 32 px:
+  parado, atingido, desfeito), recortados por `background-position`. O combate
+  nao tem laco de animacao: tem o quadro certo e um efeito curto de CSS. Isso
+  mantem a regra da secao 5 do CLAUDE.md (mapa em canvas 2D, nada de WebGL) e nao
+  acrescenta nenhuma dependencia.
+- **O ajuste "Reduzir animacoes" desliga o movimento.** Com ele ligado nada se
+  mexe, e o estado continua legivel pelo quadro do sprite, pela cor de fundo da
+  arena e pela frase — que e o que um leitor de tela ja usava.
+
+A barra de integridade do chefao saiu do painel de numeros e ficou so na arena:
+o mesmo valor em dois medidores com o mesmo rotulo atrapalha quem navega por
+leitor de tela.

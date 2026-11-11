@@ -9,27 +9,62 @@ import {
   missionId,
   takeDamage,
 } from '@/core/rpg';
+import {
+  ATTACKS,
+  answerTo,
+  attackFor,
+  canLaunchPatch,
+  eraOfAttack,
+  endTurn,
+  eraToPlay,
+  initialBoss,
+  patchEra,
+  patchStep,
+  startPatch,
+  strike,
+  turnDone,
+  turnsTaken,
+} from '@/core/boss';
 import { findPath, isDoorOpen, missionsLeft } from '@/core/world';
-import type { EraId, PlayerState } from '@/core/types';
+import { getMinigame } from '@/core/registry';
+import { bossScore } from '@/core/scoring';
+import type { Difficulty, EraId, Evaluation, PlayerState } from '@/core/types';
 import { worldOfEra } from '@/data/worlds';
+import { getMission } from '@/data/missions';
 import { QUIZ_BANK } from '@/data/quizzes';
+import { registerMinigames } from '@/minigames';
 
 /**
  * CONTRATO: o jogo e zeravel.
  *
  * Este e o teste mais importante do projeto. Ele joga a campanha inteira usando
- * so as funcoes puras: em cada era anda ate os dois terminais, conclui as duas
- * missoes, confere que a porta abre, faz a prova, recebe poder e item, e exige
- * que a era seguinte destranque.
+ * so as funcoes puras: em cada era anda ate os dois terminais, RESOLVE os dois
+ * minijogos pela logica deles mesmos, confere que a porta abre, faz a prova,
+ * recebe poder e item, e exige que a era seguinte destranque. No fim, encara o
+ * BUG Day 0 respondendo cada ataque com o micro-desafio do poder certo.
  *
  * Se alguem mexer na progressao e deixar o jogador preso em qualquer ponto --
- * porta que nao abre, prova impossivel, era que nunca libera -- este teste
- * falha dizendo exatamente em qual era travou.
+ * porta que nao abre, prova impossivel, era que nunca libera, minijogo que nao
+ * fecha nem com a propria solucao de referencia, chefao invencivel -- este teste
+ * falha dizendo exatamente onde travou.
  */
 
-/** Conclui uma missao com desempenho perfeito. */
+registerMinigames();
+
+/** Joga um minijogo com a solucao de referencia dele e devolve a avaliacao. */
+function playWithReference(era: EraId, seed: string, difficulty: Difficulty): Evaluation {
+  const game = getMinigame(era);
+  const instance = game.generate(seed, difficulty);
+  return game.evaluate(instance, game.reference(instance));
+}
+
+/** Conclui uma missao jogando o minijogo da era, nao fingindo o resultado. */
 function doMission(player: PlayerState, id: string): PlayerState {
-  return applyMissionResult(player, id, { ok: true, efficiency: 1 });
+  const mission = getMission(id);
+  expect(mission, `missao ${id} nao existe`).toBeDefined();
+  const evaluation = playWithReference(mission!.era, mission!.seed, mission!.difficulty);
+  expect({ missao: id, concluida: evaluation.ok }).toEqual({ missao: id, concluida: true });
+  return applyMissionResult(player, id, evaluation);
 }
 
 /** Faz a prova da era acertando tudo. */
@@ -40,6 +75,17 @@ function passQuiz(player: PlayerState, era: EraId): PlayerState {
   const result = gradeQuiz(quiz!, answers);
   expect({ era, aprovado: result.passed }).toEqual({ era, aprovado: true });
   return applyQuizResult(player, era, result);
+}
+
+/** Zera as seis eras e devolve o jogador como ele chega ao chefao. */
+function clearCampaign(): PlayerState {
+  let player = initialState();
+  for (const era of ERAS) {
+    player = doMission(player, missionId(era, 'A'));
+    player = doMission(player, missionId(era, 'B'));
+    player = passQuiz(player, era);
+  }
+  return player;
 }
 
 describe('contrato: campanha completa, do inicio ao fim', () => {
@@ -107,6 +153,14 @@ describe('contrato: campanha completa, do inicio ao fim', () => {
     expect(player.level).toBeGreaterThan(1);
   });
 
+  it('a solucao de referencia de cada minijogo rende as tres estrelas', () => {
+    // Sem isso nenhum poder chega ao nivel 3, e o chefao fica bem mais duro.
+    const player = clearCampaign();
+    for (const era of ERAS) {
+      expect({ era, poder: player.powers[POWER_OF_ERA[era]] }).toEqual({ era, poder: 3 });
+    }
+  });
+
   it('nenhuma era abre antes da anterior ser concluida', () => {
     for (let i = 1; i < ERAS.length; i += 1) {
       const era = ERAS[i]!;
@@ -158,5 +212,64 @@ describe('contrato: campanha completa, do inicio ao fim', () => {
     const depois = player.missions[missionId('mecanica', 'A')]!;
     expect(depois.stars).toBe(melhor.stars);
     expect(depois.bestScore).toBe(melhor.bestScore);
+  });
+});
+
+describe('contrato: o BUG Day 0 fecha a campanha', () => {
+  it('quem zerou as seis eras vence o chefao jogando os micro-desafios', () => {
+    let player = clearCampaign();
+    let boss = initialBoss('contrato-bug', player);
+    let voltas = 0;
+
+    /*
+     * A luta e jogada como um jogador jogaria: ve o ataque anunciado, abre o
+     * micro-desafio da era do poder que neutraliza aquele ataque, resolve, e
+     * fecha o turno. Nada de resultado fingido -- se um dos seis minijogos nao
+     * fechar na versao 'micro', este teste cai.
+     */
+    while (!boss.over && voltas < 200) {
+      voltas += 1;
+
+      if (canLaunchPatch(boss)) {
+        boss = startPatch(boss);
+        for (let step = 0; boss.patchRun !== null; step += 1) {
+          const era = patchEra(boss, step);
+          const evaluation = playWithReference(era, `patch-${step}`, 'micro');
+          expect({ era, patch: evaluation.ok }).toEqual({ era, patch: true });
+          boss = patchStep(boss, evaluation).state;
+        }
+        continue;
+      }
+
+      const power = answerTo(boss);
+      const era = eraToPlay(boss);
+      const evaluation = playWithReference(era, `turno-${boss.turn}-${boss.actionsLeft}`, 'micro');
+      expect({ era, micro: evaluation.ok }).toEqual({ era, micro: true });
+
+      boss = strike(boss, power, player.powers[power], evaluation).state;
+
+      if (turnDone(boss) && !boss.over) {
+        const fim = endTurn(boss, player);
+        boss = fim.state;
+        player = fim.player;
+      }
+    }
+
+    expect({ fim: boss.over, voltas }).toEqual({ fim: 'win', voltas });
+    // Respondendo certo todos os turnos, a maquina sai sem um arranhao.
+    expect(player.hp).toBe(player.hpMax);
+    expect(bossScore(player.hp, turnsTaken(boss))).toBeGreaterThan(0);
+  });
+
+  it('todo ataque do chefao tem micro-desafio registrado para responder', () => {
+    // Ataque sem minijogo registrado seria ataque impossivel de neutralizar.
+    for (const attack of ATTACKS) {
+      const era = eraOfAttack(attack);
+      expect(ERAS).toContain(era);
+      expect(() => getMinigame(era)).not.toThrow();
+    }
+    for (let turn = 1; turn <= 50; turn += 1) {
+      expect(ATTACKS).toContain(attackFor('cobertura', turn));
+    }
   });
 });

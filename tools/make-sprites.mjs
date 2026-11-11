@@ -466,4 +466,116 @@ for (const [id, [body, hair]] of Object.entries(PEOPLE)) {
   makeCharacter(`npc-${id}.png`, body, hair);
 }
 
+/* ------------------------------------------------------------ BUG Day 0 --- */
+
+const BUG = {
+  body: [52, 34, 74],
+  bodyDark: [34, 22, 52],
+  bodyLight: [86, 58, 118],
+  eye: [232, 72, 86],
+  eyeHot: [255, 216, 96],
+  leg: [26, 20, 38],
+  glitch: [88, 224, 200],
+};
+
+/**
+ * O BUG Day 0, em 32x32. Tres quadros, na ordem em que o combate os usa:
+ *
+ *   0  parado   — encarando o jogador
+ *   1  atingido — olhos abertos, corpo rachado e fatias deslocadas
+ *   2  desfeito — o corpo se espalhando em bits
+ *
+ * E a mesma tecnica dos outros sprites: pixel por pixel, sem asset externo, e
+ * com `rng(seed)` para a textura sair identica a cada geracao.
+ */
+function bugFrame(s, ox, oy, variant, seed) {
+  const p = rng(seed);
+  const hit = variant === 1;
+  const broken = variant === 2;
+
+  // Sombra no chao.
+  for (let dx = 6; dx < 26; dx += 1) s.put(ox + dx, oy + 30, [0, 0, 0, 70]);
+  for (let dx = 9; dx < 23; dx += 1) s.put(ox + dx, oy + 29, [0, 0, 0, 50]);
+
+  // Pernas: tres de cada lado, em diagonal.
+  for (let i = 0; i < 3; i += 1) {
+    const y = oy + 16 + i * 4;
+    const reach = 5 + i;
+    for (let k = 0; k < reach; k += 1) {
+      s.put(ox + 9 - k, y + Math.round(k * 0.6), BUG.leg);
+      s.put(ox + 22 + k, y + Math.round(k * 0.6), BUG.leg);
+    }
+  }
+
+  // Corpo: casco com placas, mais escuro embaixo.
+  s.disc(ox + 16, oy + 19, 9, BUG.bodyDark);
+  s.disc(ox + 16, oy + 18, 8, BUG.body);
+  s.disc(ox + 14, oy + 15, 4, BUG.bodyLight);
+  for (let i = 0; i < 3; i += 1) {
+    s.hline(ox + 9, oy + 16 + i * 3, 14, BUG.bodyDark);
+  }
+
+  // Cabeca.
+  s.disc(ox + 16, oy + 10, 6, BUG.bodyDark);
+  s.disc(ox + 16, oy + 10, 5, BUG.body);
+
+  // Antenas.
+  for (let k = 0; k < 5; k += 1) {
+    s.put(ox + 12 - k, oy + 5 - k, BUG.leg);
+    s.put(ox + 20 + k, oy + 5 - k, BUG.leg);
+  }
+  s.put(ox + 7, oy + 0, BUG.glitch);
+  s.put(ox + 25, oy + 0, BUG.glitch);
+
+  // Olhos: vermelhos parado, quentes e maiores quando leva o golpe.
+  const eye = hit ? BUG.eyeHot : BUG.eye;
+  const r = hit ? 3 : 2;
+  s.disc(ox + 12, oy + 10, r, eye);
+  s.disc(ox + 20, oy + 10, r, eye);
+  s.put(ox + 12, oy + 9, [255, 255, 255]);
+  s.put(ox + 20, oy + 9, [255, 255, 255]);
+
+  // Mandibulas.
+  s.rect(ox + 13, oy + 14, 2, 2, BUG.leg);
+  s.rect(ox + 18, oy + 14, 2, 2, BUG.leg);
+
+  // Rachaduras do golpe.
+  if (hit || broken) {
+    for (let k = 0; k < 6; k += 1) {
+      s.put(ox + 16 + k, oy + 16 + Math.round(Math.sin(k) * 2), BUG.glitch);
+      s.put(ox + 15 - k, oy + 21 - Math.round(Math.sin(k) * 2), BUG.glitch);
+    }
+  }
+
+  // Fatias deslocadas: o "erro" de que o BUG e feito.
+  const slices = broken ? 7 : hit ? 3 : 1;
+  for (let i = 0; i < slices; i += 1) {
+    const y = oy + 8 + Math.floor(p() * 18);
+    const w = 6 + Math.floor(p() * 12);
+    const x = ox + 6 + Math.floor(p() * 10);
+    s.hline(x, y, w, p() > 0.5 ? BUG.glitch : BUG.eye);
+  }
+
+  // Desfeito: pedacos soltos em volta, e buracos no corpo.
+  if (broken) {
+    for (let i = 0; i < 40; i += 1) {
+      const x = ox + Math.floor(p() * 32);
+      const y = oy + Math.floor(p() * 28);
+      s.put(x, y, p() > 0.6 ? BUG.glitch : [0, 0, 0, 0]);
+    }
+  }
+}
+
+/** Spritesheet do chefao: 3 quadros de 32x32, na horizontal. */
+function makeBug() {
+  const size = TILE * 2;
+  const s = surface(size * 3, size);
+  for (let variant = 0; variant < 3; variant += 1) {
+    bugFrame(s, variant * size, 0, variant, 0x42 + variant * 977);
+  }
+  writePng(join(OUT, 'bug.png'), s.width, s.height, s.data);
+}
+
+makeBug();
+
 console.log(`pixel art gerada em ${OUT}`);

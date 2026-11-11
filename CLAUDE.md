@@ -74,6 +74,12 @@ reprova no contrato.
 de código em inglês, texto de jogador em português. Nada de string escrita
 direto no JSX.
 
+**Texto de jogador é português escrito certo, com acento e ç.** Isso vale para
+`ui.pt-BR.json`, para as falas e para as provas — e a fonte do jogo tem os
+glifos (conferido nos três pesos). Comentário e identificador no código
+continuam sem acento. Os testes de ponta a ponta casam por rótulo: mexeu num
+texto, atualize `tests/e2e/smoke.spec.ts` na mesma mudança.
+
 **`core/` não lê arquivo de dados.** Quem precisa de dado recebe por parâmetro
 (é por isso que `buildQuiz` recebe o banco de perguntas).
 
@@ -131,20 +137,24 @@ personagem sem sprite, porque sem isso ele some do mapa em silêncio.
 Não diga que algo funciona sem ter rodado. Se um teste falha, mostre a saída.
 Se uma parte ficou de fora, diga qual e por quê.
 
-Hoje, especificamente: **as Eras 1 e 2 fecham o ciclo completo** (Tear de
-Engrenagens e Circuitos Lógicos). As eras 3 a 6 têm mapa, personagens, prova e
-item, mas os terminais mostram "Terminal em construção". O chefão não existe. Os
-itens de combate estão na mochila sem efeito. Está escrito assim no `README.md` e
-deve continuar assim até deixar de ser verdade.
+Hoje, especificamente: **as seis eras fecham o ciclo completo e a campanha
+termina no chefão**. Os seis minijogos estão registrados (Tear de Engrenagens,
+Circuitos Lógicos, Mesa de Bits, Rota dos Pacotes, Cofre Criptográfico, Treinar o
+Detector), o BUG Day 0 existe em `src/core/boss.ts` + `src/ui/BossScreen.tsx`, e
+os seis itens têm efeito no combate.
+
+O que **continua faltando**, e deve continuar escrito assim no `README.md` até
+deixar de ser verdade: o ranking no Supabase, o áudio, e o acabamento visual das
+telas dos minijogos e do combate (estrutura e alvo de toque, sim; arte, não).
 
 ---
 
 ## 8. Mapa rápido do projeto
 
 ```
-src/core/      regra pura: rng, rpg, powers, scoring, world, quiz, items, registry
+src/core/      regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
 src/minigames/ <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
-src/ui/        MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner
+src/ui/        MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
 src/store/     Zustand com persistência local
 src/data/      JSON gerado + módulos que o tipam
 tools/         geradores de conteúdo e de arte, e os scripts de nota

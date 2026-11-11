@@ -22,5 +22,53 @@
       "Se o cofre responde 1 em quase todas as linhas, descreva o contrário — quando ele responde 0 — e inverta o resultado com um NÃO no fim. Costuma sair mais barato.",
       "Monte a porta primeiro e ligue os fios depois: toque no encaixe vazio e a lista mostra só as origens válidas. No fim, aponte a Saída para a porta que fecha a conta."
     ]
+  },
+  "codigo": {
+    "machine": "Fita magnética e o primeiro compilador (UNIVAC 1951, Grace Hopper 1952)",
+    "represents": "Com o transistor as máquinas ficaram pequenas e confiáveis o bastante para guardar programas e dados em fita magnética — e aí o problema virou outro: cada bit de fita custava, e a fita andava a uma velocidade fixa. Foi nesse mundo que Grace Hopper escreveu o primeiro compilador e que David Huffman, em 1952, achou a forma mais curta possível de escrever uma mensagem em bits. É esse cálculo que o jogo pede aqui.",
+    "power": "A funcionalidade desta era é CODIFICAR: trocar o que a máquina tem de guardar por uma representação em bits. Codificar bem não é escolher símbolos bonitos, é gastar menos bits para dizer a mesma coisa — e é por isso que áudio, foto e vídeo cabem num celular hoje.",
+    "lesson": "Duas regras brigam entre si. Dar código curto a todo mundo deixa a fita ambígua, porque o leitor não sabe onde um símbolo termina; dar código longo a todo mundo não cabe na fita. A saída é olhar a frequência: o símbolo que aparece muitas vezes paga pouco por aparição, e o que aparece uma vez pode pagar caro sem pesar no total.",
+    "hints": [
+      "Olhe a coluna de aparições antes de escolher qualquer código. O símbolo que aparece mais vezes é o que precisa do código mais curto: cada bit que você tira dele é economizado uma vez por aparição.",
+      "Nenhum código pode ser o começo de outro. Se o A é \"0\", nenhum outro símbolo pode começar com 0 — então os outros têm de começar com 1, como \"10\" e \"11\".",
+      "Receita que costuma dar o melhor resultado: dê \"0\" ao mais frequente, \"10\" ao segundo, \"110\" ao terceiro, e assim por diante, sempre acrescentando um 1 na frente do próximo.",
+      "Se a fita não cabe no orçamento, compare o símbolo mais frequente com o mais raro: quase sempre dá para encurtar o código do frequente em um bit e alongar o do raro em um, e o total cai."
+    ]
+  },
+  "redes": {
+    "machine": "Os primeiros nós da ARPANET (1969) e a comutação de pacotes",
+    "represents": "Até 1969 ligar dois computadores era abrir um fio dedicado entre eles e rezar para o fio não cair. A ARPANET fez diferente: a mensagem é picada em pacotes, cada pacote viaja sozinho pela rede e cada máquina só sabe para quem ela está ligada diretamente. Em 29 de outubro de 1969 o primeiro pacote saiu da UCLA para Stanford — a máquina de Stanford travou depois de receber \"LO\" de \"LOGIN\", e mesmo assim a ideia estava provada.",
+    "power": "A funcionalidade desta era é CONECTAR: a máquina deixa de ser uma ilha. Nenhum roteador conhece a rede inteira; ele conhece os vizinhos e escolhe para qual deles empurrar o pacote. É assim que a internet funciona até hoje, inclusive agora.",
+    "lesson": "Chegar ao destino não é o difícil: qualquer volta chega. O difícil é chegar rápido escolhendo salto por salto, sem o mapa inteiro na mão — e é por isso que a rota com menos saltos muitas vezes não é a mais rápida: três ligações rápidas batem uma ligação lenta.",
+    "hints": [
+      "Conte o atraso, não os saltos. Uma ligação de atraso 9 custa mais que três ligações de atraso 1 — e no começo isso parece errado, porque a primeira parece \"mais direta\".",
+      "Experimente um salto e veja o atraso acumulado subir. Se o número ficar alto cedo, use o \"Voltar um salto\": a tentativa não custa nada na pontuação.",
+      "Quando duas opções levam ao mesmo lugar, a mais barata agora costuma ser a melhor — mas confira para onde cada uma te deixa, porque uma ligação barata que termina num canto da rede sai caro depois.",
+      "O orçamento de atraso mostrado em cima é a conta da rota mais curta mais uma folga. Se a sua rota passou do orçamento, existe caminho melhor: volte até a primeira escolha e tente o outro vizinho."
+    ]
+  },
+  "seguranca": {
+    "machine": "Criptografia de chave pública e os primeiros firewalls (Diffie-Hellman 1976, RSA 1977, web comercial 1991)",
+    "represents": "Quando a rede deixou de ser um clube de universidades e virou a web aberta a qualquer pessoa, a conta mudou: a mesma ligação que traz um cliente traz um invasor. A defesa passou a ter duas pernas — embaralhar o conteúdo, com a criptografia de chave pública que Diffie, Hellman, Rivest, Shamir e Adleman tornaram prática nos anos 70, e controlar por onde o tráfego entra, com os firewalls que apareceram no começo dos anos 90.",
+    "power": "A funcionalidade desta era é PROTEGER. Proteger não é deixar a máquina mais rápida nem mais inteligente: é fechar caminho. E o invasor não precisa de todos os caminhos — um só que fique aberto já serve para ele.",
+    "lesson": "Defesa custa, então onde cortar é a decisão inteira. Perto da entrada a rede é larga e cortar ali gasta firewall atrás de firewall; no meio ela aperta num gargalo, e lá dois ou três firewalls fecham tudo. Reparar que essa é a mesma rede da Era 4 vista do outro lado — antes você abria um caminho, agora fecha todos — é a parte que fica.",
+    "hints": [
+      "Antes de instalar nada, siga com o dedo um caminho da entrada até o cofre e veja por quantas ligações ele passa. Repita com outro caminho: as ligações que aparecem em todos os caminhos são as candidatas boas.",
+      "Fechar metade dos caminhos não protege nada. O aviso embaixo mostra um caminho que continua aberto: feche aquele e veja se aparece outro.",
+      "Procure o aperto da rede. Se três caminhos diferentes passam todos pela mesma ligação, um firewall ali vale três instalados na entrada.",
+      "Quando o cofre já estiver isolado, tente tirar um firewall por vez. Se o cofre continuar fechado, aquele firewall estava sobrando — e eficiência aqui é justamente gastar o mínimo."
+    ]
+  },
+  "ia": {
+    "machine": "Redes neurais e o ImageNet de 2012 (AlexNet, Krizhevsky, Sutskever e Hinton)",
+    "represents": "Até 2012 um detector era escrito à mão: alguém decidia, regra por regra, o que contava como suspeito. A virada foi mostrar exemplos rotulados à máquina e deixá-la escolher em quais sinais prestar atenção. A AlexNet venceu a competição ImageNet daquele ano com uma margem grande o bastante para mudar a área inteira — e o método é esse: aprender dos exemplos, não da regra escrita.",
+    "power": "A funcionalidade desta era é APRENDER. O detector não recebe a regra do ataque; ele recebe exemplos e tem de achar a regra. É por isso que o jogo guarda alguns exemplos escondidos: um detector que só acerta o que já viu não aprendeu nada.",
+    "lesson": "Observar mais sinais parece sempre melhor, e não é. Alguns sinais acertam o treino por coincidência — e é justamente neles que o detector tropeça nos exemplos guardados. Esse é o nome do problema mais comum da área: sobreajuste, quando o modelo decora em vez de aprender.",
+    "hints": [
+      "Procure, na tabela de treino, o sinal que está ligado em quase todo ataque e desligado em quase todo exemplo normal. Esse é o sinal que carrega informação de verdade.",
+      "Desconfie do sinal que acerta todos os exemplos de treino sozinho. Se ele fosse a causa, o ataque seria simples demais — muitas vezes é coincidência, e os exemplos guardados cobram isso.",
+      "Mexa no gatilho antes de acrescentar sinal. Com dois sinais observados, exigir \"os dois ligados\" é bem diferente de \"pelo menos um ligado\", e muitas vezes é só isso que falta.",
+      "Quando o treino estiver todo certo, tente tirar um sinal. Se continuar certo, aquele sinal estava sobrando — e detector enxuto é o que generaliza melhor."
+    ]
   }
 }

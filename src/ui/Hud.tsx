@@ -235,7 +235,11 @@ export default function Hud() {
                     {items.map((item) => {
                       const text = itemText(item.id);
                       const count = countOf(player.items, item.id);
-                      /* So o item de uso imediato tem botao; os de combate ficam guardados. */
+                      /*
+                       * Fora do combate, so o item de uso imediato tem botao. Os
+                       * de combate (escudo, dano extra, resposta pronta) sao
+                       * usados na tela do BUG Day 0, e aqui so ficam listados.
+                       */
                       const usable = item.kind === 'heal';
                       return (
                         <li key={item.id} className="item">
@@ -256,7 +260,7 @@ export default function Hud() {
                               {ui.items.use}
                             </button>
                           ) : (
-                            <span className="item__held">{ui.items.held}</span>
+                            <span className="item__held">{ui.items.combat}</span>
                           )}
                         </li>
                       );
