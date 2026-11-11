@@ -6,5 +6,6 @@ export * from './powers';
 export * from './scoring';
 export * from './quiz';
 export * from './items';
+export * from './boss';
 export * from './world';
 export * from './registry';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ERAS, eraUnlocked } from '@/core/powers';
+import { ERAS } from '@/core/powers';
 import { worldOfEra } from '@/data/worlds';
 import { useGameStore } from '@/store';
 import type { EraId } from '@/core/types';
@@ -7,24 +7,34 @@ import ui from '@/data/ui.pt-BR.json';
 
 interface Props {
   onPlay(era: EraId): void;
+  /** Abre o chefao. So aparece com as seis eras concluidas. */
+  onBoss(): void;
 }
 
 type Panel = 'main' | 'zones' | 'settings' | 'about';
 
 /** Menu inicial do jogo: continuar, comecar de novo, escolher zona e ajustes. */
-export default function MainMenu({ onPlay }: Props) {
+export default function MainMenu({ onPlay, onBoss }: Props) {
   const player = useGameStore((s) => s.player);
   const clearedEras = useGameStore((s) => s.clearedEras);
   const settings = useGameStore((s) => s.settings);
   const setSettings = useGameStore((s) => s.setSettings);
   const resetGame = useGameStore((s) => s.resetGame);
   const hasProgress = useGameStore((s) => s.hasProgress);
+  const canFaceBoss = useGameStore((s) => s.canFaceBoss);
+  const isEraUnlocked = useGameStore((s) => s.isEraUnlocked);
+  const bossDefeated = useGameStore((s) => s.bossDefeated);
+  const bossBestScore = useGameStore((s) => s.bossBestScore);
 
   const [panel, setPanel] = useState<Panel>('main');
 
-  /** Continuar leva a zona mais avancada que ja esta liberada. */
+  /**
+   * Continuar leva a zona mais avancada que ja esta liberada -- e no modo
+   * desenvolvedor, a mais avancada que o jogador de fato concluiu, para o botao
+   * nao jogar direto na Era 6 de quem ligou o modo so para espiar.
+   */
   function currentEra(): EraId {
-    const open = ERAS.filter((era) => eraUnlocked(era, clearedEras));
+    const open = ERAS.filter((_, index) => index === 0 || clearedEras.includes(ERAS[index - 1]!));
     return open.at(-1) ?? 'mecanica';
   }
 
@@ -60,6 +70,16 @@ export default function MainMenu({ onPlay }: Props) {
               {ui.menu.newGame}
             </button>
           ) : null}
+          {canFaceBoss() ? (
+            <button type="button" className="menu__boss" onClick={onBoss}>
+              {bossDefeated ? ui.menu.bossAgain : ui.menu.boss}
+            </button>
+          ) : null}
+          {bossDefeated ? (
+            <p className="menu__bossScore">
+              {ui.boss.score}: {bossBestScore}
+            </p>
+          ) : null}
           <button type="button" onClick={() => setPanel('zones')}>
             {ui.menu.zones}
           </button>
@@ -76,7 +96,7 @@ export default function MainMenu({ onPlay }: Props) {
         <div className="menu__panel">
           <ul className="menu__zones">
             {ERAS.map((era) => {
-              const locked = !eraUnlocked(era, clearedEras);
+              const locked = !isEraUnlocked(era);
               const world = worldOfEra(era);
               const done = world
                 ? world.stations.filter((s) => (player.missions[s.missionId]?.stars ?? 0) >= 1)
@@ -130,6 +150,19 @@ export default function MainMenu({ onPlay }: Props) {
           >
             {ui.settings.vibration}
           </button>
+          <button
+            type="button"
+            className={settings.devMode ? 'menu__dev menu__dev--on' : 'menu__dev'}
+            /* === true: save antigo foi gravado sem esta chave, e aria-pressed
+               nao pode sair indefinido. */
+            aria-pressed={settings.devMode === true}
+            onClick={() => setSettings({ devMode: settings.devMode !== true })}
+          >
+            {ui.settings.devMode}
+          </button>
+          <p className="menu__devText">
+            {settings.devMode ? ui.settings.devModeOn : ui.settings.devModeText}
+          </p>
           <button
             type="button"
             onClick={() => {

@@ -1,39 +1,39 @@
 {
   "app": {
-    "title": "Da Valvula a IA",
-    "subtitle": "O BUG Day 0 embaralhou a historia da computacao. Voce e o Debugger: atravesse as eras e conserte a linha do tempo.",
-    "start": "Comecar",
+    "title": "Da Válvula à IA",
+    "subtitle": "O BUG Day 0 embaralhou a história da computação. Você é o Debugger: atravesse as eras e conserte a linha do tempo.",
+    "start": "Começar",
     "continue": "Continuar",
     "reset": "Apagar progresso",
     "resetConfirm": "Apagar todo o progresso salvo?",
     "settings": "Ajustes",
     "back": "Voltar",
-    "offline": "Sem conexao: ranking e chefao diario ficam indisponiveis.",
+    "offline": "Sem conexão: ranking e chefão diário ficam indisponíveis.",
     "loading": "Carregando...",
-    "missionsDone": "missoes feitas",
+    "missionsDone": "missões feitas",
     "renderFail": "Algo falhou ao desenhar esta tela. Volte e tente de novo.",
     "newGame": "Novo jogo",
     "continueGame": "Continuar",
     "menu": "Menu",
     "backToMenu": "Voltar ao menu",
-    "credits": "Um jogo sobre a historia da computacao.",
+    "credits": "Um jogo sobre a história da computação.",
     "zone": "Zona",
-    "nextEra": "Proxima era"
+    "nextEra": "Próxima era"
   },
   "hud": {
-    "label": "Estado da maquina",
+    "label": "Estado da máquina",
     "hp": "Integridade",
     "xp": "Conhecimento",
-    "level": "Nivel",
-    "levelShort": "Niv",
-    "clock": "Clock (acoes por turno)",
+    "level": "Nível",
+    "levelShort": "Nív",
+    "clock": "Clock (ações por turno)",
     "clockShort": "Clock",
     "year": "Ano do mundo",
     "powers": "Poderes",
-    "powerLevel": "nivel",
+    "powerLevel": "nível",
     "locked": "trancado",
     "of": "de",
-    "open": "Ver estado da maquina",
+    "open": "Ver estado da máquina",
     "close": "Fechar o estado",
     "yearShort": "Ano"
   },
@@ -46,12 +46,12 @@
     "aprender": "Aprender"
   },
   "eras": {
-    "mecanica": "Mecanica",
-    "logica": "Valvulas e Logica",
+    "mecanica": "Mecânica",
+    "logica": "Válvulas e Lógica",
     "codigo": "Transistor e Linguagens",
     "redes": "Redes",
-    "seguranca": "Web, Nuvem e Seguranca",
-    "ia": "Inteligencia Artificial"
+    "seguranca": "Web, Nuvem e Segurança",
+    "ia": "Inteligência Artificial"
   },
   "eraSubtitles": {
     "mecanica": "1642 a 1843",
@@ -63,53 +63,56 @@
   },
   "minigames": {
     "mecanica": "Tear de Engrenagens",
-    "logica": "Circuitos Logicos",
+    "logica": "Circuitos Lógicos",
     "codigo": "Mesa de Bits",
     "redes": "Rota dos Pacotes",
-    "seguranca": "Cofre Criptografico",
+    "seguranca": "Cofre Criptográfico",
     "ia": "Treinar o Detector"
   },
   "mission": {
     "locked": "Trancado: falta o poder",
     "stars": "estrelas",
-    "bestScore": "Melhor pontuacao",
+    "bestScore": "Melhor pontuação",
     "play": "Jogar",
     "retry": "Tentar de novo",
-    "submit": "Enviar solucao",
-    "exit": "Sair da missao",
-    "result": "Resultado da missao",
-    "success": "Missao concluida!",
-    "failure": "Ainda nao: o resultado nao bateu.",
-    "efficiency": "Eficiencia",
-    "score": "Pontuacao"
+    "submit": "Enviar solução",
+    "exit": "Sair da missão",
+    "result": "Resultado da missão",
+    "success": "Missão concluída!",
+    "failure": "Ainda não: o resultado não bateu.",
+    "efficiency": "Eficiência",
+    "score": "Pontuação"
   },
   "help": {
-    "what": "O que e isto?",
-    "close": "Fechar explicacao",
+    "what": "O que é isto?",
+    "close": "Fechar explicação",
     "whatTitle": "O que este desafio representa",
     "powerTitle": "A funcionalidade desta era",
-    "lessonTitle": "Por que o desafio e esse",
+    "lessonTitle": "Por que o desafio é esse",
     "hint": "Dica",
     "of": "de",
     "hintsLabel": "Dicas liberadas",
     "noMoreHints": "Essas eram todas as dicas."
   },
   "settings": {
-    "reduceMotion": "Reduzir animacoes",
-    "vibration": "Vibracao",
-    "muted": "Som desligado"
+    "reduceMotion": "Reduzir animações",
+    "vibration": "Vibração",
+    "muted": "Som desligado",
+    "devMode": "Modo desenvolvedor",
+    "devModeText": "Desligado. Ligue para abrir as seis zonas, as portas das provas e o BUG Day 0 sem jogar as eras anteriores — serve para testar uma fase direto.",
+    "devModeOn": "Ligado: todas as zonas, as portas e o BUG Day 0 estão abertos, e no combate os seis poderes valem no nível máximo. Seu progresso salvo não muda."
   },
   "status": {
-    "coreReady": "Nucleo pronto: RPG, poderes, pontuacao, seed, portao e fases de plataforma."
+    "coreReady": "Núcleo pronto: RPG, poderes, pontuação, seed, portão e fases de plataforma."
   },
   "loom": {
-    "help": "Monte a fita igual ao padrao. Toque nas cores para adicionar e use \"repetir\" para gastar menos cartoes.",
-    "microHelp": "Reproduza o padrao curto o mais rapido que conseguir.",
-    "target": "Padrao a reproduzir",
+    "help": "Monte a fita igual ao padrão. Toque nas cores para adicionar e use \"repetir\" para gastar menos cartões.",
+    "microHelp": "Reproduza o padrão curto o mais rápido que conseguir.",
+    "target": "Padrão a reproduzir",
     "yours": "Sua fita",
     "program": "Grupos da fita",
     "group": "grupo",
-    "cards": "Cartoes",
+    "cards": "Cartões",
     "color": "cor",
     "empty": "Fita vazia",
     "addColor": "Adicionar cor",
@@ -119,13 +122,13 @@
     "eraseShort": "Apagar"
   },
   "circuit": {
-    "help": "Monte o circuito que responde igual a tabela. Toque num encaixe vazio e depois na origem do fio.",
-    "microHelp": "Feche o cofre: ligue as portas ate a tabela bater.",
+    "help": "Monte o circuito que responde igual à tabela. Toque num encaixe vazio e depois na origem do fio.",
+    "microHelp": "Feche o cofre: ligue as portas até a tabela bater.",
     "table": "Tabela do cofre",
     "board": "Portas montadas",
-    "palette": "Portas disponiveis",
+    "palette": "Portas disponíveis",
     "gates": {
-      "NOT": "NAO",
+      "NOT": "NÃO",
       "AND": "E",
       "OR": "OU"
     },
@@ -133,7 +136,7 @@
     "input": "entrada",
     "gate": "porta",
     "slot": "encaixe",
-    "out": "Saida",
+    "out": "Saída",
     "wanted": "Pedido",
     "yours": "Seu",
     "gatesUsed": "Portas",
@@ -152,68 +155,242 @@
     "rowWrong": "linha errada",
     "pending": "sem resposta ainda"
   },
+  "bits": {
+    "help": "Escolha o código em bits de cada símbolo. O que aparece mais vezes merece o código mais curto — e nenhum código pode ser o começo de outro.",
+    "microHelp": "Rápido: código curto para o símbolo frequente, e nenhum começo repetido.",
+    "message": "Mensagem a gravar na fita",
+    "symbol": "Símbolo",
+    "times": "aparições",
+    "timesShort": "x",
+    "code": "código",
+    "bits": "bits",
+    "budget": "Fita",
+    "empty": "—",
+    "addZero": "Acrescentar bit 0 ao código de",
+    "addOne": "Acrescentar bit 1 ao código de",
+    "erase": "Apagar o último bit do código de",
+    "eraseShort": "⌫",
+    "tape": "A fita gravada",
+    "tapeEmpty": "Falta código para algum símbolo: a fita ainda não pode ser gravada.",
+    "incomplete": "Dê um código a cada símbolo.",
+    "ambiguous": "Código ambíguo: um é começo do outro",
+    "overBudget": "A fita não cabe no orçamento de bits",
+    "allOk": "Cabe na fita e a leitura é única."
+  },
+  "route": {
+    "help": "O pacote salta de máquina em máquina até o destino. Cada ligação cobra atraso, e você só vê os vizinhos de onde o pacote está.",
+    "microHelp": "Rápido: leve o pacote ao destino pela rota de menor atraso.",
+    "delay": "Atraso",
+    "pathLabel": "Rota do pacote até agora",
+    "options": "Vizinhos para onde dá para mandar o pacote",
+    "from": "O pacote está em",
+    "sendTo": "Mandar o pacote para",
+    "node": "Máquina",
+    "originName": "Origem",
+    "destName": "Destino",
+    "nodeNames": [
+      "UCLA",
+      "Stanford",
+      "Utah",
+      "Santa Bárbara",
+      "MIT",
+      "Harvard",
+      "Illinois",
+      "Case",
+      "Carnegie"
+    ],
+    "undo": "Voltar um salto",
+    "deadEnd": "Daqui não sai nenhuma ligação nova: volte um salto.",
+    "arrivedTitle": "O pacote chegou",
+    "arrived": "O pacote está no destino. Envie a rota, ou volte um salto para tentar um caminho mais curto.",
+    "keepGoing": "O pacote ainda não chegou ao destino.",
+    "overBudget": "A rota passou do orçamento de atraso",
+    "allOk": "Chegou dentro do orçamento de atraso."
+  },
+  "vault": {
+    "help": "O invasor entra pela borda da rede e quer chegar ao cofre. Instale firewalls nas ligações até não sobrar nenhum caminho aberto.",
+    "microHelp": "Rápido: feche todos os caminhos até o cofre, com o menor número de firewalls.",
+    "firewalls": "Firewalls",
+    "linksLabel": "Ligações da rede",
+    "machine": "Máquina",
+    "entryName": "Entrada da rede",
+    "vaultName": "Cofre",
+    "toward": "até",
+    "putFirewall": "Instalar firewall na ligação",
+    "removeFirewall": "Retirar o firewall da ligação",
+    "cut": "bloqueada",
+    "openLink": "aberta",
+    "clear": "Tirar todos",
+    "nothingDone": "Nenhum firewall instalado: o cofre está aberto.",
+    "stillOpen": "Ainda há caminho aberto",
+    "sealed": "Nenhum caminho chega ao cofre.",
+    "overBudget": "Você usou mais firewalls do que tem"
+  },
+  "model": {
+    "help": "Escolha quais sinais o detector vai observar. Ele acusa ataque quando o número de sinais ligados chega ao gatilho — e precisa acertar todos os exemplos, inclusive os guardados.",
+    "microHelp": "Rápido: escolha os sinais e o gatilho que acertam todos os exemplos.",
+    "signals": "Sinais observados",
+    "signalName": "Sinal",
+    "watch": "Passar a observar o sinal",
+    "unwatch": "Deixar de observar o sinal",
+    "watching": "observado",
+    "ignored": "ignorado",
+    "trigger": "Gatilho",
+    "triggerText": "sinais ligados para acusar ataque",
+    "triggerUp": "Aumentar o gatilho",
+    "triggerDown": "Diminuir o gatilho",
+    "trainTitle": "Exemplos de treino",
+    "testTitle": "Exemplos guardados",
+    "testHidden": "Os exemplos guardados só são conferidos quando você envia o detector. É assim que se descobre se o detector aprendeu ou só decorou.",
+    "attack": "ataque",
+    "normal": "normal",
+    "says": "o detector diz",
+    "trainScore": "Acertos no treino",
+    "noSignals": "Escolha pelo menos um sinal.",
+    "trainWrong": "O detector ainda erra exemplos de treino",
+    "trainOk": "O detector acerta todos os exemplos de treino.",
+    "overBudget": "Você está observando mais sinais do que o detector aguenta"
+  },
+  "boss": {
+    "title": "BUG Day 0",
+    "subtitle": "O bug que atravessou as seis eras. Ele anuncia o ataque antes de dar — e cada ataque só é neutralizado por um dos seus poderes.",
+    "hp": "Integridade do BUG",
+    "yourHp": "Sua integridade",
+    "turn": "Turno",
+    "actions": "Ações neste turno",
+    "announced": "Ataque anunciado",
+    "neutralizedBy": "Neutralizado por",
+    "pick": "Responda com um poder",
+    "answerWith": "Responder com",
+    "wrongPower": "Poder diferente do anunciado machuca o BUG, mas não impede o ataque.",
+    "patchCharges": "Cargas de Patch",
+    "launchPatch": "Lançar o Patch Day 0",
+    "patchTitle": "Patch Day 0",
+    "patchStep": "Desafio",
+    "patchHelp": "Três micro-desafios seguidos. Errar um interrompe o patch e devolve as cargas a zero.",
+    "patchDone": "Patch aplicado!",
+    "patchFailed": "O patch falhou no meio: as cargas voltaram a zero.",
+    "blocked": "Ataque neutralizado.",
+    "notBlocked": "O ataque passou.",
+    "damageDealt": "Dano no BUG",
+    "damageTaken": "Dano na sua máquina",
+    "noDamage": "Nenhum dano",
+    "nextTurn": "Seguir para o próximo turno",
+    "continueTurn": "Continuar o turno",
+    "win": "BUG Day 0 corrigido!",
+    "winText": "As seis eras vieram juntas: repetir, decidir, codificar, conectar, proteger e aprender. Nenhuma delas resolveria isso sozinha.",
+    "lose": "Sua máquina reiniciou",
+    "loseText": "O BUG derrubou a máquina. Ela volta com metade da integridade — e você pode encarar de novo quando quiser.",
+    "score": "Pontuação",
+    "turnsTaken": "Turnos",
+    "retry": "Encarar de novo",
+    "leave": "Sair da luta",
+    "items": "Mochila",
+    "noItems": "Nenhum item na mochila.",
+    "shieldArmed": "Escudo armado: o ataque deste turno não acerta a máquina.",
+    "bonusArmed": "Dano extra guardado para o próximo golpe.",
+    "autoArmed": "Resposta pronta guardada: o próximo micro-desafio sai resolvido.",
+    "useAuto": "Usar a resposta pronta",
+    "stage": "A arena do BUG Day 0",
+    "bitName": "Bit",
+    "stageIdle": "O BUG encara você e prepara o ataque.",
+    "stageHit": "O BUG leva o golpe.",
+    "stageBlocked": "O ataque bate no seu poder e se desfaz.",
+    "stageAttack": "O BUG acerta a sua máquina.",
+    "stagePatch": "O Patch Day 0 abre uma brecha no BUG.",
+    "stageWin": "O BUG se desfaz em bits.",
+    "stageLose": "A sua máquina reinicia.",
+    "attacks": {
+      "clonagem": {
+        "name": "Clonagem",
+        "text": "O BUG se copia sem parar, como um cartão furado que volta no rolo. Só quem entende de repetição corta a cópia na raiz."
+      },
+      "metamorfose": {
+        "name": "Metamorfose",
+        "text": "Ele troca de forma conforme a entrada que recebe. Para fechar o cerco é preciso decidir: a resposta depende da combinação."
+      },
+      "instrucaoCorrompida": {
+        "name": "Instrução corrompida",
+        "text": "O BUG embaralha os bits da instrução no caminho. Quem sabe codificar reescreve a instrução de forma que ela chegue legível."
+      },
+      "pacotesPerdidos": {
+        "name": "Pacotes perdidos",
+        "text": "Ele corta as ligações e os pacotes se perdem na rede. Conectar é achar outra rota antes do tempo acabar."
+      },
+      "vazamento": {
+        "name": "Vazamento",
+        "text": "O BUG abre caminho até o cofre e começa a copiar o que acha. Proteger é fechar todos os caminhos, não o mais óbvio."
+      },
+      "camuflagem": {
+        "name": "Camuflagem",
+        "text": "Ele se disfarça de tráfego normal. Só um detector treinado em exemplos separa o ataque do barulho de sempre."
+      }
+    }
+  },
   "menu": {
-    "title": "Da Valvula a IA",
-    "tagline": "Atravesse seis eras da computacao e conserte a linha do tempo.",
+    "title": "Da Válvula à IA",
+    "tagline": "Atravesse seis eras da computação e conserte a linha do tempo.",
     "newGame": "Novo jogo",
-    "newGameWarning": "Isto apaga o progresso salvo. Comecar mesmo assim?",
+    "newGameWarning": "Isto apaga o progresso salvo. Começar mesmo assim?",
     "continueGame": "Continuar",
     "zones": "Zonas",
     "settings": "Ajustes",
     "about": "Sobre",
     "close": "Fechar",
-    "aboutText": "Jogo educacional sobre a historia da computacao, feito como TCC. Codigo sob MIT, conteudo sob CC BY 4.0.",
-    "locked": "Conclua a era anterior"
+    "aboutText": "Jogo educacional sobre a história da computação, feito como TCC. Código sob MIT, conteúdo sob CC BY 4.0.",
+    "locked": "Conclua a era anterior",
+    "boss": "Enfrentar o BUG Day 0",
+    "bossAgain": "Encarar o BUG Day 0 de novo"
   },
   "world": {
     "title": "Zona",
     "loading": "Carregando o mapa...",
-    "help": "Toque em qualquer lugar do mapa: o Bit caminha ate la.",
+    "help": "Toque em qualquer lugar do mapa: o Bit caminha até lá.",
     "tapHelp": "Toque num ponto do mapa para mover o Bit",
-    "moving": "O Bit esta indo...",
-    "unreachable": "Nao da para chegar ai.",
+    "moving": "O Bit está indo...",
+    "unreachable": "Não dá para chegar aí.",
     "station": "Terminal",
     "enterStation": "Usar o terminal",
-    "stationSoon": "Terminal em construcao",
-    "stationDone": "Missao ja concluida. Pode repetir para melhorar a nota.",
+    "stationSoon": "Terminal em construção",
+    "stationDone": "Missão já concluída. Pode repetir para melhorar a nota.",
     "talk": "Conversar",
-    "doorClosed": "Porta trancada: conclua as duas missoes da zona.",
+    "doorClosed": "Porta trancada: conclua as duas missões da zona.",
     "doorOpen": "Porta aberta: a prova da era espera do outro lado.",
     "enterDoor": "Fazer a prova da era",
     "backToWorld": "Voltar para a zona",
-    "missionsDone": "missoes feitas",
+    "missionsDone": "missões feitas",
     "missionsLeft": "Falta concluir"
   },
   "tutorial": {
     "title": "Como jogar",
     "skip": "Pular tutorial",
     "next": "Entendi",
-    "done": "Tutorial concluido. Boa sorte!",
-    "step1": "Toque em qualquer ponto do mapa. O Bit caminha sozinho ate la, desviando de arvores e agua.",
-    "step2": "Agora va ate um dos terminais: os dois quadrados com tela acesa, um de cada lado do caminho.",
-    "step3": "Chegou no terminal? Toque em \"Usar o terminal\" para abrir o minijogo da missao.",
-    "step4": "Conclua as duas missoes da zona para destrancar a porta la em cima e seguir para a proxima era."
+    "done": "Tutorial concluído. Boa sorte!",
+    "step1": "Toque em qualquer ponto do mapa. O Bit caminha sozinho até lá, desviando de árvores e água.",
+    "step2": "Agora vá até um dos terminais: os dois quadrados com tela acesa, um de cada lado do caminho.",
+    "step3": "Chegou no terminal? Toque em \"Usar o terminal\" para abrir o minijogo da missão.",
+    "step4": "Conclua as duas missões da zona para destrancar a porta lá em cima e seguir para a próxima era."
   },
   "quiz": {
     "title": "Prova da era",
-    "intro": "Responda para provar que entendeu esta era. Acertando, o poder e o item sao seus.",
+    "intro": "Responda para provar que entendeu esta era. Acertando, o poder e o item são seus.",
     "question": "Pergunta",
     "of": "de",
     "correct": "Certo!",
-    "wrong": "Nao e essa.",
-    "next": "Proxima",
+    "wrong": "Não é essa.",
+    "next": "Próxima",
     "seeResult": "Ver resultado",
     "resultTitle": "Resultado da prova",
-    "passed": "Aprovado! O poder desta era e seu.",
-    "failed": "Ainda nao. Converse com os personagens da zona e tente de novo.",
+    "passed": "Aprovado! O poder desta era é seu.",
+    "failed": "Ainda não. Converse com os personagens da zona e tente de novo.",
     "score": "Acertos",
     "needed": "Precisa de",
     "gotPower": "Poder desbloqueado",
     "gotItem": "Item recebido",
     "retry": "Refazer a prova",
-    "continue": "Seguir para a proxima era",
+    "continue": "Seguir para a próxima era",
     "backToWorld": "Voltar para a zona",
-    "lockedDoor": "Conclua as duas missoes da zona antes da prova."
+    "lockedDoor": "Conclua as duas missões da zona antes da prova."
   },
   "items": {
     "title": "Mochila",
@@ -221,29 +398,30 @@
     "use": "Usar",
     "used": "Item usado.",
     "cartao-perfurado": {
-      "name": "Cartao Perfurado",
-      "text": "Guarda uma instrucao fora da maquina. Revela uma dica no minijogo."
+      "name": "Cartão Perfurado",
+      "text": "Uma solução gravada em papelão. No BUG Day 0, resolve um micro-desafio por você, com eficiência cheia."
     },
     "valvula-reserva": {
-      "name": "Valvula Reserva",
-      "text": "Troca a valvula queimada. Restaura 40 de integridade."
+      "name": "Válvula Reserva",
+      "text": "Uma válvula nova no lugar da que queimou. Restaura 40 de integridade na hora em que você usa."
     },
     "fita-magnetica": {
-      "name": "Fita Magnetica",
-      "text": "Guarda o programa para reusar. Revela uma dica no minijogo."
+      "name": "Fita Magnética",
+      "text": "Uma rotina pronta, guardada em fita. No BUG Day 0, resolve um micro-desafio por você, com eficiência cheia."
     },
     "pacote-roteado": {
       "name": "Pacote Roteado",
-      "text": "Desvia pelo caminho livre. Bloqueia o proximo ataque do chefao."
+      "text": "Um desvio pronto na rede. No BUG Day 0, bloqueia o ataque anunciado deste turno, sem gastar ação."
     },
     "chave-publica": {
-      "name": "Chave Publica",
-      "text": "Fecha o canal com quem voce nunca viu. Bloqueia o proximo ataque do chefao."
+      "name": "Chave Pública",
+      "text": "Um canal fechado com criptografia. No BUG Day 0, bloqueia o ataque anunciado deste turno, sem gastar ação."
     },
     "modelo-treinado": {
       "name": "Modelo Treinado",
-      "text": "Aprendeu com os exemplos. Aumenta o dano do proximo ataque."
+      "text": "Um detector já treinado. No BUG Day 0, aumenta em 50% o dano do seu próximo golpe."
     },
-    "held": "Guardado"
+    "held": "Guardado",
+    "combat": "Guardado para o BUG Day 0"
   }
 }

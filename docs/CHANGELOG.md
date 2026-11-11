@@ -2,6 +2,12 @@
 
 ## Notas
 
+- [acentuar os textos do jogo e dar arena visual ao BUG Day 0](changes/2026-11-10-acentuar-os-textos-do-jogo-e-dar-arena-visual-ao-bug-day-0.md) — 2026-11-10
+
+- [modo desenvolvedor nos ajustes para testar qualquer fase e o chefao](changes/2026-11-10-modo-desenvolvedor-nos-ajustes-para-testar-qualquer-fase-e-o.md) — 2026-11-10
+
+- [fechar o jogo: minijogos das eras 3 a 6, chefao BUG Day 0 e itens de combate](changes/2026-11-10-fechar-o-jogo-minijogos-das-eras-3-a-6-chefao-bug-day-0-e-it.md) — 2026-11-10
+
 - [Explicar e dar dica em todo minijogo](changes/2026-11-09-explicar-e-dar-dica-em-todo-minijogo.md) — 2026-11-09
 
 - [Minijogo da Era 2: Circuitos Logicos](changes/2026-11-09-minijogo-da-era-2-circuitos-logicos.md) — 2026-11-09

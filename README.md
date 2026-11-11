@@ -43,6 +43,11 @@ simples, sem arrastar**.
    era**: quatro perguntas, três acertos para passar. Errar não tira vida, e cada resposta vem
    com a explicação — errar também ensina.
 5. **Passou?** Ganha o poder da era, o item dela, e a próxima zona abre.
+6. **No fim das seis eras, enfrente o BUG Day 0.** Ele anuncia o ataque antes de dar, e cada
+   ataque só é neutralizado por um dos seis poderes — responder é jogar a versão curta do
+   minijogo daquela era. A arena mostra o Bit de um lado e o BUG do outro: ele racha quando
+   leva o golpe, avança quando o ataque passa e se desfaz no fim. Os itens guardados na
+   mochila entram aqui: escudo, dano extra e resposta pronta.
 
 | Era                     | Período   | Poder     | Minijogo            | Item             |
 | ----------------------- | --------- | --------- | ------------------- | ---------------- |
@@ -59,22 +64,27 @@ simples, sem arrastar**.
 
 Nada aqui é promessa: só está marcado como pronto o que já roda.
 
-|                         | Zona, personagens e prova |  Minijogo  |
-| ----------------------- | :-----------------------: | :--------: |
-| **Mecânica**            |          pronto           | **pronto** |
-| **Válvulas e Lógica**   |          pronto           | **pronto** |
-| Transistor e Linguagens |          pronto           |   falta    |
-| Redes                   |          pronto           |   falta    |
-| Web, Nuvem e Segurança  |          pronto           |   falta    |
-| Inteligência Artificial |          pronto           |   falta    |
-| **Chefão BUG Day 0**    |             —             |   falta    |
+|                             | Zona, personagens e prova |  Minijogo  |
+| --------------------------- | :-----------------------: | :--------: |
+| **Mecânica**                |          pronto           | **pronto** |
+| **Válvulas e Lógica**       |          pronto           | **pronto** |
+| **Transistor e Linguagens** |          pronto           | **pronto** |
+| **Redes**                   |          pronto           | **pronto** |
+| **Web, Nuvem e Segurança**  |          pronto           | **pronto** |
+| **Inteligência Artificial** |          pronto           | **pronto** |
+| **Chefão BUG Day 0**        |             —             | **pronto** |
 
-Ou seja: **as Eras 1 e 2 fecham o ciclo completo**. Nas outras quatro você anda pelo mapa,
-conversa com os personagens e faz a prova, mas os terminais mostram "Terminal em construção".
+Ou seja: **as seis eras fecham o ciclo completo e a campanha termina no chefão**. Cada
+terminal abre o minijogo da sua era, cada era entrega poder e item, e os seis itens têm
+efeito no BUG Day 0.
 
-Também falta: o efeito dos itens de combate (hoje só a Válvula Reserva faz algo), o ranking no
-Supabase, o áudio, e o acabamento visual da tela dos minijogos — o mapa e o menu já passaram
-por ele, as telas do Tear e dos Circuitos ainda não.
+O que o contrato garante, e não é promessa: `tests/contract/progression.test.ts` zera a
+campanha inteira resolvendo os seis minijogos pelas funções puras e vence o chefão. Se
+alguma era deixar de fechar, ele falha dizendo qual.
+
+Ainda falta: o ranking no Supabase, o áudio, e o acabamento visual das telas dos seis
+minijogos — o mapa, o menu e a arena do chefão já passaram por ele; as telas dos minijogos
+têm a estrutura e os alvos de toque certos, mas ainda não a arte.
 
 ---
 
@@ -91,6 +101,11 @@ npm run dev
 
 Abre em `http://localhost:5173`. Para ver o jogo como ele foi pensado, use o modo celular do
 navegador, em retrato.
+
+> **Para testar uma fase sem jogar as anteriores:** Menu > **Ajustes** > **Modo
+> desenvolvedor**. Ele destranca as seis zonas, as portas das provas e o BUG Day 0, e no
+> combate os seis poderes valem no nível máximo. Não concede progresso: o save continua
+> exatamente como estava (ver [D53](DECISIONS.md)).
 
 <details>
 <summary>Todos os comandos</summary>
@@ -140,7 +155,7 @@ Tambem traz o redirecionamento de rota unica (qualquer URL cai no
 `index.html`) e tres cabecalhos de seguranca basicos.
 
 > **Para testar o que vai ao ar:** `npm run build && npm run preview`. Isso
-> serve exatamente o `dist/` que a Vercel publica — e e contra ele que os 54
+> serve exatamente o `dist/` que a Vercel publica — e e contra ele que os 99
 > testes de ponta a ponta rodam.
 
 ---
@@ -163,9 +178,9 @@ afrouxar o lint não faz o problema sumir.
 
 ```
 src/
-  core/         regra pura: rng, rpg, powers, scoring, world, quiz, items, registry
+  core/         regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
   minigames/    <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
-  ui/           MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner
+  ui/           MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
   store/        Zustand com persistência em localStorage
   data/         JSON do conteúdo + módulos que o tipam
 tools/          geradores de conteúdo e de arte, e os scripts das notas

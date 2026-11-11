@@ -34,6 +34,17 @@ function spriteExists(file: string): boolean {
 }
 
 describe('contrato: cada era esta completa', () => {
+  registerMinigames();
+
+  it.each(ERAS)('era %s tem minijogo registrado', (era) => {
+    // Era sem minijogo cai no aviso de "terminal em construcao": o ciclo da
+    // era nao fecha, e a campanha trava ali para quem quer os poderes no nivel 3.
+    expect({ era, registrada: registeredEras().includes(era) }).toEqual({
+      era,
+      registrada: true,
+    });
+  });
+
   it.each(ERAS)('era %s tem zona, missoes, poder, item e prova', (era) => {
     const world = worldOfEra(era);
     expect(world, `falta a zona da era ${era}`).toBeDefined();
@@ -152,6 +163,11 @@ describe('contrato: a arte existe no disco', () => {
 
   it('ha sprite do Bit', () => {
     expect(spriteExists('bit.png')).toBe(true);
+  });
+
+  it('ha sprite do BUG Day 0', () => {
+    // A arena do chefao desenha este arquivo; sem ele o combate fica sem imagem.
+    expect(spriteExists('bug.png')).toBe(true);
   });
 
   it('ha um sprite para cada personagem colocado no mapa', () => {

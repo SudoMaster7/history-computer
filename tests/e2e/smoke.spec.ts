@@ -29,15 +29,15 @@ async function tapCell(page: Page, col: number, row: number): Promise<void> {
 /** Resolve o Tear escrevendo o padrao cor por cor (a missao A tem folga). */
 async function solveLoomByHand(page: Page): Promise<void> {
   const colors = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('[aria-label="Padrao a reproduzir"] .loom__cell')).map(
+    Array.from(document.querySelectorAll('[aria-label="Padrão a reproduzir"] .loom__cell')).map(
       (cell) => (cell.getAttribute('aria-label') ?? '').replace('cor ', ''),
     ),
   );
   for (const color of colors) {
     await page.getByRole('button', { name: `Adicionar cor ${color}` }).click();
   }
-  await page.getByRole('button', { name: /Enviar solucao/ }).click();
-  await expect(page.getByRole('heading', { name: 'Missao concluida!' })).toBeVisible();
+  await page.getByRole('button', { name: /Enviar solução/ }).click();
+  await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
 }
 
 /**
@@ -163,7 +163,7 @@ async function enterFirstZone(page: Page, { skipTutorial = true } = {}): Promise
 
 test('abre no menu do jogo', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Da Valvula a IA' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Da Válvula à IA' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Novo jogo' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Zonas' })).toBeVisible();
 });
@@ -179,9 +179,9 @@ test('nao ha rolagem horizontal', async ({ page }) => {
 test('no menu, zonas sem pre-requisito ficam trancadas', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Zonas' }).click();
-  await expect(page.getByRole('button', { name: /Mecanica/ })).toBeEnabled();
-  await expect(page.getByRole('button', { name: /Valvulas e Logica/ })).toBeDisabled();
-  await expect(page.getByRole('button', { name: /Inteligencia Artificial/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Mecânica/ })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /Válvulas e Lógica/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Inteligência Artificial/ })).toBeDisabled();
 });
 
 test('o tutorial aparece no primeiro jogo e pode ser pulado', async ({ page }) => {
@@ -237,7 +237,7 @@ test('tocar num tile bloqueado nao move o Bit', async ({ page }) => {
   // Arvore na borda esquerda, longe dos botoes de canto.
   await tapCell(page, 0, 8);
 
-  await expect(page.getByText('Nao da para chegar ai.')).toBeVisible();
+  await expect(page.getByText('Não dá para chegar aí.')).toBeVisible();
   expect(await bitCell(page)).toBe(before);
 });
 
@@ -248,7 +248,7 @@ test('o terminal abre o minijogo da missao', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
   await expect(page.getByRole('heading', { name: 'Tear de Engrenagens' })).toBeVisible();
-  await expect(page.getByLabel('Padrao a reproduzir')).toBeVisible();
+  await expect(page.getByLabel('Padrão a reproduzir')).toBeVisible();
 });
 
 test('o minijogo e jogavel por toque e da estrelas', async ({ page }) => {
@@ -279,7 +279,7 @@ test('o minijogo da Era 2 e jogavel por toque e fecha com 3 estrelas', async ({ 
   await tapCell(page, 2, 7);
   await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('2,7');
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
-  await expect(page.getByRole('heading', { name: 'Circuitos Logicos' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Circuitos Lógicos' })).toBeVisible();
 
   /*
    * A seed `logica-A-v1` pede NAO (A E B). Se a seed ou o gerador mudarem, esta
@@ -294,15 +294,15 @@ test('o minijogo da Era 2 e jogavel por toque e fecha com 3 estrelas', async ({ 
   await page.getByRole('button', { name: 'Adicionar porta E' }).click();
   await wire(page, 'porta 1, encaixe 1', 'entrada A');
   await wire(page, 'porta 1, encaixe 2', 'entrada B');
-  await page.getByRole('button', { name: 'Adicionar porta NAO' }).click();
+  await page.getByRole('button', { name: 'Adicionar porta NÃO' }).click();
   await wire(page, 'porta 2, encaixe 1', 'porta 1');
-  await wire(page, 'Saida', 'porta 2');
+  await wire(page, 'Saída', 'porta 2');
 
   await expect(page.getByText('A tabela inteira bate. Pode enviar.')).toBeVisible();
-  await page.getByRole('button', { name: /Enviar solucao/ }).click();
+  await page.getByRole('button', { name: /Enviar solução/ }).click();
 
   // Duas portas, o mesmo da referencia: eficiencia 1, tres estrelas.
-  await expect(page.getByRole('heading', { name: 'Missao concluida!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
   await expect(page.getByLabel('3 estrelas')).toBeVisible();
 });
 
@@ -316,7 +316,7 @@ test('apagar uma porta desliga os fios que apontavam para ela', async ({ page })
 
   await page.getByRole('button', { name: 'Adicionar porta E' }).click();
   await wire(page, 'porta 1, encaixe 1', 'entrada A');
-  await page.getByRole('button', { name: 'Adicionar porta NAO' }).click();
+  await page.getByRole('button', { name: 'Adicionar porta NÃO' }).click();
   await wire(page, 'porta 2, encaixe 1', 'porta 1');
 
   // Apagar a porta 1 deixa a porta que era 2 sem origem, e nao com fio solto.
@@ -325,7 +325,7 @@ test('apagar uma porta desliga os fios que apontavam para ela', async ({ page })
     page.getByRole('button', { name: 'Ligar fio em porta 1, encaixe 1: ligar' }),
   ).toBeVisible();
   await expect(page.getByText('Falta ligar algum fio.')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Enviar solucao/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeDisabled();
 });
 
 test('a tela dos Circuitos cabe no celular: 44 px e sem rolagem lateral', async ({ page }) => {
@@ -341,7 +341,7 @@ test('a tela dos Circuitos cabe no celular: 44 px e sem rolagem lateral', async 
     await page.getByRole('button', { name: 'Adicionar porta OU' }).click();
   }
   await expect(page.locator('.circuit__gate')).toHaveCount(3);
-  await page.getByRole('button', { name: 'O que e isto?' }).click();
+  await page.getByRole('button', { name: 'O que é isto?' }).click();
   await page.getByRole('button', { name: 'Dica', exact: true }).click();
   await expect(page.locator('.help__panel')).toBeVisible();
   await expect(page.locator('.help__hints li').first()).toBeVisible();
@@ -370,7 +370,7 @@ test('o minijogo diz o que representa e libera dicas uma a uma', async ({ page }
 
   // A explicacao comeca recolhida: quem quer jogar nao perde a tela.
   await expect(page.locator('.help__panel')).toBeHidden();
-  await page.getByRole('button', { name: 'O que e isto?' }).click();
+  await page.getByRole('button', { name: 'O que é isto?' }).click();
 
   const painel = page.locator('.help__panel');
   await expect(
@@ -380,7 +380,7 @@ test('o minijogo diz o que representa e libera dicas uma a uma', async ({ page }
   // A funcionalidade da era, que e o que a missao entrega como poder.
   await expect(painel).toContainText('REPETIR');
 
-  await page.getByRole('button', { name: 'Fechar explicacao' }).click();
+  await page.getByRole('button', { name: 'Fechar explicação' }).click();
   await expect(painel).toBeHidden();
 
   // As dicas saem uma por toque, nao todas de uma vez.
@@ -409,7 +409,7 @@ test('a ajuda dos Circuitos explica a funcionalidade da Era 2', async ({ page })
   await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('2,7');
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
 
-  await page.getByRole('button', { name: 'O que e isto?' }).click();
+  await page.getByRole('button', { name: 'O que é isto?' }).click();
   const painel = page.locator('.help__panel');
   await expect(painel).toContainText('Shannon');
   await expect(painel).toContainText('DECIDIR');
@@ -426,7 +426,7 @@ test('fala com um personagem historico da zona', async ({ page }) => {
   await expect.poll(async () => bitCell(page), { timeout: 10000 }).toBe('8,8');
 
   await expect(page.getByText('Joseph-Marie Jacquard')).toBeVisible();
-  await expect(page.getByText('Tear de cartoes perfurados (1804)')).toBeVisible();
+  await expect(page.getByText('Tear de cartões perfurados (1804)')).toBeVisible();
   // A fala tem varias partes e avanca por toque.
   await expect(page.getByText('1/3')).toBeVisible();
   await page.getByRole('button', { name: 'Entendi' }).click();
@@ -504,21 +504,21 @@ test('acertando a prova, o item vai para a mochila e a proxima zona abre', async
     await page.locator('.quiz__feedback button').click();
   }
 
-  await expect(page.getByText('Aprovado! O poder desta era e seu.')).toBeVisible();
-  await expect(page.getByText(/Item recebido:\s*Cartao Perfurado/)).toBeVisible();
-  await page.getByRole('button', { name: 'Seguir para a proxima era' }).click();
+  await expect(page.getByText('Aprovado! O poder desta era é seu.')).toBeVisible();
+  await expect(page.getByText(/Item recebido:\s*Cartão Perfurado/)).toBeVisible();
+  await page.getByRole('button', { name: 'Seguir para a próxima era' }).click();
 
   // Entrou na zona seguinte, e o item aparece na mochila.
   await expect(page.locator('.world__canvas')).toBeVisible();
   await openHud(page);
-  await expect(page.getByText('Cartao Perfurado')).toBeVisible();
+  await expect(page.getByText('Cartão Perfurado')).toBeVisible();
 });
 
 test('a zona seguinte so abre depois da prova', async ({ page }) => {
   await enterFirstZone(page);
   await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Zonas' }).click();
-  await expect(page.getByRole('button', { name: /Valvulas e Logica/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Válvulas e Lógica/ })).toBeDisabled();
 });
 
 test('alvos de toque tem ao menos 44 px', async ({ page }) => {
@@ -544,4 +544,433 @@ test('o progresso sobrevive a um recarregamento', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible();
   const saved = await page.evaluate(() => localStorage.getItem('davalvulaaia:save:v1'));
   expect(saved).not.toBeNull();
+});
+
+/* ------------------------------------------------------------------ *
+ * Eras 3 a 6 e o chefao.
+ *
+ * As quatro zonas do meio ficam longe do inicio da campanha, entao o save e
+ * montado pronto -- do mesmo jeito que a Era 2 ja fazia. O que estes testes
+ * cobrem e a tela: o terminal abre o minijogo certo, o jogo responde ao toque e
+ * o estado aparece escrito. A regra de cada minijogo e coberta pelos testes de
+ * unidade, que a rodam centenas de vezes.
+ * ------------------------------------------------------------------ */
+
+const ERA_ORDER = ['mecanica', 'logica', 'codigo', 'redes', 'seguranca', 'ia'] as const;
+
+const POWER_OF: Record<string, string> = {
+  mecanica: 'repetir',
+  logica: 'decidir',
+  codigo: 'codificar',
+  redes: 'conectar',
+  seguranca: 'proteger',
+  ia: 'aprender',
+};
+
+const ITEM_OF: Record<string, string> = {
+  mecanica: 'cartao-perfurado',
+  logica: 'valvula-reserva',
+  codigo: 'fita-magnetica',
+  redes: 'pacote-roteado',
+  seguranca: 'chave-publica',
+  ia: 'modelo-treinado',
+};
+
+/** Save com as eras informadas concluidas com 3 estrelas, poder e item. */
+async function seedCleared(page: Page, cleared: readonly string[]): Promise<void> {
+  await page.addInitScript(
+    ([lista, poderDe, itemDe]: [string[], Record<string, string>, Record<string, string>]) => {
+      const done = { stars: 3, bestScore: 1000 };
+      const powers: Record<string, number> = {
+        repetir: 0,
+        decidir: 0,
+        codificar: 0,
+        conectar: 0,
+        proteger: 0,
+        aprender: 0,
+      };
+      const missions: Record<string, typeof done> = {};
+      const items: Record<string, number> = {};
+      for (const era of lista) {
+        powers[poderDe[era] as string] = 3;
+        missions[era + '-A'] = done;
+        missions[era + '-B'] = done;
+        items[itemDe[era] as string] = 1;
+      }
+      localStorage.setItem(
+        'davalvulaaia:save:v1',
+        JSON.stringify({
+          version: 1,
+          state: {
+            player: {
+              level: 6,
+              xp: 0,
+              hp: 160,
+              hpMax: 160,
+              clock: 2,
+              powers,
+              missions,
+              year: 2012,
+              items,
+            },
+            clearedEras: lista,
+            bossDefeated: false,
+            bossBestScore: 0,
+            settings: { reduceMotion: false, vibration: true, muted: true },
+            tutorialDone: true,
+          },
+        }),
+      );
+    },
+    [[...cleared], POWER_OF, ITEM_OF] as [string[], Record<string, string>, Record<string, string>],
+  );
+}
+
+/** Abre o terminal da missao A de uma era, com o save montado para ela. */
+async function openStationOf(
+  page: Page,
+  era: (typeof ERA_ORDER)[number],
+  col: number,
+  row: number,
+): Promise<void> {
+  const index = ERA_ORDER.indexOf(era);
+  await seedCleared(page, ERA_ORDER.slice(0, index));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.locator('.world__canvas')).toBeVisible();
+  await tapCell(page, col, row);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe(col + ',' + row);
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+}
+
+test('o minijogo da Era 3 fecha a missao com codigo de tamanho fixo', async ({ page }) => {
+  await openStationOf(page, 'codigo', 1, 7);
+  await expect(page.getByRole('heading', { name: 'Mesa de Bits' })).toBeVisible();
+
+  /*
+   * A missao A cabe com codigo de tamanho fixo (A=00, B=01, C=10), que e a
+   * primeira ideia de qualquer um -- passa, mas com eficiencia baixa. O codigo
+   * de Huffman e o que rende as tres estrelas, e e isso que a era ensina.
+   */
+  const rows = page.locator('.bits__row');
+  const total = await rows.count();
+  expect(total).toBeGreaterThan(1);
+
+  const bits = Math.max(1, Math.ceil(Math.log2(total)));
+  for (let i = 0; i < total; i += 1) {
+    const code = i.toString(2).padStart(bits, '0');
+    for (const bit of code) {
+      await rows
+        .nth(i)
+        .getByRole('button', { name: new RegExp('^Acrescentar bit ' + bit + ' ao código de') })
+        .click();
+    }
+  }
+
+  await expect(page.getByText('Cabe na fita e a leitura é única.')).toBeVisible();
+  await page.getByRole('button', { name: /Enviar solução/ }).click();
+  await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
+  await expect(page.getByLabel(/estrelas/)).toBeVisible();
+});
+
+test('a Era 3 acusa codigo ambiguo antes de enviar', async ({ page }) => {
+  await openStationOf(page, 'codigo', 1, 7);
+  const rows = page.locator('.bits__row');
+  const total = await rows.count();
+
+  // Todo mundo com o mesmo codigo: a fita fica ilegivel, e a tela diz isso.
+  for (let i = 0; i < total; i += 1) {
+    await rows
+      .nth(i)
+      .getByRole('button', { name: /^Acrescentar bit 0 ao código de/ })
+      .click();
+  }
+  await expect(page.getByText(/Código ambíguo/)).toBeVisible();
+});
+
+test('a Era 4 leva o pacote de vizinho em vizinho, e da para voltar', async ({ page }) => {
+  await openStationOf(page, 'redes', 2, 8);
+  await expect(page.getByRole('heading', { name: 'Rota dos Pacotes' })).toBeVisible();
+
+  // O pacote comeca na origem e so ve os vizinhos dela.
+  await expect(page.getByLabel('Rota do pacote até agora')).toContainText('Origem');
+  const voltar = page.getByRole('button', { name: 'Voltar um salto' });
+  await expect(voltar).toBeDisabled();
+
+  const opcoes = page.locator('.route__option');
+  await expect(opcoes.first()).toBeVisible();
+  const primeiro = (
+    (await opcoes.first().locator('.route__optionName').textContent()) ?? ''
+  ).trim();
+  await opcoes.first().click();
+
+  await expect(page.getByLabel('Rota do pacote até agora')).toContainText(primeiro);
+  await expect(voltar).toBeEnabled();
+  await voltar.click();
+  await expect(page.getByLabel('Rota do pacote até agora')).not.toContainText(primeiro);
+});
+
+test('a Era 5 so considera o cofre fechado quando nao sobra caminho', async ({ page }) => {
+  await openStationOf(page, 'seguranca', 1, 7);
+  await expect(page.getByRole('heading', { name: 'Cofre Criptográfico' })).toBeVisible();
+
+  // Com a rede aberta, a tela diz que o cofre esta exposto.
+  await expect(page.getByText('Nenhum firewall instalado: o cofre está aberto.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeDisabled();
+
+  // Bloquear tudo fecha o cofre (gasta firewall demais, mas fecha).
+  const links = page.locator('.vault__link');
+  const total = await links.count();
+  expect(total).toBeGreaterThan(1);
+  for (let i = 0; i < total; i += 1) await links.nth(i).click();
+
+  await expect(page.getByText('Nenhum caminho chega ao cofre.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeEnabled();
+});
+
+test('a Era 6 esconde os exemplos guardados e conta os acertos do treino', async ({ page }) => {
+  await openStationOf(page, 'ia', 1, 7);
+  await expect(page.getByRole('heading', { name: 'Treinar o Detector' })).toBeVisible();
+
+  await expect(page.getByText('Escolha pelo menos um sinal.')).toBeVisible();
+  await expect(page.getByText(/Os exemplos guardados só são conferidos/)).toBeVisible();
+
+  await page.getByRole('button', { name: 'Passar a observar o sinal 1' }).click();
+  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeEnabled();
+  await expect(page.locator('.model__example').first()).toBeVisible();
+});
+
+test('o chefao abre no menu com as seis eras concluidas', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: /BUG Day 0/ })).toBeHidden();
+
+  await seedCleared(page, ERA_ORDER);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Enfrentar o BUG Day 0' }).click();
+
+  await expect(page.getByRole('heading', { name: 'BUG Day 0' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ataque anunciado' })).toBeVisible();
+  await expect(page.getByRole('meter', { name: /Integridade do BUG/ })).toBeVisible();
+
+  // Os seis poderes viram resposta possivel, e a mochila entra no combate.
+  await expect(page.locator('.boss__power')).toHaveCount(6);
+  await expect(page.locator('.boss__items button').first()).toBeVisible();
+});
+
+test('a arena do chefao mostra o Bit, o BUG e as duas integridades', async ({ page }) => {
+  await seedCleared(page, ERA_ORDER);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Enfrentar o BUG Day 0' }).click();
+
+  const arena = page.locator('.bossStage');
+  await expect(arena).toBeVisible();
+  await expect(arena.locator('.bossStage__bug')).toBeVisible();
+  await expect(arena.locator('.bossStage__bit')).toBeVisible();
+
+  // As duas barras da cena: a sua e a do BUG.
+  await expect(arena.getByRole('meter', { name: /Sua integridade/ })).toBeVisible();
+  await expect(arena.getByRole('meter', { name: /Integridade do BUG/ })).toBeVisible();
+
+  // Os sprites sao os mesmos PNG do mapa, e o quadro vem de uma variavel CSS.
+  const art = await arena.locator('.bossStage__bug').evaluate((el) => ({
+    image: getComputedStyle(el).backgroundImage,
+    frame: getComputedStyle(el).getPropertyValue('--frame').trim(),
+  }));
+  expect(art.image).toContain('/sprites/bug.png');
+  expect(art.frame).toBe('0');
+
+  // Parado, a arena so encara.
+  await expect(arena).toHaveClass(/bossStage--idle/);
+  await expect(page.getByText('O BUG encara você e prepara o ataque.')).toBeVisible();
+});
+
+test('responder ao chefao abre o micro-desafio da era do poder escolhido', async ({ page }) => {
+  await seedCleared(page, ERA_ORDER);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Enfrentar o BUG Day 0' }).click();
+
+  // O poder que neutraliza o ataque esta escrito na tela.
+  const resposta = (await page.locator('.boss__answer').textContent()) ?? '';
+  expect(resposta.length).toBeGreaterThan(0);
+  await page.locator('.boss__power--right').click();
+
+  const titulos = [
+    'Tear de Engrenagens',
+    'Circuitos Lógicos',
+    'Mesa de Bits',
+    'Rota dos Pacotes',
+    'Cofre Criptográfico',
+    'Treinar o Detector',
+  ];
+  const aberto = page.locator('.boss__micro h2');
+  await expect(aberto).toBeVisible();
+  expect(titulos).toContain(((await aberto.textContent()) ?? '').trim());
+
+  // Sair do micro-desafio devolve o turno, sem gastar acao.
+  await page.getByRole('button', { name: 'Sair da missão' }).click();
+  await expect(page.getByRole('heading', { name: 'Ataque anunciado' })).toBeVisible();
+  await expect(page.locator('.boss__stats')).toContainText('Ações neste turno: 2/2');
+});
+
+test('o item de escudo e usado no combate e fica armado para o turno', async ({ page }) => {
+  await seedCleared(page, ERA_ORDER);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Enfrentar o BUG Day 0' }).click();
+
+  await page.getByRole('button', { name: 'Usar Pacote Roteado' }).click();
+  await expect(
+    page.getByText('Escudo armado: o ataque deste turno não acerta a máquina.'),
+  ).toBeVisible();
+  // O item sai da mochila ao ser usado.
+  await expect(page.getByRole('button', { name: 'Usar Pacote Roteado' })).toBeHidden();
+});
+
+test('a tela do chefao cabe no celular: 44 px e sem rolagem lateral', async ({ page }) => {
+  await seedCleared(page, ERA_ORDER);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Enfrentar o BUG Day 0' }).click();
+  await expect(page.getByRole('heading', { name: 'Ataque anunciado' })).toBeVisible();
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+  );
+  expect(overflow).toBe(false);
+
+  const buttons = page.locator('.boss button');
+  const count = await buttons.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i += 1) {
+    const box = await buttons.nth(i).boundingBox();
+    if (!box) continue;
+    expect(box.width, 'botao ' + i + ' estreito').toBeGreaterThanOrEqual(43.5);
+    expect(box.height, 'botao ' + i + ' baixo').toBeGreaterThanOrEqual(43.5);
+  }
+});
+
+/*
+ * Um teste por era, e nao um laco com as quatro: no iPhone 12 emulado as quatro
+ * zonas numa so chamada chegaram perto do limite de 30 s e falharam por tempo,
+ * sem nada de errado na tela. Separados, cada um sobra tempo.
+ */
+for (const tela of [
+  { era: 'codigo', col: 1, row: 7, raiz: '.bits' },
+  { era: 'redes', col: 2, row: 8, raiz: '.route' },
+  { era: 'seguranca', col: 1, row: 7, raiz: '.vault' },
+  { era: 'ia', col: 1, row: 7, raiz: '.model' },
+] as const) {
+  test(`a tela da era ${tela.era} cabe no celular: 44 px e sem rolagem lateral`, async ({
+    page,
+  }) => {
+    await openStationOf(page, tela.era, tela.col, tela.row);
+    await page.getByRole('button', { name: 'O que é isto?' }).click();
+    await expect(page.locator('.help__panel')).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    );
+    expect(overflow, tela.era + ' rola de lado').toBe(false);
+
+    const buttons = page.locator(tela.raiz + ' button');
+    const count = await buttons.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i += 1) {
+      const box = await buttons.nth(i).boundingBox();
+      if (!box) continue;
+      expect(box.width, tela.era + ': botao ' + i + ' estreito').toBeGreaterThanOrEqual(43.5);
+      expect(box.height, tela.era + ': botao ' + i + ' baixo').toBeGreaterThanOrEqual(43.5);
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Modo desenvolvedor.
+ *
+ * E atalho de teste, nao progresso: ele destranca as telas e nao mexe no save.
+ * Estes testes cobram as duas metades disso -- destrancar de verdade, e nao
+ * inventar progresso que o jogador nao fez.
+ * ------------------------------------------------------------------ */
+
+/** Liga o modo desenvolvedor pelo menu de ajustes e volta ao menu. */
+async function enableDevMode(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Ajustes' }).click();
+  const toggle = page.getByRole('button', { name: 'Modo desenvolvedor' });
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Voltar' }).click();
+}
+
+test('o modo desenvolvedor abre as seis zonas e o chefao', async ({ page }) => {
+  await page.goto('/');
+
+  // Antes: so a primeira zona, e nenhum chefao.
+  await page.getByRole('button', { name: 'Zonas' }).click();
+  await expect(page.getByRole('button', { name: /Inteligência Artificial/ })).toBeDisabled();
+  await page.getByRole('button', { name: 'Voltar' }).click();
+  await expect(page.getByRole('button', { name: /BUG Day 0/ })).toBeHidden();
+
+  await enableDevMode(page);
+
+  // Depois: todas as zonas tocaveis, e o BUG Day 0 no menu.
+  await expect(page.getByRole('button', { name: 'Enfrentar o BUG Day 0' })).toBeVisible();
+  await page.getByRole('button', { name: 'Zonas' }).click();
+  for (const zona of [
+    'Mecânica',
+    'Válvulas e Lógica',
+    'Transistor e Linguagens',
+    'Redes',
+    'Web, Nuvem e Segurança',
+    'Inteligência Artificial',
+  ]) {
+    await expect(page.getByRole('button', { name: new RegExp(zona) })).toBeEnabled();
+  }
+});
+
+test('no modo desenvolvedor a zona abre direto e a porta da prova nao cobra missao', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await enableDevMode(page);
+
+  // Era 6 sem ter jogado nenhuma das anteriores.
+  await page.getByRole('button', { name: 'Zonas' }).click();
+  await page.getByRole('button', { name: /Inteligência Artificial/ }).click();
+  await expect(page.locator('.world__canvas')).toBeVisible();
+  const pular = page.getByRole('button', { name: 'Pular tutorial' });
+  if (await pular.isVisible()) await pular.click();
+
+  // O terminal da era abre o minijogo dela.
+  await tapCell(page, 1, 7);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('1,7');
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+  await expect(page.getByRole('heading', { name: 'Treinar o Detector' })).toBeVisible();
+  await page.getByRole('button', { name: 'Sair da missão' }).click();
+
+  // E a porta leva a prova mesmo com as duas missoes em aberto.
+  await tapCell(page, 7, 2);
+  await expect.poll(async () => bitCell(page), { timeout: 12000 }).toBe('7,2');
+  await page.getByRole('button', { name: 'Fazer a prova da era' }).click();
+  await expect(page.getByRole('region', { name: 'Prova da era' })).toBeVisible();
+});
+
+test('o modo desenvolvedor da os seis poderes no chefao, sem mexer no save', async ({ page }) => {
+  await page.goto('/');
+  await enableDevMode(page);
+  await page.getByRole('button', { name: 'Enfrentar o BUG Day 0' }).click();
+
+  // Os seis poderes respondem, num save que nao tem poder nenhum.
+  await expect(page.locator('.boss__power')).toHaveCount(6);
+  await expect(page.locator('.boss__items button')).toHaveCount(0);
+
+  // O progresso continua zerado: o modo abre telas, nao concede progresso.
+  const salvo = await page.evaluate(() => localStorage.getItem('davalvulaaia:save:v1'));
+  const estado = JSON.parse(salvo ?? '{}').state as {
+    clearedEras: string[];
+    player: { powers: Record<string, number>; missions: Record<string, unknown> };
+    settings: { devMode: boolean };
+  };
+  expect(estado.clearedEras).toEqual([]);
+  expect(Object.values(estado.player.powers)).toEqual([0, 0, 0, 0, 0, 0]);
+  expect(Object.keys(estado.player.missions)).toEqual([]);
+  expect(estado.settings.devMode).toBe(true);
 });

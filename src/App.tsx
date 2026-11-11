@@ -4,6 +4,7 @@ import Quiz from './ui/Quiz';
 import MainMenu from './ui/MainMenu';
 import WorldScreen from './ui/WorldScreen';
 import MissionRunner from './ui/MissionRunner';
+import BossScreen from './ui/BossScreen';
 import Tutorial from './ui/Tutorial';
 import { TUTORIAL_STEPS } from './ui/tutorialSteps';
 import ErrorBoundary from './ui/ErrorBoundary';
@@ -27,7 +28,8 @@ type View =
   | { screen: 'menu' }
   | { screen: 'world'; era: EraId }
   | { screen: 'mission'; era: EraId; missionId: string }
-  | { screen: 'quiz'; era: EraId };
+  | { screen: 'quiz'; era: EraId }
+  | { screen: 'boss' };
 
 export default function App() {
   const settings = useGameStore((s) => s.settings);
@@ -35,6 +37,7 @@ export default function App() {
   const closeQuiz = useGameStore((s) => s.closeQuiz);
   const tutorialDone = useGameStore((s) => s.tutorialDone);
   const finishTutorial = useGameStore((s) => s.finishTutorial);
+  const canFaceBoss = useGameStore((s) => s.canFaceBoss);
 
   const [view, setView] = useState<View>({ screen: 'menu' });
   const [offline, setOffline] = useState(false);
@@ -85,11 +88,18 @@ export default function App() {
     setView({ screen: 'quiz', era });
   }
 
-  /** Prova passada: segue para a zona da era seguinte, se houver. */
+  /**
+   * Prova passada: segue para a zona da era seguinte. Depois da ultima era, o
+   * que resta e o chefao -- e ele so abre com as seis eras concluidas.
+   */
   function afterQuiz(era: EraId): void {
     closeQuiz();
     const next = nextEra(era);
-    setView(next ? { screen: 'world', era: next } : { screen: 'menu' });
+    if (next) {
+      setView({ screen: 'world', era: next });
+      return;
+    }
+    setView(canFaceBoss() ? { screen: 'boss' } : { screen: 'menu' });
   }
 
   const showTutorial = !tutorialDone && view.screen === 'world' && view.era === 'mecanica';
@@ -102,7 +112,10 @@ export default function App() {
             {view.screen === 'menu' ? (
               <>
                 {offline ? <p className="app__offline">{ui.app.offline}</p> : null}
-                <MainMenu onPlay={(era) => setView({ screen: 'world', era })} />
+                <MainMenu
+                  onPlay={(era) => setView({ screen: 'world', era })}
+                  onBoss={() => setView({ screen: 'boss' })}
+                />
               </>
             ) : null}
 
@@ -142,6 +155,8 @@ export default function App() {
                 }}
               />
             ) : null}
+
+            {view.screen === 'boss' ? <BossScreen seed="bug-day-0" onExit={goMenu} /> : null}
 
             {view.screen === 'menu' ? null : <Hud />}
 

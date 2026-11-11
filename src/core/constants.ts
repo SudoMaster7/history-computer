@@ -131,6 +131,64 @@ export const CIRCUIT = {
   GEN_ATTEMPTS: 40,
 } as const;
 
+export const BITS = {
+  /** Simbolos que a mensagem pode usar, na ordem em que entram na mesa. */
+  SYMBOLS: ['A', 'B', 'C', 'D', 'E'] as readonly string[],
+  /** Quantos simbolos diferentes a mensagem tem, por dificuldade. */
+  COUNT: { micro: 3, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
+  /** Faixa de repeticoes de um simbolo na mensagem. */
+  MIN_WEIGHT: 1,
+  MAX_WEIGHT: 9,
+  /** Comprimento maximo de um codigo, para a mesa caber na tela do celular. */
+  MAX_CODE_LEN: 6,
+  /** Bits acima do codigo otimo que a missao ainda aceita. */
+  SLACK: { micro: 4, 1: 4, 2: 2, 3: 0 } as Record<string, number>,
+  /** Sorteios de pesos antes de cair na mensagem deterministica de reserva. */
+  GEN_ATTEMPTS: 40,
+} as const;
+
+export const ROUTE = {
+  /** Nos da rede, por dificuldade (contando origem e destino). */
+  NODES: { micro: 6, 1: 6, 2: 8, 3: 10 } as Record<string, number>,
+  /** Ligacoes extras sorteadas acima da arvore que garante a rede conexa. */
+  EXTRA_LINKS: { micro: 2, 1: 3, 2: 5, 3: 7 } as Record<string, number>,
+  /** Faixa de atraso de uma ligacao, em milissegundos de mentira. */
+  MIN_COST: 1,
+  MAX_COST: 9,
+  /** Folga de atraso acima da rota mais curta que a missao ainda aceita. */
+  SLACK: { micro: 6, 1: 6, 2: 3, 3: 0 } as Record<string, number>,
+  /** Sorteios de rede antes de cair na rede deterministica de reserva. */
+  GEN_ATTEMPTS: 40,
+} as const;
+
+export const VAULT = {
+  /** Camadas de maquinas entre a entrada da rede e o cofre, por dificuldade. */
+  LAYERS: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Maquinas por camada. */
+  WIDTH: { micro: 2, 1: 2, 2: 2, 3: 3 } as Record<string, number>,
+  /** Ligacoes extras sorteadas entre camadas vizinhas. */
+  EXTRA_LINKS: { micro: 1, 1: 2, 2: 3, 3: 4 } as Record<string, number>,
+  /** Firewalls acima do corte minimo que a missao ainda aceita. */
+  SLACK: { micro: 2, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
+  /** Sorteios de rede antes de cair na rede deterministica de reserva. */
+  GEN_ATTEMPTS: 40,
+} as const;
+
+export const MODEL = {
+  /** Sinais que o detector pode observar, por dificuldade. */
+  SIGNALS: { micro: 4, 1: 4, 2: 5, 3: 6 } as Record<string, number>,
+  /** Sinais que de fato causam o ataque (os outros sao coincidencia). */
+  REAL: { micro: 2, 1: 2, 2: 2, 3: 3 } as Record<string, number>,
+  /** Exemplos rotulados mostrados ao jogador (o treino). */
+  TRAIN: { micro: 6, 1: 6, 2: 8, 3: 10 } as Record<string, number>,
+  /** Exemplos guardados para a prova do detector (o teste). */
+  TEST: { micro: 3, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
+  /** Sinais acima do minimo que a missao ainda aceita. */
+  SLACK: { micro: 2, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
+  /** Sorteios de conjunto antes de cair no conjunto deterministico de reserva. */
+  GEN_ATTEMPTS: 60,
+} as const;
+
 export const LOOM = {
   /** Cores disponiveis na paleta do Tear de Engrenagens. */
   COLORS: ['a', 'b', 'c'] as readonly string[],

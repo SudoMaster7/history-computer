@@ -1212,3 +1212,686 @@
   border-radius: var(--radius);
   backdrop-filter: blur(6px);
 }
+
+/* ---------- Minijogos das eras 3 a 6 ---------- */
+/*
+ * As quatro telas compartilham a moldura (rolagem vertical, cabecalho, blocos),
+ * porque sao a mesma gramatica: um painel de estado em cima, as pecas no meio,
+ * o estado em texto embaixo. O que muda e a peca de cada era.
+ */
+.bits,
+.route,
+.vault,
+.model {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bits__head h2,
+.route__head h2,
+.vault__head h2,
+.model__head h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.bits__help,
+.route__help,
+.vault__help,
+.model__help {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.bits__block h3,
+.route__block h3,
+.vault__block h3,
+.model__block h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.bits__status,
+.route__status,
+.vault__status,
+.model__status {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.bits__submit,
+.route__submit,
+.vault__submit,
+.model__submit {
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+/* ---------- Mesa de Bits ---------- */
+.bits__table {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.bits__row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  background: var(--bg-soft);
+  border-radius: 10px;
+  padding: 6px;
+  flex-wrap: wrap;
+}
+
+.bits__row--clash {
+  outline: 2px solid var(--danger);
+}
+
+.bits__symbol {
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 24px;
+}
+
+.bits__weight {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  min-width: 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bits__code {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 2px;
+  min-width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bits__buttons {
+  display: flex;
+  gap: var(--gap);
+  margin-left: auto;
+}
+
+.bits__tape {
+  margin: 0;
+  padding: 8px;
+  background: var(--bg-soft);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  word-break: break-all;
+}
+
+/* ---------- Rota dos Pacotes ---------- */
+.route__path {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  background: var(--bg-soft);
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.route__hop--now {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.route__arrow {
+  margin: 0 4px;
+  color: var(--text-dim);
+}
+
+.route__options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.route__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  border-color: var(--accent);
+}
+
+.route__optionCost {
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.route__arrived,
+.route__dead {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ---------- Cofre Criptografico ---------- */
+.vault__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.vault__link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  font-size: 0.9rem;
+}
+
+.vault__link--cut {
+  border-color: var(--danger);
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.vault__linkState {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* ---------- Treinar o Detector ---------- */
+.model__signals,
+.model__trigger {
+  flex-wrap: wrap;
+}
+
+.model__signal--on {
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.model__examples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.model__example {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  background: var(--bg-soft);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+
+.model__example--wrong {
+  outline: 2px solid var(--danger);
+}
+
+.model__bits {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.model__truth {
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.model__said {
+  min-width: 16px;
+  text-align: center;
+}
+
+.model__hidden {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* ---------- BUG Day 0 ---------- */
+.boss {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.boss__head h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  color: var(--danger);
+}
+
+.boss__sub,
+.boss__hint,
+.boss__empty {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.boss__stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.boss__block h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.boss__attack {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--danger);
+}
+
+.boss__attackText {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.boss__answer {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.boss__powers {
+  flex-wrap: wrap;
+}
+
+.boss__power--right {
+  border-color: var(--accent);
+}
+
+.boss__patch,
+.boss__primary {
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.boss__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+
+.boss__armed {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.boss__damage,
+.boss__score,
+.boss__turns {
+  font-variant-numeric: tabular-nums;
+}
+
+.boss__score {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.boss__micro {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.boss__microLabel {
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--panel);
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.menu__boss {
+  border-color: var(--danger);
+  font-weight: 700;
+}
+
+.menu__bossScore {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* ---------- Modo desenvolvedor ---------- */
+.menu__dev--on {
+  border-color: var(--danger);
+  font-weight: 700;
+}
+
+.menu__devText {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+/* ---------- A arena do BUG Day 0 ---------- */
+/*
+ * Nas telas de resultado a arena e o primeiro elemento, e o distintivo de
+ * estado flutua sobre o canto de cima: sem esta folga ele cobre o BUG.
+ */
+.boss.pad > .bossStage:first-child {
+  margin-top: 48px;
+}
+
+/*
+ * Cena de combate em pixel art: o Bit de um lado, o BUG do outro. Os sprites
+ * sao os mesmos PNG do mapa, desenhados por background-position -- sem canvas,
+ * sem laco de animacao, so o quadro certo e um efeito curto.
+ *
+ * Toda animacao daqui esta desligada em .reduce-motion (ajuste do jogador): o
+ * estado continua legivel pela cor, pelo quadro do sprite e pela frase embaixo.
+ */
+.bossStage {
+  /* Um lugar so decide o tamanho dos sprites: o quadro e recortado em cima
+     disto, entao mudar aqui nao desalinha a animacao. */
+  --bit-size: 64px;
+  --bug-size: 128px;
+  /* A tela do chefao e uma coluna flex que rola: sem isto a arena encolhe ate
+     sumir quando o conteudo passa da altura, e os sprites ficam cortados. */
+  flex: 0 0 auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 10px;
+  background: radial-gradient(120% 80% at 50% 110%, rgba(88, 224, 200, 0.12), transparent 70%),
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 4px),
+    var(--bg-soft);
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.bossStage__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bossStage__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bossStage__bit,
+.bossStage__bug {
+  display: block;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+}
+
+/* bit.png: 3 quadros x 4 direcoes; a terceira linha e o Bit virado para a direita. */
+.bossStage__bit {
+  width: var(--bit-size);
+  height: var(--bit-size);
+  background-image: url('/sprites/bit.png');
+  background-size: calc(var(--bit-size) * 3) calc(var(--bit-size) * 4);
+  background-position: calc(var(--frame, 1) * var(--bit-size) * -1) calc(var(--bit-size) * -2);
+  animation: bitIdle 2.4s ease-in-out infinite;
+}
+
+/* bug.png: 3 quadros na horizontal (parado, atingido, desfeito). */
+.bossStage__bug {
+  width: var(--bug-size);
+  height: var(--bug-size);
+  background-image: url('/sprites/bug.png');
+  background-size: calc(var(--bug-size) * 3) var(--bug-size);
+  background-position: calc(var(--frame, 0) * var(--bug-size) * -1) 0;
+  animation: bugFloat 2.8s ease-in-out infinite;
+}
+
+.bossStage__name {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bossStage__bar {
+  display: block;
+  width: 100%;
+  max-width: 140px;
+  height: 8px;
+  border-radius: 6px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.bossStage__fill {
+  display: block;
+  height: 100%;
+  transition: width var(--dur-fast) var(--ease);
+}
+
+.bossStage__fill--bit {
+  background: var(--accent);
+}
+
+.bossStage__fill--bug {
+  background: var(--danger);
+}
+
+.bossStage__line {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  min-height: 1.2em;
+}
+
+/* --- os momentos do turno --- */
+
+/* O golpe acertou: o BUG treme e clareia. */
+.bossStage--hit .bossStage__bug,
+.bossStage--patch .bossStage__bug {
+  animation: bugHit 0.4s steps(4, end) 2;
+}
+
+.bossStage--hit,
+.bossStage--patch {
+  background-color: rgba(232, 72, 86, 0.12);
+}
+
+/* O ataque passou: o BUG avanca e a cena pisca em vermelho. */
+.bossStage--attack .bossStage__bug {
+  animation: bugLunge 0.5s ease-in-out 1;
+}
+
+.bossStage--attack .bossStage__bit {
+  animation: bitHurt 0.5s steps(3, end) 1;
+}
+
+.bossStage--attack {
+  background-color: rgba(232, 72, 86, 0.2);
+}
+
+/* O ataque foi neutralizado: o escudo acende do lado do Bit. */
+.bossStage--blocked .bossStage__bit {
+  animation: bitGuard 0.6s ease-out 1;
+}
+
+.bossStage--blocked {
+  background-color: rgba(88, 224, 200, 0.12);
+}
+
+/* Fim de luta: o quadro fica como terminou. */
+.bossStage--win .bossStage__bug {
+  animation: bugGone 1.2s ease-out forwards;
+}
+
+.bossStage--lose .bossStage__bit {
+  animation: bitHurt 0.6s steps(3, end) 2;
+}
+
+.bossStage--lose {
+  background-color: rgba(232, 72, 86, 0.2);
+}
+
+@keyframes bugFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes bitIdle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes bugHit {
+  0% {
+    transform: translateX(0);
+    filter: none;
+  }
+  25% {
+    transform: translateX(6px);
+    filter: brightness(2.2);
+  }
+  50% {
+    transform: translateX(-5px);
+    filter: brightness(1.4);
+  }
+  75% {
+    transform: translateX(3px);
+    filter: brightness(2);
+  }
+  100% {
+    transform: translateX(0);
+    filter: none;
+  }
+}
+
+@keyframes bugLunge {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  40% {
+    transform: translateX(-28px) scale(1.08);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes bitHurt {
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: none;
+  }
+  50% {
+    transform: translateX(-8px);
+    filter: brightness(2) saturate(0.4);
+  }
+}
+
+@keyframes bitGuard {
+  0% {
+    transform: translateY(0);
+    filter: none;
+  }
+  40% {
+    transform: translateY(-6px);
+    filter: drop-shadow(0 0 6px var(--accent)) brightness(1.3);
+  }
+  100% {
+    transform: translateY(0);
+    filter: none;
+  }
+}
+
+@keyframes bugGone {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  60% {
+    opacity: 0.6;
+    transform: translateY(4px) scale(0.96);
+  }
+  100% {
+    opacity: 0.15;
+    transform: translateY(10px) scale(0.9);
+  }
+}
+
+/* Ajuste do jogador: sem movimento. A leitura continua pela cor e pelo texto. */
+.reduce-motion .bossStage__bit,
+.reduce-motion .bossStage__bug {
+  animation: none !important;
+}
+
+/* Tela estreita: os dois lados continuam lado a lado, so menores. */
+@media (max-width: 380px) {
+  .bossStage {
+    --bit-size: 48px;
+    --bug-size: 96px;
+  }
+}

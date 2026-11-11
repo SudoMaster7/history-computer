@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as constants from '@/core/constants';
+import * as boss from '@/core/boss';
 import * as items from '@/core/items';
 import * as powers from '@/core/powers';
 import * as quiz from '@/core/quiz';
@@ -31,17 +32,21 @@ function exported(mod: object): string[] {
 describe('contrato: superficie publica do nucleo', () => {
   it('core/constants', () => {
     expect(exported(constants)).toEqual([
+      'BITS',
       'BOSS',
       'CIRCUIT',
       'ERA_YEARS',
       'ITEMS',
       'LOOM',
+      'MODEL',
       'POWERS',
       'QUIZ',
+      'ROUTE',
       'RPG',
       'SCORING',
       'STORAGE',
       'TIME',
+      'VAULT',
       'WORLD',
     ]);
   });
@@ -80,6 +85,33 @@ describe('contrato: superficie publica do nucleo', () => {
 
   it('core/quiz', () => {
     expect(exported(quiz)).toEqual(['buildQuiz', 'gradeQuiz', 'isCorrect']);
+  });
+
+  it('core/boss', () => {
+    expect(exported(boss)).toEqual([
+      'ATTACKS',
+      'answerTo',
+      'armAuto',
+      'armBonus',
+      'armShield',
+      'attackById',
+      'attackFor',
+      'autoEvaluation',
+      'canLaunchPatch',
+      'endTurn',
+      'eraOfAttack',
+      'eraToPlay',
+      'initialBoss',
+      'neutralizes',
+      'patchEra',
+      'patchStep',
+      'spendAuto',
+      'startPatch',
+      'strike',
+      'strikeDamage',
+      'turnDone',
+      'turnsTaken',
+    ]);
   });
 
   it('core/items', () => {
