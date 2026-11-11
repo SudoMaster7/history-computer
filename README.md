@@ -47,7 +47,10 @@ simples, sem arrastar**.
    ataque só é neutralizado por um dos seis poderes — responder é jogar a versão curta do
    minijogo daquela era. A arena mostra o Bit de um lado e o BUG do outro: ele racha quando
    leva o golpe, avança quando o ataque passa e se desfaz no fim. Os itens guardados na
-   mochila entram aqui: escudo, dano extra e resposta pronta.
+   mochila entram aqui, e são quatro efeitos: resposta pronta (Cartão Perfurado,
+   Fita Magnética), escudo contra o ataque anunciado (Pacote Roteado, Chave
+   Pública), cura na hora (Válvula Reserva) e dano extra no próximo golpe
+   (Modelo Treinado).
 
 | Era                     | Período   | Poder     | Minijogo            | Item             |
 | ----------------------- | --------- | --------- | ------------------- | ---------------- |
@@ -81,6 +84,11 @@ efeito no BUG Day 0.
 O que o contrato garante, e não é promessa: `tests/contract/progression.test.ts` zera a
 campanha inteira resolvendo os seis minijogos pelas funções puras e vence o chefão. Se
 alguma era deixar de fechar, ele falha dizendo qual.
+
+Hoje a suíte está em **411 testes de unidade e de contrato** (20 arquivos) e **120 testes
+de ponta a ponta** em Pixel 5, iPhone 12 e desktop — estes últimos cobrem os seis
+minijogos, a arena do chefão, o uso de item em combate, o modo desenvolvedor e o alvo de
+toque mínimo de 44 px em cada tela.
 
 Ainda falta: o ranking no Supabase, o áudio, e o acabamento visual das telas dos seis
 minijogos — o mapa, o menu e a arena do chefão já passaram por ele; as telas dos minijogos
@@ -130,32 +138,32 @@ Para o Playwright, rode antes `npx playwright install chromium webkit`.
 
 ## Publicar na Vercel
 
-O repositorio ja vem configurado: a raiz do repositorio **e** a raiz do projeto,
-entao nao ha "Root Directory" para ajustar.
+O repositório já vem configurado: a raiz do repositório **é** a raiz do projeto,
+então não há "Root Directory" para ajustar.
 
 1. Em [vercel.com/new](https://vercel.com/new), importe
    `SudoMaster7/history-computer`.
-2. A Vercel detecta Vite sozinha. **Nao ha variavel de ambiente para
+2. A Vercel detecta Vite sozinha. **Não há variável de ambiente para
    configurar** — o jogo roda inteiro no navegador, sem servidor e sem chave.
 3. Deploy.
 
-Cada push na `main` publica em producao, e cada pull request ganha uma URL de
-previa.
+Cada push na `main` publica em produção, e cada pull request ganha uma URL de
+prévia.
 
-O [`vercel.json`](vercel.json) cuida de tres coisas que quebram um PWA se
-ficarem no padrao:
+O [`vercel.json`](vercel.json) cuida de três coisas que quebram um PWA se
+ficarem no padrão:
 
 | Caminho                                       | Cache                      | Por que                                                                                 |
 | --------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------- |
-| `sw.js`, `manifest.webmanifest`, `index.html` | sem cache, revalida sempre | service worker em cache prende o jogador numa versao velha, e nenhuma atualizacao chega |
-| `/assets/*`                                   | 1 ano, imutavel            | tem hash no nome: conteudo novo, nome novo                                              |
-| `/sprites/*`, `/fonts/*`                      | 30 dias                    | nao tem hash no nome; quem versiona esses arquivos e o service worker                   |
+| `sw.js`, `manifest.webmanifest`, `index.html` | sem cache, revalida sempre | service worker em cache prende o jogador numa versão velha, e nenhuma atualização chega |
+| `/assets/*`                                   | 1 ano, imutável            | tem hash no nome: conteúdo novo, nome novo                                              |
+| `/sprites/*`, `/fonts/*`                      | 30 dias                    | não tem hash no nome; quem versiona esses arquivos é o service worker                   |
 
-Tambem traz o redirecionamento de rota unica (qualquer URL cai no
-`index.html`) e tres cabecalhos de seguranca basicos.
+Também traz o redirecionamento de rota única (qualquer URL cai no
+`index.html`) e três cabeçalhos de segurança básicos.
 
 > **Para testar o que vai ao ar:** `npm run build && npm run preview`. Isso
-> serve exatamente o `dist/` que a Vercel publica — e e contra ele que os 99
+> serve exatamente o `dist/` que a Vercel publica — e é contra ele que os 120
 > testes de ponta a ponta rodam.
 
 ---

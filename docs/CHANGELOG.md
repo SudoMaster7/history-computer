@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [corrigir o README: numeros da suite, efeitos dos itens e acentos da secao da Vercel](changes/2026-11-11-corrigir-o-readme-numeros-da-suite-efeitos-dos-itens-e-acent.md) — 2026-11-11
+
 - [acentuar os textos do jogo e dar arena visual ao BUG Day 0](changes/2026-11-10-acentuar-os-textos-do-jogo-e-dar-arena-visual-ao-bug-day-0.md) — 2026-11-10
 
 - [modo desenvolvedor nos ajustes para testar qualquer fase e o chefao](changes/2026-11-10-modo-desenvolvedor-nos-ajustes-para-testar-qualquer-fase-e-o.md) — 2026-11-10
