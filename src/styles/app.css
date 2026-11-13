@@ -541,6 +541,18 @@
   display: block;
   cursor: pointer;
   touch-action: manipulation;
+  /*
+   * Sem o realce de toque do navegador. No celular, elemento "clicavel" pisca
+   * com uma pelicula azulada a cada toque -- e aqui o elemento e o mapa
+   * inteiro, tocado a cada passo. A regra geral de global.css so cobria botao
+   * e `.game-surface`; o canvas ficava de fora. Segurar o dedo tambem nao
+   * seleciona nem abre o menu de "salvar imagem".
+   */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  outline: none;
 }
 
 .world__loading {

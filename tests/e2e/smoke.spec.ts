@@ -1132,3 +1132,17 @@ test('a musica acompanha a tela e obedece aos dois ajustes', async ({ page }) =>
   // O sequenciador rodou esse tempo todo sem derrubar a pagina.
   expect(erros).toEqual([]);
 });
+
+test('tocar no mapa nao acende o realce de toque do navegador', async ({ page }) => {
+  await enterFirstZone(page);
+  // E o realce que deixava a tela azulada no celular a cada passo do Bit.
+  const estilo = await page.locator('.world__canvas').evaluate((el) => {
+    const css = getComputedStyle(el);
+    return {
+      realce: css.getPropertyValue('-webkit-tap-highlight-color'),
+      selecao: css.userSelect || css.getPropertyValue('-webkit-user-select'),
+    };
+  });
+  expect(estilo.realce.replace(/\s/g, '')).toBe('rgba(0,0,0,0)');
+  expect(estilo.selecao).toBe('none');
+});

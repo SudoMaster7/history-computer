@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [tirar o realce azulado do toque no mapa](changes/2026-11-13-tirar-o-realce-azulado-do-toque-no-mapa.md) — 2026-11-13
+
 - [musica de fundo, pixel art refeita e o Bit como robo](changes/2026-11-13-musica-de-fundo-pixel-art-refeita-e-o-bit-como-robo.md) — 2026-11-13
 
 - [dar vida ao jogo: mapa animado, fragmentos de memoria, som, telas dos minijogos e resultado com recompensa](changes/2026-11-13-dar-vida-ao-jogo-mapa-animado-fragmentos-de-memoria-som-tela.md) — 2026-11-13
