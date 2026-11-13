@@ -114,7 +114,8 @@ export function setMuted(value: boolean): void {
   muted = value;
 }
 
-function audio(): AudioContext | null {
+/** O contexto de audio do jogo, criado na primeira vez que alguem pede. */
+export function audioContext(): AudioContext | null {
   if (context) return context;
   const Ctor =
     typeof window === 'undefined'
@@ -136,7 +137,7 @@ function audio(): AudioContext | null {
  */
 export function play(name: SoundName, pitch = 1): void {
   if (muted) return;
-  const ctx = audio();
+  const ctx = audioContext();
   if (!ctx) return;
   if (ctx.state === 'suspended') void ctx.resume();
 

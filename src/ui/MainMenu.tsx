@@ -265,6 +265,16 @@ export default function MainMenu({ onPlay, onBoss }: Props) {
           <button
             type="button"
             className="menu__toggle"
+            /* !== false: save antigo nao tem a chave, e a musica comeca ligada. */
+            aria-pressed={settings.music !== false}
+            disabled={muted}
+            onClick={() => setSettings({ music: settings.music === false })}
+          >
+            {ui.settings.music}
+          </button>
+          <button
+            type="button"
+            className="menu__toggle"
             aria-pressed={settings.reduceMotion}
             onClick={() => setSettings({ reduceMotion: !settings.reduceMotion })}
           >

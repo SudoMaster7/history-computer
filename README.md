@@ -2,7 +2,7 @@
 
 **RPG educacional em pixel art sobre a história da computação**, jogado no navegador.
 
-Você controla o **Bit** e atravessa seis eras — uma zona por era. Em cada uma, conversa com
+Você controla o **Bit**, um robô pequeno, e atravessa seis eras — uma zona por era. Em cada uma, conversa com
 quem fez aquela história, resolve os minijogos dos terminais e passa na prova da era para
 ganhar o poder e o item dela, até enfrentar o **BUG Day 0**.
 
@@ -23,6 +23,16 @@ simples, sem arrastar**.
     <td align="center"><sub>O mapa da zona</sub></td>
     <td align="center"><sub>Conversa com uma figura histórica</sub></td>
     <td align="center"><sub>Estado da máquina</sub></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="docs/img/07-rota.png" alt="Minijogo Rota dos Pacotes: mapa da rede com o caminho do pacote e os vizinhos disponíveis"></td>
+    <td width="33%"><img src="docs/img/08-resultado.png" alt="Resultado de uma missão com três estrelas, eficiência, pontuação e o conhecimento ganho"></td>
+    <td width="33%"><img src="docs/img/09-chefao.png" alt="Arena do BUG Day 0, com o Bit de um lado, o BUG do outro e o ataque anunciado"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Rota dos Pacotes (Era 4)</sub></td>
+    <td align="center"><sub>Resultado da missão</sub></td>
+    <td align="center"><sub>O BUG Day 0</sub></td>
   </tr>
 </table>
 
@@ -87,20 +97,24 @@ O que o contrato garante, e não é promessa: `tests/contract/progression.test.t
 campanha inteira resolvendo os seis minijogos pelas funções puras e vence o chefão. Se
 alguma era deixar de fechar, ele falha dizendo qual.
 
-Hoje a suíte está em **431 testes de unidade e de contrato** (20 arquivos) e **138 testes
+Hoje a suíte está em **431 testes de unidade e de contrato** (20 arquivos) e **141 testes
 de ponta a ponta** em Pixel 5, iPhone 12 e desktop — estes últimos cobrem os seis
-minijogos, a arena do chefão, o uso de item em combate, os fragmentos, o som, o modo
+minijogos, a arena do chefão, o uso de item em combate, os fragmentos, o som e a música, o modo
 desenvolvedor e o alvo de toque mínimo de 44 px em cada tela.
 
-O acabamento já passou pelo jogo inteiro: mapa animado, arte própria em cada minijogo,
-resultado de missão com recompensa, e som (sintetizado, desligado por padrão — liga no
-botão do canto do menu).
+O acabamento já passou pelo jogo inteiro: pixel art refeita com uma paleta por era, mapa
+animado, arte própria em cada minijogo e resultado de missão com recompensa.
+
+**Som e música** são sintetizados na hora, sem nenhum arquivo de áudio: 16 efeitos e nove
+faixas (menu, uma por era, prova e chefão). Começam desligados — liga no botão do canto do
+menu; em Ajustes dá para ficar só com os efeitos.
 
 Ainda falta: o **ranking no Supabase** e tudo o que depende dele. O desenho do ranking, do
 duelo assíncrono e da batalha entre jogadores está em
 [`docs/MULTIPLAYER.md`](docs/MULTIPLAYER.md) — é proposta, nada ali está implementado.
 Também falta conferir em fonte primária as falas, as perguntas e as curiosidades dos
-fragmentos (ver `ASSETS.md`). As capturas de tela acima são de antes do acabamento.
+fragmentos (ver `ASSETS.md`), e alguém do grupo ouvir e afinar as faixas de música, que
+foram escritas em código.
 
 ---
 
@@ -197,7 +211,7 @@ src/
   core/         regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
   minigames/    <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
   ui/           MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
-  fx/           som sintetizado (Web Audio) e efeitos de tela
+  fx/           som e música sintetizados (Web Audio) e efeitos de tela
   store/        Zustand com persistência em localStorage
   data/         JSON do conteúdo + módulos que o tipam
 tools/          geradores de conteúdo e de arte, e os scripts das notas

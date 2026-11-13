@@ -18,6 +18,8 @@ export interface Settings {
   reduceMotion: boolean;
   vibration: boolean;
   muted: boolean;
+  /** Musica de fundo. So toca com o som ligado (`muted` falso). */
+  music: boolean;
   /**
    * Modo desenvolvedor: destranca as seis zonas, as portas das provas e o
    * chefao, para dar para testar uma fase sem jogar as anteriores.
@@ -75,7 +77,7 @@ export const useGameStore = create<GameStore>()(
       bossBestScore: 0,
       fragments: [],
       quiz: null,
-      settings: { reduceMotion: false, vibration: true, muted: true, devMode: false },
+      settings: { reduceMotion: false, vibration: true, muted: true, music: true, devMode: false },
       tutorialDone: false,
 
       resetGame() {

@@ -242,3 +242,122 @@ export function drawShimmer(ctx: Ctx, x: number, y: number, t: number, phase: nu
   ctx.fillRect(x + 1 + a, y + 4, 3, 1);
   ctx.fillRect(x + 1 + b, y + 11, 3, 1);
 }
+
+/* ------------------------------------------------------------------ chao -- */
+
+/** Cor das flores de cada zona a ceu aberto. Sala fechada nao tem flor. */
+const BLOOM: Partial<Record<EraId, string>> = {
+  mecanica: '#f6de6e',
+  redes: '#f4f6ff',
+  seguranca: '#e88a8a',
+};
+
+/** Numero estavel para uma celula do mapa: decide o que nasce nela. */
+function spot(col: number, row: number): number {
+  let h = (col * 374761393 + row * 668265263) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
+/** Formato minimo de zona que o desenho do chao precisa. */
+interface GroundMap {
+  cols: number;
+  rows: number;
+  tiles: readonly number[];
+}
+
+/**
+ * Desenha o chao da zona uma vez, num canvas a parte, e devolve esse canvas.
+ *
+ * O chao nao muda enquanto o jogador esta na zona, entao redesenhar 255 tiles
+ * a cada quadro era trabalho jogado fora: o mapa passa a copiar esta camada
+ * pronta e so desenha por cima o que se mexe.
+ *
+ * E aqui tambem que os tiles deixam de parecer ladrilho solto: o caminho ganha
+ * borda onde encosta na grama, a agua ganha margem clara, e parede e arvore
+ * projetam sombra em quem esta logo abaixo.
+ */
+export function buildGround(
+  map: GroundMap,
+  tiles: HTMLImageElement,
+  size: number,
+  ids: { grass: number; path: number; water: number; tree: number; wall: number },
+  era: EraId,
+): HTMLCanvasElement {
+  const layer = document.createElement('canvas');
+  layer.width = map.cols * size;
+  layer.height = map.rows * size;
+  const ctx = layer.getContext('2d');
+  if (!ctx) return layer;
+  ctx.imageSmoothingEnabled = false;
+
+  const at = (col: number, row: number): number | undefined =>
+    col < 0 || row < 0 || col >= map.cols || row >= map.rows
+      ? undefined
+      : map.tiles[row * map.cols + col];
+  const solid = (tile: number | undefined): boolean => tile === ids.tree || tile === ids.wall;
+
+  for (let row = 0; row < map.rows; row += 1) {
+    for (let col = 0; col < map.cols; col += 1) {
+      const tile = at(col, row) ?? 0;
+      ctx.drawImage(tiles, tile * size, 0, size, size, col * size, row * size, size, size);
+    }
+  }
+
+  // Flores, so nas zonas a ceu aberto e so em algumas celulas de grama: o
+  // lugar sai de uma conta sobre a celula, entao a zona e sempre a mesma.
+  const bloom = BLOOM[era];
+  if (bloom) {
+    for (let row = 0; row < map.rows; row += 1) {
+      for (let col = 0; col < map.cols; col += 1) {
+        if (at(col, row) !== ids.grass) continue;
+        const pick = spot(col, row);
+        if (pick % 4 !== 0) continue;
+        const x = col * size + 2 + ((pick >>> 3) % (size - 5));
+        const y = row * size + 2 + ((pick >>> 7) % (size - 5));
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+        ctx.fillRect(x, y + 2, 1, 1);
+        ctx.fillStyle = bloom;
+        ctx.fillRect(x - 1, y, 3, 1);
+        ctx.fillRect(x, y - 1, 1, 3);
+        ctx.fillStyle = '#fff6c8';
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+
+  /** Faixa de 1 px numa borda do tile: [dx, dy, largura, altura]. */
+  const EDGES: readonly (readonly [number, number, number, number, number, number])[] = [
+    [0, -1, 0, 0, size, 1],
+    [0, 1, 0, size - 1, size, 1],
+    [-1, 0, 0, 0, 1, size],
+    [1, 0, size - 1, 0, 1, size],
+  ];
+
+  for (let row = 0; row < map.rows; row += 1) {
+    for (let col = 0; col < map.cols; col += 1) {
+      const tile = at(col, row);
+      const x = col * size;
+      const y = row * size;
+
+      if (tile === ids.path || tile === ids.water) {
+        // Borda so onde o vizinho e outro tipo de chao (e nao parede nem arvore).
+        ctx.fillStyle = tile === ids.water ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.16)';
+        for (const [dc, dr, ex, ey, w, h] of EDGES) {
+          const other = at(col + dc, row + dr);
+          if (other === undefined || other === tile || solid(other)) continue;
+          ctx.fillRect(x + ex, y + ey, w, h);
+        }
+      }
+
+      // Sombra de quem esta logo acima: parede e arvore escurecem o topo do tile.
+      if (!solid(tile) && solid(at(col, row - 1))) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(x, y, size, 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(x, y + 2, size, 2);
+      }
+    }
+  }
+  return layer;
+}

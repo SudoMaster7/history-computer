@@ -1098,3 +1098,37 @@ test('com "Reduzir animações" o mapa continua jogavel e a fala aparece inteira
   // Sem animacao nao ha texto "por digitar": nada fica escondido na fala.
   await expect(page.locator('.dialogue__rest')).toBeEmpty();
 });
+
+test('a musica acompanha a tela e obedece aos dois ajustes', async ({ page }) => {
+  const erros: string[] = [];
+  page.on('pageerror', (erro) => erros.push(erro.message));
+
+  await page.goto('/');
+  const app = page.locator('.app');
+  // Som desligado por padrao: nenhuma faixa.
+  await expect(app).toHaveAttribute('data-music', 'off');
+
+  await page.getByRole('button', { name: 'Ligar o som' }).click();
+  await expect(app).toHaveAttribute('data-music', 'menu');
+
+  // Na zona toca a faixa da era.
+  await page.getByRole('button', { name: 'Novo jogo' }).click();
+  await expect(page.locator('.world__canvas')).toBeVisible();
+  await expect(app).toHaveAttribute('data-music', 'mecanica');
+
+  // O ajuste "Música de fundo" desliga so a musica; os efeitos continuam.
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('button', { name: 'Ajustes' }).click();
+  const musica = page.getByRole('button', { name: 'Música de fundo' });
+  await expect(musica).toHaveAttribute('aria-pressed', 'true');
+  await musica.click();
+  await expect(musica).toHaveAttribute('aria-pressed', 'false');
+  await expect(app).toHaveAttribute('data-music', 'off');
+  await expect(page.getByRole('button', { name: 'Som', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
+  // O sequenciador rodou esse tempo todo sem derrubar a pagina.
+  expect(erros).toEqual([]);
+});

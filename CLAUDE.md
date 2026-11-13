@@ -148,12 +148,14 @@ os seis itens têm efeito no combate.
 
 O acabamento também já passou pelo jogo inteiro: mapa com laço de animação,
 fragmentos de memória para recolher, arte por era nos minijogos, resultado de
-missão com recompensa e som sintetizado (`src/fx/`, desligado por padrão).
+missão com recompensa, pixel art refeita no gerador (o Bit é um robô), e som e
+música sintetizados (`src/fx/`, desligados por padrão).
 
 O que **continua faltando**, e deve continuar escrito assim no `README.md` até
 deixar de ser verdade: o ranking no Supabase (e o multiplayer, que só existe
 como proposta em `docs/MULTIPLAYER.md`), e a conferência em fonte primária das
-falas, das provas e das curiosidades dos fragmentos.
+falas, das provas e das curiosidades dos fragmentos. As faixas de música foram
+escritas em código e ninguém as afinou de ouvido ainda.
 
 Duas regras de animação, que estão explicadas no topo de `src/styles/fx.css`:
 nenhuma animação em laço mexe em `transform` ou tamanho de **botão** (botão
@@ -168,7 +170,7 @@ sentido parado, porque "Reduzir animações" zera todas.
 src/core/      regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
 src/minigames/ <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
 src/ui/        MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
-src/fx/        som sintetizado (Web Audio) e efeitos de tela; nada de regra de jogo
+src/fx/        som e música sintetizados (Web Audio) e efeitos de tela; nada de regra de jogo
 src/store/     Zustand com persistência local
 src/data/      JSON gerado + módulos que o tipam
 tools/         geradores de conteúdo e de arte, e os scripts de nota

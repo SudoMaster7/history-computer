@@ -22,6 +22,7 @@ import { IconFragment, IconMenu } from './icons';
 import ZoneTracker from './ZoneTracker';
 import type { Particle } from './worldArt';
 import {
+  buildGround,
   drawAmbient,
   drawArrow,
   drawBang,
@@ -153,6 +154,36 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
     () => fragments.filter((fragment) => !(collected ?? []).includes(fragment.id)),
     [fragments, collected],
   );
+
+  /* O chao e desenhado uma vez por zona; o laco so copia esta camada (ver worldArt). */
+  const groundLayer = useMemo(
+    () =>
+      art
+        ? buildGround(
+            world,
+            art.tiles,
+            WORLD.TILE,
+            {
+              grass: TILE.GRASS,
+              path: TILE.PATH,
+              water: TILE.WATER,
+              tree: TILE.TREE,
+              wall: TILE.WALL,
+            },
+            world.era,
+          )
+        : null,
+    [art, world],
+  );
+  const waterCells = useMemo(() => {
+    const cells: Cell[] = [];
+    world.tiles.forEach((tile, index) => {
+      if (tile === TILE.WATER) {
+        cells.push({ col: index % world.cols, row: Math.floor(index / world.cols) });
+      }
+    });
+    return cells;
+  }, [world]);
 
   // Carrega a arte da zona: um tileset por era e um sprite por personagem.
   useEffect(() => {
@@ -305,14 +336,11 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
       const sprite = (image: HTMLImageElement, sx: number, sy: number, x: number, y: number) =>
         ctx.drawImage(image, sx * size, sy * size, size, size, x, y, size, size);
 
-      // Chao.
-      for (let row = 0; row < world.rows; row += 1) {
-        for (let col = 0; col < world.cols; col += 1) {
-          const tile = world.tiles[row * world.cols + col] ?? 0;
-          sprite(art.tiles, tile, 0, col * size, row * size);
-          if (!still && tile === TILE.WATER) {
-            drawShimmer(ctx, col * size, row * size, t, col + row * 3);
-          }
+      // Chao: a camada pronta, e por cima dela so o brilho da agua.
+      if (groundLayer) ctx.drawImage(groundLayer, 0, 0);
+      if (!still) {
+        for (const spot of waterCells) {
+          drawShimmer(ctx, spot.col * size, spot.row * size, t, spot.col + spot.row * 3);
         }
       }
 
@@ -387,7 +415,7 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
         drawAmbient(ctx, world.era, world.cols * size, world.rows * size, t);
       }
     },
-    [art, reduceMotion, stars, world, doorOpen, pending, talked],
+    [art, reduceMotion, stars, world, doorOpen, pending, talked, groundLayer, waterCells],
   );
 
   /* ---------------------------------------------------------- animacao --- */

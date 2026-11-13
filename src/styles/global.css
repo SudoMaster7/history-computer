@@ -227,6 +227,8 @@ button[disabled] {
 /* Em tela larga o jogo nao estica: fica centrado, em proporcao de retrato. */
 @media (min-width: 760px) {
   .layout {
+    /* Sem crescer: `.app` e flex, e com `flex: 1` a largura abaixo era ignorada. */
+    flex: 0 1 560px;
     width: min(100%, 560px);
     margin-inline: auto;
     padding: var(--space-4);

@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [musica de fundo, pixel art refeita e o Bit como robo](changes/2026-11-13-musica-de-fundo-pixel-art-refeita-e-o-bit-como-robo.md) — 2026-11-13
+
 - [dar vida ao jogo: mapa animado, fragmentos de memoria, som, telas dos minijogos e resultado com recompensa](changes/2026-11-13-dar-vida-ao-jogo-mapa-animado-fragmentos-de-memoria-som-tela.md) — 2026-11-13
 
 - [corrigir o README: numeros da suite, efeitos dos itens e acentos da secao da Vercel](changes/2026-11-11-corrigir-o-readme-numeros-da-suite-efeitos-dos-itens-e-acent.md) — 2026-11-11

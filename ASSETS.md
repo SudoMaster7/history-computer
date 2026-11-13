@@ -10,12 +10,13 @@ Assets de terceiros apenas CC0 ou compativeis.
 | Textos das cartas (`src/data/cards.pt-BR.json`) | escritos neste projeto               | CC BY 4.0 | portao da Linha do Tempo  |
 | Textos de interface (`src/data/ui.pt-BR.json`)  | escritos neste projeto               | CC BY 4.0 | toda a UI                 |
 | `public/sprites/tiles-<era>.png`                | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | tiles das zonas           |
-| `public/sprites/bit.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o jogador, 4 direcoes     |
+| `public/sprites/bit.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o Bit (robo), 4 direcoes  |
 | `public/sprites/npc-<pessoa>.png`               | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | 18 personagens historicos |
 | `public/sprites/bug.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o BUG Day 0, 3 quadros    |
 | Fonte                                           | pilha do sistema (`system-ui`)       | n/a       | toda a UI                 |
 | Curiosidades (`src/data/fragments.pt-BR.json`)  | escritas neste projeto               | CC BY 4.0 | fragmentos de memoria     |
 | Efeitos sonoros                                 | sintetizados em `src/fx/sound.ts`    | MIT       | todo o jogo               |
+| Musica de fundo (9 faixas)                      | partitura em `src/fx/music.ts`       | MIT       | menu, zonas, prova, chefao |
 | Marcadores e particulas do mapa                 | desenhados em `src/ui/worldArt.ts`   | MIT       | mapa e faixa do menu      |
 
 ## Fonte
@@ -44,13 +45,16 @@ na hora pela Web Audio API (`src/fx/sound.ts`): o som e codigo, entao segue a
 licenca do codigo e nao ha nada de terceiros para atribuir. Comeca desligado; o
 jogador liga no menu.
 
+A musica segue a mesma regra: `src/fx/music.ts` guarda nove partituras curtas,
+escritas para este projeto, e um sequenciador as toca com tres vozes de
+oscilador. Nao ha gravacao nem melodia de terceiros.
+
 ## Pendente
 
 - Icones PWA definitivos (os atuais sao placeholders solidos).
 - Retratos maiores dos personagens para a caixa de fala (hoje so o sprite do mapa).
 - Conferencia em fonte primaria das falas e das perguntas.
-- Musica de fundo: ha efeitos, nao ha trilha.
-- Capturas de tela do `README.md` (`docs/img/`): sao de antes do acabamento visual.
+- Musica de fundo: as faixas foram escritas em codigo e ainda nao foram afinadas de ouvido.
 
 ## Conteudo historico
 

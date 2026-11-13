@@ -112,7 +112,8 @@
     "devMode": "Modo desenvolvedor",
     "devModeText": "Desligado. Ligue para abrir as seis zonas, as portas das provas e o BUG Day 0 sem jogar as eras anteriores — serve para testar uma fase direto.",
     "devModeOn": "Ligado: todas as zonas, as portas e o BUG Day 0 estão abertos, e no combate os seis poderes valem no nível máximo. Seu progresso salvo não muda.",
-    "sound": "Som"
+    "sound": "Som",
+    "music": "Música de fundo"
   },
   "status": {
     "coreReady": "Núcleo pronto: RPG, poderes, pontuação, seed, portão e fases de plataforma."

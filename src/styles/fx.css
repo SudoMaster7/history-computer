@@ -254,6 +254,12 @@ button:not([disabled]):active,
   overflow: hidden;
 }
 
+/* Faltando altura, quem cede e a frase do proximo passo, nunca as fichas. */
+.tracker__title,
+.tracker--full .tracker__chips {
+  flex-shrink: 0;
+}
+
 .tracker__title {
   margin: 0;
   color: var(--text-dim);
@@ -466,8 +472,9 @@ button:not([disabled]):active,
 
 .gainToast {
   position: absolute;
-  top: calc(var(--space-2) + var(--touch) + 6px);
-  right: var(--space-2);
+  /* Ao lado do distintivo, nao embaixo: ali ele cobria o titulo do resultado. */
+  top: calc(var(--space-2) + 6px);
+  right: calc(var(--space-2) + 152px);
   z-index: 9;
   display: flex;
   flex-direction: column;

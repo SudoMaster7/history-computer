@@ -634,3 +634,66 @@ Ranking, duelo assíncrono e batalha entre jogadores estão desenhados em
 que cabe no briefing (ranking e duelo assíncrono) do que muda o escopo (tempo
 real), e recomenda uma batalha por turnos assíncrona antes de qualquer tempo
 real.
+
+## 2026-11-13 — Música de fundo e pixel art refeita
+
+### D63. A música é partitura em código, tocada por um sequenciador
+
+O pedido era música de fundo. Ela segue a mesma escolha dos efeitos (D56): **não
+há arquivo de áudio**. `src/fx/music.ts` guarda nove faixas como partitura — tom,
+escala, quatro acordes e uma melodia de 32 passos — e um sequenciador as toca em
+laço com três vozes de oscilador (baixo, arpejo, melodia).
+
+- **Uma faixa por lugar:** menu, cada uma das seis eras (que segue tocando dentro
+  da missão), prova e chefão. Quem escolhe é `App.tsx`, pela tela.
+- **Nada é sorteado.** A mesma faixa soa sempre igual.
+- **Dois ajustes.** A música só toca com o som ligado **e** "Música de fundo"
+  ligada. O ajuste novo (`settings.music`) nasce ligado, então quem liga o som
+  ouve música; quem quer só os efeitos desliga a música. Save antigo não tem a
+  chave e é lido como ligado.
+- **Para o teste:** a faixa atual aparece em `data-music` na raiz do app.
+
+O que isso não é: trilha composta por músico. São temas curtos de chip, feitos
+para não cansar em laço. Se o grupo gravar ou licenciar música de verdade, o
+ponto de troca é `playMusic`.
+
+### D64. O Bit é um robô
+
+O Bit era desenhado como uma pessoa, igual aos personagens históricos, embora a
+história o chame de máquina desde o briefing ("o Bit, uma máquina primitiva").
+Agora ele é um robô pequeno: cabeça de caixa com visor, olhos de luz, antena.
+Mesma folha de sprites (3 quadros × 4 direções, 16 px), então nenhuma tela mudou.
+
+### D65. A pixel art foi refeita no gerador, não trocada por pack
+
+Continua valendo a D21: toda a arte sai de `tools/make-sprites.mjs`, sem asset de
+terceiros. O que mudou foi o desenho:
+
+- **Paletas por era** mais vivas, e cada zona com a sua cara: campo (Mecânica),
+  laboratório de válvulas, sala do mainframe, campus com pinheiros (Redes),
+  entardecer (Segurança), datacenter (IA).
+- **Tiles com volume:** árvore com contorno, luz e sombra; pinheiro nas zonas
+  `pine`; parede de tijolo em fiadas; piso em placas chanfradas; terminal e porta
+  redesenhados. Zona a céu aberto ganhou pedra própria (`wall`) no prédio da porta.
+- **Personagens com traço próprio** (`look`): cabelo comprido, barba, óculos,
+  boné, gravata. Continuam sem pretender semelhança com quem existiu.
+- **O formato das folhas não mudou** (8 tiles de 16 px; 3×4 quadros por
+  personagem; 3 quadros de 32 px no BUG), que é o que as telas e o contrato leem.
+
+### D66. O chão do mapa é desenhado uma vez, e ganha borda, sombra e flores
+
+`buildGround` (`src/ui/worldArt.ts`) monta o chão da zona num canvas à parte,
+uma vez por zona; o laço do mapa só copia essa camada. Antes eram 255 tiles
+redesenhados a cada quadro.
+
+É nessa camada que os tiles deixam de parecer ladrilho solto: caminho com borda
+onde encosta na grama, água com margem clara, parede e árvore projetando sombra
+no tile de baixo, e flores espalhadas nas zonas a céu aberto. As flores **não**
+ficam no tile de grama de propósito — repetidas em toda célula viravam uma grade
+de pontinhos.
+
+### D67. Em tela larga o jogo fica na coluna de 560 px, como sempre foi a intenção
+
+`global.css` já pedia `width: min(100%, 560px)` no desktop, mas `.layout` tinha
+`flex: 1` dentro de um contêiner flex e a largura era ignorada: o jogo esticava
+pela janela inteira. Corrigido com `flex: 0 1 560px`.

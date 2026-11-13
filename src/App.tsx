@@ -12,8 +12,8 @@ import { ERAS } from '@/core/powers';
 import { worldOfEra } from '@/data/worlds';
 import { registerMinigames } from '@/minigames';
 import { useGameStore } from '@/store';
-import { play, setMuted } from '@/fx';
-import type { SoundName } from '@/fx';
+import { play, playMusic, setMuted } from '@/fx';
+import type { SoundName, TrackName } from '@/fx';
 import type { EraId } from '@/core/types';
 import ui from '@/data/ui.pt-BR.json';
 import './styles/app.css';
@@ -61,6 +61,30 @@ export default function App() {
   useEffect(() => {
     setMuted(settings.muted !== false);
   }, [settings.muted]);
+
+  /*
+   * A musica acompanha a tela: uma faixa no menu, uma por era (que segue
+   * tocando dentro da missao), uma na prova e uma no chefao. So toca com o som
+   * ligado e o ajuste "Musica" ligado; `!== false` porque save antigo nao tem
+   * a chave, e o padrao dela e ligada.
+   */
+  const track: TrackName | null =
+    settings.muted !== false || settings.music === false
+      ? null
+      : view.screen === 'menu'
+        ? 'menu'
+        : view.screen === 'boss'
+          ? 'boss'
+          : view.screen === 'quiz'
+            ? 'quiz'
+            : view.era;
+
+  useEffect(() => {
+    playMusic(track);
+  }, [track]);
+
+  // Saiu do jogo: a musica para junto.
+  useEffect(() => () => playMusic(null), []);
 
   /*
    * Todo botao responde com som, de um lugar so: assim nenhuma tela esquece.
@@ -129,7 +153,11 @@ export default function App() {
   const showTutorial = !tutorialDone && view.screen === 'world' && view.era === 'mecanica';
 
   return (
-    <div className={settings.reduceMotion ? 'app reduce-motion' : 'app'}>
+    <div
+      className={settings.reduceMotion ? 'app reduce-motion' : 'app'}
+      /* Faixa que esta tocando, para o teste de ponta a ponta conferir. */
+      data-music={track ?? 'off'}
+    >
       <div className="layout">
         <div className="stage">
           <ErrorBoundary fallback={<p className="pad">{ui.app.renderFail}</p>}>
