@@ -1,0 +1,32 @@
+{
+  "mecanica": [
+    "A Pascalina, de 1642, somava e subtraía com rodas dentadas: quando uma roda completava a volta, empurrava a seguinte. Era o “vai um” feito de engrenagem.",
+    "O tear de Jacquard, de 1804, lia cartões perfurados: com furo o fio sobe, sem furo ele fica. Trocar os cartões trocava o desenho do tecido sem trocar a máquina.",
+    "Em 1843, Ada publicou notas sobre a Máquina Analítica com um método para calcular os números de Bernoulli. Muita gente o considera o primeiro programa de computador."
+  ],
+  "logica": [
+    "Em 1936, Alan Turing descreveu uma máquina imaginária que lê e escreve símbolos numa fita. Tudo o que um computador de hoje calcula, ela também calcularia.",
+    "Em 1937, Claude Shannon mostrou que circuitos de relés resolvem a álgebra de Boole: ligado e desligado passam a valer verdadeiro e falso.",
+    "O ENIAC, apresentado em 1946, tinha cerca de 18 mil válvulas e pesava quase 30 toneladas. Seis mulheres o programaram, mudando cabos e chaves à mão."
+  ],
+  "codigo": [
+    "O transistor nasceu em 1947, nos Bell Labs. Ele faz o trabalho da válvula, ligar e desligar corrente, sendo muito menor, mais frio e mais durável.",
+    "Em 1952, Grace Hopper terminou o A-0, um programa que traduzia instruções para código de máquina. A ideia do compilador começou ali.",
+    "O FORTRAN, lançado pela IBM em 1957, deixou cientistas escreverem fórmulas quase como no papel. Foi a primeira linguagem de alto nível a se espalhar de verdade."
+  ],
+  "redes": [
+    "A primeira mensagem da ARPANET, em 29 de outubro de 1969, deveria ser “LOGIN”. O sistema caiu depois de duas letras, e o que chegou foi só “LO”.",
+    "Na comutação de pacotes, a mensagem é cortada em pedaços que viajam por caminhos diferentes e são remontados no destino. Se um caminho cai, os pacotes desviam.",
+    "Em 1º de janeiro de 1983, a ARPANET passou a usar o TCP/IP. É o mesmo par de protocolos que faz a internet funcionar hoje."
+  ],
+  "seguranca": [
+    "Em 1976, Diffie e Hellman publicaram a ideia da chave pública: duas pessoas combinam um segredo conversando por um canal que qualquer um pode escutar.",
+    "O RSA, de 1977, se apoia numa conta fácil de fazer e difícil de desfazer: multiplicar dois primos grandes é rápido; descobrir os dois a partir do resultado, não.",
+    "Tim Berners-Lee propôs a World Wide Web em 1989, no CERN. O primeiro site entrou no ar em 1991 e explicava o que era a própria Web."
+  ],
+  "ia": [
+    "O termo “inteligência artificial” foi criado para o encontro de Dartmouth, em 1956. Os organizadores achavam que um verão de trabalho renderia grandes avanços.",
+    "Em 2012, a rede neural AlexNet venceu a competição ImageNet com larga vantagem, treinada em placas de vídeo. Foi o estopim da onda do aprendizado profundo.",
+    "Um modelo que decora os exemplos de treino e erra os casos novos sofre de sobreajuste. Por isso todo detector é testado com dados que nunca viu."
+  ]
+}

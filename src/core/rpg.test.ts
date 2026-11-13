@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyMissionResult,
   clockFor,
+  collectFragment,
   eraOfMissionId,
   fullHeal,
   gainXp,
@@ -262,5 +263,22 @@ describe('rpg: missoes e poderes', () => {
     expect(s.year).toBe(2012);
     s = applyMissionResult(s, 'mecanica-B', ok(1));
     expect(s.year).toBe(2012);
+  });
+});
+
+describe('rpg: fragmentos de memoria', () => {
+  it('fragmento novo rende XP e entra na lista', () => {
+    const result = collectFragment(initialState(), [], 'world-mecanica:0');
+    expect(result.gained).toBe(true);
+    expect(result.player.xp).toBe(RPG.FRAGMENT_XP);
+    expect(result.collected).toEqual(['world-mecanica:0']);
+  });
+
+  it('fragmento repetido nao rende de novo', () => {
+    const first = collectFragment(initialState(), [], 'world-mecanica:0');
+    const again = collectFragment(first.player, first.collected, 'world-mecanica:0');
+    expect(again.gained).toBe(false);
+    expect(again.player).toBe(first.player);
+    expect(again.collected).toEqual(['world-mecanica:0']);
   });
 });

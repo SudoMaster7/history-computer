@@ -31,7 +31,9 @@ simples, sem arrastar**.
 ## Como se joga
 
 1. **Ande pelo mapa.** Toque numa célula e o Bit caminha até lá sozinho, desviando de árvore e
-   água. Não há botão de direção nem arrastar.
+   água. Não há botão de direção nem arrastar. Pelo caminho há **fragmentos de memória**
+   (os losangos que brilham): cada um rende conhecimento e conta uma curiosidade da era. O
+   painel de objetivos, abaixo do mapa, mostra o que falta fazer na zona.
 2. **Converse com os três personagens da zona.** Cada um conta o que a máquina daquela era é,
    o que ela já consegue fazer e o que ainda não consegue — é esse "ainda não" que prepara a
    era seguinte.
@@ -85,14 +87,20 @@ O que o contrato garante, e não é promessa: `tests/contract/progression.test.t
 campanha inteira resolvendo os seis minijogos pelas funções puras e vence o chefão. Se
 alguma era deixar de fechar, ele falha dizendo qual.
 
-Hoje a suíte está em **411 testes de unidade e de contrato** (20 arquivos) e **120 testes
+Hoje a suíte está em **431 testes de unidade e de contrato** (20 arquivos) e **138 testes
 de ponta a ponta** em Pixel 5, iPhone 12 e desktop — estes últimos cobrem os seis
-minijogos, a arena do chefão, o uso de item em combate, o modo desenvolvedor e o alvo de
-toque mínimo de 44 px em cada tela.
+minijogos, a arena do chefão, o uso de item em combate, os fragmentos, o som, o modo
+desenvolvedor e o alvo de toque mínimo de 44 px em cada tela.
 
-Ainda falta: o ranking no Supabase, o áudio, e o acabamento visual das telas dos seis
-minijogos — o mapa, o menu e a arena do chefão já passaram por ele; as telas dos minijogos
-têm a estrutura e os alvos de toque certos, mas ainda não a arte.
+O acabamento já passou pelo jogo inteiro: mapa animado, arte própria em cada minijogo,
+resultado de missão com recompensa, e som (sintetizado, desligado por padrão — liga no
+botão do canto do menu).
+
+Ainda falta: o **ranking no Supabase** e tudo o que depende dele. O desenho do ranking, do
+duelo assíncrono e da batalha entre jogadores está em
+[`docs/MULTIPLAYER.md`](docs/MULTIPLAYER.md) — é proposta, nada ali está implementado.
+Também falta conferir em fonte primária as falas, as perguntas e as curiosidades dos
+fragmentos (ver `ASSETS.md`). As capturas de tela acima são de antes do acabamento.
 
 ---
 
@@ -189,6 +197,7 @@ src/
   core/         regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
   minigames/    <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
   ui/           MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
+  fx/           som sintetizado (Web Audio) e efeitos de tela
   store/        Zustand com persistência em localStorage
   data/         JSON do conteúdo + módulos que o tipam
 tools/          geradores de conteúdo e de arte, e os scripts das notas

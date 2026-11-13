@@ -125,6 +125,76 @@ export function IconLevel(props: IconProps) {
   );
 }
 
+/** Estrela de missao. `filled` acende a estrela conquistada. */
+export function IconStar({ filled, ...props }: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      className={props.className}
+      width={props.size ?? 20}
+      height={props.size ?? 20}
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      data-filled={filled ? 'true' : 'false'}
+    >
+      <path d="m12 3.5 2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8L3.5 9.7l5.9-.9L12 3.5Z" />
+    </svg>
+  );
+}
+
+/** Fragmento de memoria: o losango que se recolhe no mapa. */
+export function IconFragment(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3 20 12l-8 9-8-9 8-9Z" />
+      <path d="M4 12h16M12 3l-3 9 3 9 3-9-3-9Z" />
+    </Svg>
+  );
+}
+
+/** Porta da prova da era. */
+export function IconDoor(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6.5 20.5V5a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 17.5 5v15.5" />
+      <path d="M4 20.5h16M14 12.5v1" />
+    </Svg>
+  );
+}
+
+/** Som ligado. */
+export function IconSound(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z" />
+      <path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" />
+    </Svg>
+  );
+}
+
+/** Som desligado. */
+export function IconSoundOff(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z" />
+      <path d="m16 9.5 5 5m0-5-5 5" />
+    </Svg>
+  );
+}
+
+/** Certo. */
+export function IconCheck(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </Svg>
+  );
+}
+
 /** Abre o menu do jogo. */
 export function IconMenu(props: IconProps) {
   return (

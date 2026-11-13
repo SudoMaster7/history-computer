@@ -3,6 +3,7 @@ import type { MinigameScreenProps } from '@/core/types';
 import type { ModelInstance, ModelSolution } from './logic';
 import { classify, missedExamples } from './logic';
 import MinigameHelp from '@/ui/MinigameHelp';
+import Gauge from '@/ui/Gauge';
 import ui from '@/data/ui.pt-BR.json';
 
 type Props = MinigameScreenProps<ModelInstance, ModelSolution>;
@@ -45,6 +46,7 @@ export default function ModelScreen({ instance, mode, onSubmit, onExit }: Props)
         <h3>
           {t.signals}: {ordered.length}/{instance.maxSignals}
         </h3>
+        <Gauge value={ordered.length} max={instance.maxSignals} />
         <div className="controls model__signals" aria-label={t.signals}>
           {Array.from({ length: instance.signals }, (_, index) => {
             const on = watched.includes(index);
@@ -54,9 +56,11 @@ export default function ModelScreen({ instance, mode, onSubmit, onExit }: Props)
                 type="button"
                 className={on ? 'model__signal model__signal--on' : 'model__signal'}
                 aria-pressed={on}
+                data-sfx={on ? 'erase' : 'place'}
                 onClick={() => toggle(index)}
                 aria-label={`${on ? t.unwatch : t.watch} ${index + 1}`}
               >
+                <i className="model__lamp" data-s={on ? 'on' : 'ignored'} aria-hidden="true" />
                 {t.signalName} {index + 1}
               </button>
             );
@@ -105,15 +109,24 @@ export default function ModelScreen({ instance, mode, onSubmit, onExit }: Props)
                   said === null ? '–' : said ? t.attack : t.normal
                 }`}
               >
+                {/* Uma lampada por sinal: acesa, apagada, ou fosca se o detector nao olha. */}
                 <span className="model__bits" aria-hidden="true">
-                  {item.signals
-                    .map((on, signal) => (watched.includes(signal) ? (on ? '1' : '0') : '·'))
-                    .join(' ')}
+                  {item.signals.map((on, signal) => (
+                    <i
+                      key={signal}
+                      className="model__lamp"
+                      data-s={watched.includes(signal) ? (on ? 'on' : 'off') : 'ignored'}
+                    />
+                  ))}
                 </span>
-                <span className="model__truth" aria-hidden="true">
+                <span className="model__truth" data-attack={item.attack} aria-hidden="true">
                   {item.attack ? t.attack : t.normal}
                 </span>
-                <span className="model__said" aria-hidden="true">
+                <span
+                  className="model__said"
+                  data-ok={said === null ? 'none' : said === item.attack}
+                  aria-hidden="true"
+                >
                   {said === null ? '–' : said === item.attack ? '✓' : '✗'}
                 </span>
               </li>
@@ -126,7 +139,11 @@ export default function ModelScreen({ instance, mode, onSubmit, onExit }: Props)
         {t.testTitle}: {instance.test.length} — {t.testHidden}
       </p>
 
-      <p className="model__status" role="status">
+      <p
+        className="model__status"
+        role="status"
+        data-state={ordered.length === 0 ? 'idle' : trained ? 'ok' : 'warn'}
+      >
         {ordered.length === 0
           ? t.noSignals
           : overBudget
@@ -140,6 +157,7 @@ export default function ModelScreen({ instance, mode, onSubmit, onExit }: Props)
         <button
           type="button"
           className="model__submit"
+          data-ready={trained}
           disabled={!solution}
           onClick={() => solution && onSubmit(solution)}
         >

@@ -3,6 +3,7 @@ import type { MinigameScreenProps } from '@/core/types';
 import type { CircuitInstance, CircuitRef, CircuitSolution, GateType } from './logic';
 import { arityOf, inputValue, rowCount, simulate } from './logic';
 import MinigameHelp from '@/ui/MinigameHelp';
+import Gauge from '@/ui/Gauge';
 import ui from '@/data/ui.pt-BR.json';
 
 type Props = MinigameScreenProps<CircuitInstance, CircuitSolution>;
@@ -17,6 +18,40 @@ interface DraftGate {
 type Pending = { gate: number; slot: number } | { out: true } | null;
 
 const TYPES: GateType[] = ['NOT', 'AND', 'OR'];
+
+/**
+ * Simbolo da porta, no tracado dos esquemas de eletronica: triangulo com bolinha
+ * para NAO, meia-lua reta para E, meia-lua curva para OU. E enfeite ao lado do
+ * nome, entao nao entra na leitura de tela.
+ */
+function GateIcon({ type }: { type: GateType }) {
+  return (
+    <svg
+      className="gateIcon"
+      width={26}
+      height={18}
+      viewBox="0 0 26 18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {type === 'NOT' ? (
+        <>
+          <path d="M1 9h5M6 3v12l11-6L6 3ZM21.5 9H25" />
+          <circle cx="19.2" cy="9" r="2" />
+        </>
+      ) : null}
+      {type === 'AND' ? <path d="M1 5h5M1 13h5M6 2h6a7 7 0 0 1 0 14H6V2ZM19 9h6" /> : null}
+      {type === 'OR' ? (
+        <path d="M1 5h5.5M1 13h5.5M5 2h6c4 0 7 3 9 7-2 4-5 7-9 7H5c2.4-4.4 2.4-9.6 0-14ZM20 9h5" />
+      ) : null}
+    </svg>
+  );
+}
 
 function sameRef(a: CircuitRef | null, b: CircuitRef): boolean {
   if (!a) return false;
@@ -115,6 +150,7 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
         <h3>
           {t.table} — {t.gatesUsed}: {used}/{instance.maxGates}
         </h3>
+        <Gauge value={used} max={instance.maxGates} />
         <table className="circuit__table">
           <thead>
             <tr>
@@ -134,13 +170,26 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
               return (
                 <tr
                   key={row}
-                  className={ok === false ? 'circuit__row circuit__row--wrong' : 'circuit__row'}
+                  className={
+                    ok === false
+                      ? 'circuit__row circuit__row--wrong'
+                      : ok
+                        ? 'circuit__row circuit__row--ok'
+                        : 'circuit__row'
+                  }
                 >
                   {Array.from({ length: instance.inputs }, (_, i) => (
-                    <td key={i}>{inputValue(row, i) ? '1' : '0'}</td>
+                    <td key={i} className="circuit__bit" data-on={inputValue(row, i)}>
+                      {inputValue(row, i) ? '1' : '0'}
+                    </td>
                   ))}
-                  <td className="circuit__wanted">{instance.table[row] ? '1' : '0'}</td>
-                  <td aria-label={ok === null ? t.pending : ok ? t.rowOk : t.rowWrong}>
+                  <td className="circuit__wanted" data-on={instance.table[row]}>
+                    {instance.table[row] ? '1' : '0'}
+                  </td>
+                  <td
+                    className="circuit__mine"
+                    aria-label={ok === null ? t.pending : ok ? t.rowOk : t.rowWrong}
+                  >
                     {mine === null ? '–' : `${mine ? '1' : '0'} ${ok ? '✓' : '✗'}`}
                   </td>
                 </tr>
@@ -154,6 +203,7 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
         {gates.map((gate, index) => (
           <li key={index} className="circuit__gate">
             <span className="circuit__gateName">
+              <GateIcon type={gate.type} />
               {index + 1}. {gateLabel(gate.type)}
             </span>
             <span className="circuit__slots">
@@ -167,7 +217,13 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
                   <button
                     key={slot}
                     type="button"
-                    className={waiting ? 'circuit__slot circuit__slot--waiting' : 'circuit__slot'}
+                    className={
+                      waiting
+                        ? 'circuit__slot circuit__slot--waiting'
+                        : ref
+                          ? 'circuit__slot circuit__slot--wired'
+                          : 'circuit__slot'
+                    }
                     aria-pressed={waiting}
                     onClick={() => setPending(waiting ? null : { gate: index, slot })}
                     aria-label={`${t.wireInto} ${t.gate} ${index + 1}, ${t.slot} ${
@@ -181,6 +237,7 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
             </span>
             <button
               type="button"
+              data-sfx="erase"
               onClick={() => removeGate(index)}
               aria-label={`${t.erase} ${t.gate} ${index + 1}`}
             >
@@ -198,7 +255,9 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
           className={
             pending !== null && 'out' in pending
               ? 'circuit__slot circuit__slot--waiting'
-              : 'circuit__slot'
+              : out
+                ? 'circuit__slot circuit__slot--wired'
+                : 'circuit__slot'
           }
           aria-pressed={pending !== null && 'out' in pending}
           onClick={() =>
@@ -224,6 +283,7 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
                   ? 'circuit__source circuit__source--current'
                   : 'circuit__source'
               }
+              data-sfx="place"
               onClick={() => wire(ref)}
             >
               {refLabel(ref)}
@@ -237,17 +297,24 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
             <button
               key={type}
               type="button"
+              className="circuit__add"
               disabled={full}
+              data-sfx="place"
               onClick={() => addGate(type)}
               aria-label={`${t.addGate} ${gateLabel(type)}`}
             >
+              <GateIcon type={type} />
               {gateLabel(type)}
             </button>
           ))}
         </div>
       )}
 
-      <p className="circuit__status" role="status">
+      <p
+        className="circuit__status"
+        role="status"
+        data-state={!complete ? 'idle' : wrong === 0 ? 'ok' : 'warn'}
+      >
         {!complete ? t.incomplete : wrong === 0 ? t.allRowsOk : `${t.rowsWrong}: ${wrong}`}
       </p>
 
@@ -255,6 +322,7 @@ export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Prop
         <button
           type="button"
           className="circuit__submit"
+          data-ready={complete && wrong === 0}
           disabled={!solution}
           onClick={() => solution && onSubmit(solution)}
         >

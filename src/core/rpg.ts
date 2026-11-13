@@ -210,6 +210,19 @@ export function applyQuizResult(s: PlayerState, era: EraId, result: QuizResult):
   return fullHeal(next);
 }
 
+/**
+ * Recolhe um fragmento de memoria do mapa: rende XP uma vez so. `collected` e a
+ * lista do que ja foi recolhido; fragmento repetido devolve tudo como estava.
+ */
+export function collectFragment(
+  s: PlayerState,
+  collected: readonly string[],
+  id: string,
+): { player: PlayerState; collected: string[]; gained: boolean } {
+  if (collected.includes(id)) return { player: s, collected: [...collected], gained: false };
+  return { player: gainXp(s, RPG.FRAGMENT_XP), collected: [...collected, id], gained: true };
+}
+
 /** Usa um item da mochila. Devolve o estado intacto quando nao ha o item. */
 export function consumeItem(s: PlayerState, id: string): { player: PlayerState; used: boolean } {
   const result = spendItem(s.items, id);

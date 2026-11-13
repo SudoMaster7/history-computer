@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { MinigameScreenProps } from '@/core/types';
 import type { LoomGroup, LoomInstance, LoomSolution } from './logic';
 import { expand, solutionCost } from './logic';
 import { LOOM } from '@/core/constants';
 import MinigameHelp from '@/ui/MinigameHelp';
+import Gauge from '@/ui/Gauge';
 import ui from '@/data/ui.pt-BR.json';
 
 type Props = MinigameScreenProps<LoomInstance, LoomSolution>;
@@ -13,6 +15,11 @@ const COLOR_STYLE: Record<string, string> = {
   b: 'var(--era-logica)',
   c: 'var(--era-codigo)',
 };
+
+/** A cor do fio entra por variavel: o CSS desenha a trama por cima dela. */
+function thread(color: string): CSSProperties {
+  return { '--thread': COLOR_STYLE[color] } as CSSProperties;
+}
 
 /**
  * Tear de Engrenagens. Tudo por toque: tocar na cor adiciona ao grupo atual,
@@ -63,6 +70,8 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
   const matches =
     produced.length === instance.target.length &&
     produced.every((c, i) => c === instance.target[i]);
+  /** Quantas casas do padrao a fita ainda nao cobriu: viram contorno vazio. */
+  const missing = Math.max(0, instance.target.length - produced.length);
 
   return (
     <section className="loom game-surface" aria-label={ui.minigames.mecanica}>
@@ -80,7 +89,7 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
             <li
               key={`t-${i}`}
               className="loom__cell"
-              style={{ background: COLOR_STYLE[color] }}
+              style={thread(color)}
               aria-label={`${t.color} ${color}`}
             />
           ))}
@@ -91,18 +100,24 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
         <h3>
           {t.yours} — {t.cards}: {used}/{instance.maxCards}
         </h3>
-        <ol className="loom__tape" aria-label={t.yours}>
+        <Gauge value={used} max={instance.maxCards} />
+        <ol className={matches ? 'loom__tape loom__tape--ok' : 'loom__tape'} aria-label={t.yours}>
           {produced.map((color, i) => (
             <li
               key={`p-${i}`}
               className={
-                color === instance.target[i] ? 'loom__cell' : 'loom__cell loom__cell--wrong'
+                color === instance.target[i]
+                  ? 'loom__cell loom__cell--new'
+                  : 'loom__cell loom__cell--new loom__cell--wrong'
               }
-              style={{ background: COLOR_STYLE[color] }}
+              style={thread(color)}
               aria-label={`${t.color} ${color}`}
             />
           ))}
           {produced.length === 0 ? <li className="loom__empty">{t.empty}</li> : null}
+          {Array.from({ length: missing }, (_, i) => (
+            <li key={`g-${i}`} className="loom__ghost" aria-hidden="true" />
+          ))}
         </ol>
       </div>
 
@@ -111,16 +126,13 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
           <li key={`g-${index}`} className="loom__group">
             <span className="loom__groupColors">
               {group.colors.map((color, i) => (
-                <i
-                  key={i}
-                  className="loom__chip"
-                  style={{ background: COLOR_STYLE[color] }}
-                  aria-hidden="true"
-                />
+                <i key={i} className="loom__chip" style={thread(color)} aria-hidden="true" />
               ))}
             </span>
             <button
               type="button"
+              className={group.times > 1 ? 'loom__repeat loom__repeat--on' : 'loom__repeat'}
+              data-sfx="place"
               onClick={() => bumpRepeat(index)}
               aria-label={`${t.repeat} ${t.group} ${index + 1}: ${group.times}`}
             >
@@ -128,6 +140,7 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
             </button>
             <button
               type="button"
+              data-sfx="erase"
               onClick={() => removeGroup(index)}
               aria-label={`${t.erase} ${t.group} ${index + 1}`}
             >
@@ -143,8 +156,9 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
             key={color}
             type="button"
             className="loom__paletteCard"
-            style={{ background: COLOR_STYLE[color] }}
+            style={thread(color)}
             disabled={left <= 0}
+            data-sfx="place"
             onClick={() => addColor(color)}
             aria-label={`${t.addColor} ${color}`}
           />
@@ -158,6 +172,7 @@ export default function LoomScreen({ instance, mode, onSubmit, onExit }: Props) 
         <button
           type="button"
           className="loom__submit"
+          data-ready={matches}
           disabled={groups.length === 0}
           onClick={() => onSubmit(groups.filter((g) => g.colors.length > 0))}
         >

@@ -529,3 +529,108 @@ Tres escolhas dentro disso:
 A barra de integridade do chefao saiu do painel de numeros e ficou so na arena:
 o mesmo valor em dois medidores com o mesmo rotulo atrapalha quem navega por
 leitor de tela.
+
+## 2026-11-13 — Acabamento: movimento, som, fragmentos e resultado
+
+### D56. Movimento e som sem biblioteca nova
+
+O pedido era deixar o jogo "mais divertido, com animações" e perguntava se valia
+usar uma biblioteca de efeitos. Foram consideradas Motion (animação de
+interface) e ZzFX (som sintetizado). Não entrou nenhuma: **a D10 continua
+valendo**.
+
+O que o jogo precisava cabe no que ele já tinha:
+
+- **Animação de interface** em CSS (`src/styles/fx.css`): entrada de tela,
+  estrelas, estouro de partículas, tremor, brilho.
+- **Animação do mapa** no canvas 2D que já existia (`src/ui/worldArt.ts`).
+- **Som** com a Web Audio API (`src/fx/sound.ts`): cada efeito é uma ou mais
+  notas de oscilador. Sem arquivo de áudio, sem licença de terceiros, e o jogo
+  continua abrindo offline.
+
+O que se perde é animação de **saída** de tela (o elemento some na hora), que só
+uma biblioteca resolveria bem. Foi troca consciente: animação de saída mantém
+dois elementos na página ao mesmo tempo, e os testes de ponta a ponta casam por
+rótulo — dois títulos iguais na tela derrubariam a suíte.
+
+Duas regras nasceram daqui e estão escritas no topo de `fx.css`:
+
+- **Nenhuma animação em laço mexe em `transform` ou tamanho de botão.** Botão
+  chama atenção com brilho (`box-shadow`). Botão que pulsa de tamanho escapa do
+  dedo e do teste de 44 px.
+- **Toda animação termina num quadro que faz sentido parado**, porque "Reduzir
+  animações" zera a duração (e, agora, o atraso) de todas.
+
+### D57. O mapa tem laço de animação, e o canvas tem 3 px por pixel do mapa
+
+Antes o mapa só era redesenhado enquanto o Bit andava. Agora ele tem um laço
+próprio: água que brilha, personagens que respiram e olham para o Bit,
+marcadores que quicam, poeira no passo, ciscos no ar com o jeito de cada era.
+
+O canvas passou a ter `WORLD.SCALE` (3) pixels por pixel do mapa. A pixel art
+continua em 16 px por tile; o que muda é que o Bit anda um terço de pixel por
+vez e os marcadores não ficam serrilhados. Essa constante já existia e não era
+usada. **Consequência para os testes:** `tapCell`, em `tests/e2e/smoke.spec.ts`,
+tira o lado do tile de `data-cols` no canvas, em vez de supor 16.
+
+Nada disso é regra de jogo, e com "Reduzir animações" o laço nem começa: o mapa
+é desenhado parado, com os mesmos marcadores no mesmo lugar.
+
+### D58. O Bit não atravessa terminal, personagem nem porta
+
+Tocar num terminal levava o Bit para **cima** dele, cobrindo o sprite; com
+personagem, o personagem sumia atrás do Bit. Agora o Bit para na célula livre ao
+lado e vira para o que foi tocado.
+
+Entrou `approachPath` em `core/world.ts`, ao lado de `findPath`, que **não
+mudou**:
+
+- `findPath` responde "o chão deixa passar?". É o que o contrato de progressão
+  confere, e continua igual.
+- `approachPath` responde "por onde o Bit vai?": desvia de célula ocupada e,
+  quando o destino é ocupado, para ao lado.
+
+`validateWorld` passou a acusar zona em que um personagem tampa a passagem para
+outra coisa (`sem acesso a pe`). As seis zonas passam.
+
+### D59. Fragmentos de memória: colecionável que sai da planta da zona
+
+O mapa não tinha nada para achar além dos terminais e dos personagens. Cada zona
+ganhou 3 fragmentos; pisar num deles rende conhecimento (`RPG.FRAGMENT_XP`) e
+mostra uma curiosidade da era.
+
+- **Os lugares não estão no JSON do mapa.** Saem de `fragmentsOf(world)`, por
+  sorteio com seed fixa sobre a planta, só em célula alcançável a pé e fora do
+  caminho principal quando há espaço. Zona nova já nasce com os seus.
+- **O texto mora em `src/data/fragments.pt-BR.json`**, escrito à mão como
+  `ui.pt-BR.json` e `minigames.pt-BR.json`. São 18 curiosidades e, como as falas
+  e as provas, **ainda precisam de conferência em fonte primária** (ver
+  `ASSETS.md`).
+- **O save ganhou a lista `fragments`**, fora de `PlayerState`. Campo novo com
+  valor inicial não invalida save antigo, então `STORAGE.VERSION` não subiu —
+  mesma escolha feita para `bossDefeated`.
+
+### D60. O som continua desligado por padrão, com botão no menu
+
+O briefing pede áudio "mudo por padrão", e isso foi mantido. Para o som não
+ficar escondido, o menu inicial ganhou um botão de som no canto, além do ajuste
+na tela de ajustes. Todo botão do jogo toca pelo mesmo ouvinte em `App.tsx`; um
+botão escolhe o próprio efeito com `data-sfx`.
+
+### D61. O ganho é avisado pelo HUD, e o resultado mede antes e depois
+
+Duas telas mostram recompensa sem refazer conta nenhuma do núcleo:
+
+- **O HUD** compara o jogador de uma renderização com o da seguinte e avisa
+  quando o conhecimento ou o nível sobem. Vale para missão, prova e fragmento
+  sem nenhuma tela precisar lembrar de avisar.
+- **O resultado da missão** (`MissionResult`) recebe a diferença entre o jogador
+  antes e depois de `completeMission`: conhecimento ganho, nível, poder, recorde.
+
+### D62. Multiplayer fica só documentado
+
+Ranking, duelo assíncrono e batalha entre jogadores estão desenhados em
+`docs/MULTIPLAYER.md`, e **nada disso foi implementado**. O documento separa o
+que cabe no briefing (ranking e duelo assíncrono) do que muda o escopo (tempo
+real), e recomenda uma batalha por turnos assíncrona antes de qualquer tempo
+real.

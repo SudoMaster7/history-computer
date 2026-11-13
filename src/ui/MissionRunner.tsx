@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
-import type { Evaluation } from '@/core/types';
 import { getMinigame } from '@/core/registry';
 import { getMission } from '@/data/missions';
-import { missionScore, starsFor } from '@/core/scoring';
+import { POWER_OF_ERA } from '@/core/powers';
 import { useGameStore } from '@/store';
+import MissionResult from './MissionResult';
+import type { MissionOutcome } from './MissionResult';
+import { totalXp } from './xp';
 import ui from '@/data/ui.pt-BR.json';
 
 interface Props {
@@ -17,7 +19,8 @@ interface Props {
  */
 export default function MissionRunner({ missionId, onExit }: Props) {
   const completeMission = useGameStore((s) => s.completeMission);
-  const [result, setResult] = useState<Evaluation | null>(null);
+  const reduceMotion = useGameStore((s) => s.settings.reduceMotion);
+  const [outcome, setOutcome] = useState<MissionOutcome | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   const mission = getMission(missionId);
@@ -40,43 +43,46 @@ export default function MissionRunner({ missionId, onExit }: Props) {
   }
 
   const active = game;
+  const power = POWER_OF_ERA[mission.era];
 
   function submit(solution: unknown): void {
     const evaluation = active.evaluate(instance, solution);
-    setResult(evaluation);
+
+    /*
+     * O que a missao rendeu sai da comparacao do jogador antes e depois: a
+     * regra (XP, nivel, poder) continua toda em `core/rpg`, e esta tela so
+     * mostra a diferenca -- nao refaz a conta.
+     */
+    const before = useGameStore.getState().player;
     if (evaluation.ok) completeMission(missionId, evaluation);
+    const after = useGameStore.getState().player;
+    const previousBest = before.missions[missionId]?.bestScore ?? 0;
+    const best = after.missions[missionId]?.bestScore ?? 0;
+
+    setOutcome({
+      evaluation,
+      xp: totalXp(after) - totalXp(before),
+      levelFrom: before.level,
+      levelTo: after.level,
+      power,
+      powerFrom: before.powers[power],
+      powerTo: after.powers[power],
+      record: previousBest > 0 && best > previousBest,
+      best,
+    });
   }
 
-  if (result) {
-    const stars = starsFor(result.efficiency, result.ok);
+  if (outcome) {
     return (
-      <section className="result game-surface pad" aria-label={ui.mission.result}>
-        <h2>{result.ok ? ui.mission.success : ui.mission.failure}</h2>
-        <p className="result__stars" aria-label={`${stars} ${ui.mission.stars}`}>
-          {'★'.repeat(stars)}
-          {'☆'.repeat(3 - stars)}
-        </p>
-        <p>
-          {ui.mission.efficiency}: {(result.efficiency * 100).toFixed(0)}%
-        </p>
-        <p>
-          {ui.mission.score}: {result.ok ? missionScore(result.efficiency) : 0}
-        </p>
-        <div className="controls">
-          <button
-            type="button"
-            onClick={() => {
-              setResult(null);
-              setAttempt((n) => n + 1);
-            }}
-          >
-            {ui.mission.retry}
-          </button>
-          <button type="button" onClick={onExit}>
-            {ui.world.backToWorld}
-          </button>
-        </div>
-      </section>
+      <MissionResult
+        outcome={outcome}
+        reduceMotion={reduceMotion}
+        onRetry={() => {
+          setOutcome(null);
+          setAttempt((n) => n + 1);
+        }}
+        onExit={onExit}
+      />
     );
   }
 

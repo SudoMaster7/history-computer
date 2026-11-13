@@ -4,6 +4,8 @@ import { xpToNextLevel } from '@/core/rpg';
 import { POWER_IDS } from '@/core/powers';
 import { carriedItems, countOf } from '@/core/items';
 import { itemText } from './itemText';
+import { totalXp } from './xp';
+import { play } from '@/fx';
 import {
   IconBag,
   IconClock,
@@ -83,6 +85,34 @@ export default function Hud() {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
 
+  /*
+   * Aviso de ganho: aparece sozinho sempre que o conhecimento sobe, venha de
+   * missao, prova ou fragmento. Mora aqui porque o HUD esta em toda tela de
+   * jogo e ja observa o jogador -- nenhuma tela precisa lembrar de avisar.
+   */
+  const previous = useRef(player);
+  const [gain, setGain] = useState<{ id: number; xp: number; level: number | null } | null>(null);
+
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = player;
+    const xp = totalXp(player) - totalXp(before);
+    const leveled = player.level > before.level;
+    if (xp <= 0 && !leveled) return;
+    setGain((current) => ({
+      id: (current?.id ?? 0) + 1,
+      xp,
+      level: leveled ? player.level : null,
+    }));
+    if (leveled) play('levelUp');
+  }, [player]);
+
+  useEffect(() => {
+    if (!gain) return;
+    const id = setTimeout(() => setGain(null), gain.level ? 3200 : 2200);
+    return () => clearTimeout(id);
+  }, [gain]);
+
   const needed = xpToNextLevel(player.level);
   const items = carriedItems(player.items);
   const hpRatio = player.hpMax > 0 ? player.hp / player.hpMax : 0;
@@ -107,7 +137,7 @@ export default function Hud() {
       <button
         ref={triggerRef}
         type="button"
-        className={open ? 'statusChip statusChip--open' : 'statusChip'}
+        className={`statusChip${open ? ' statusChip--open' : ''}${gain ? ' statusChip--gain' : ''}`}
         aria-expanded={open}
         aria-controls="hud-panel"
         aria-label={`${ui.hud.label}. ${ui.hud.hp} ${player.hp} ${ui.hud.of} ${player.hpMax}. ${ui.hud.level} ${player.level}.`}
@@ -125,6 +155,26 @@ export default function Hud() {
           {ui.hud.levelShort} {player.level}
         </span>
       </button>
+
+      {gain ? (
+        <div
+          key={gain.id}
+          className={gain.level ? 'gainToast gainToast--level' : 'gainToast'}
+          role="status"
+        >
+          {gain.level ? (
+            <strong className="gainToast__level">
+              <IconLevel size={16} />
+              {ui.hud.levelUpToast} {ui.hud.levelShort} {gain.level}
+            </strong>
+          ) : null}
+          {gain.xp > 0 ? (
+            <span className="gainToast__xp">
+              <IconKnowledge size={14} />+{gain.xp}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {open ? (
         <>

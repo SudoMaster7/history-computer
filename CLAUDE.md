@@ -114,6 +114,9 @@ personagem sem sprite, porque sem isso ele some do mapa em silêncio.
 - Nada pode exigir teclado.
 - Sem rolagem horizontal, em nenhuma tela.
 - O mapa é canvas 2D com pixel art. **Sem WebGL.**
+- O Bit não sobe em terminal, personagem nem porta: para na célula ao lado
+  (`approachPath`). Teste de ponta a ponta espera o botão ou a fala, não a
+  célula tocada.
 
 ---
 
@@ -143,9 +146,19 @@ Circuitos Lógicos, Mesa de Bits, Rota dos Pacotes, Cofre Criptográfico, Treina
 Detector), o BUG Day 0 existe em `src/core/boss.ts` + `src/ui/BossScreen.tsx`, e
 os seis itens têm efeito no combate.
 
+O acabamento também já passou pelo jogo inteiro: mapa com laço de animação,
+fragmentos de memória para recolher, arte por era nos minijogos, resultado de
+missão com recompensa e som sintetizado (`src/fx/`, desligado por padrão).
+
 O que **continua faltando**, e deve continuar escrito assim no `README.md` até
-deixar de ser verdade: o ranking no Supabase, o áudio, e o acabamento visual das
-telas dos minijogos e do combate (estrutura e alvo de toque, sim; arte, não).
+deixar de ser verdade: o ranking no Supabase (e o multiplayer, que só existe
+como proposta em `docs/MULTIPLAYER.md`), e a conferência em fonte primária das
+falas, das provas e das curiosidades dos fragmentos.
+
+Duas regras de animação, que estão explicadas no topo de `src/styles/fx.css`:
+nenhuma animação em laço mexe em `transform` ou tamanho de **botão** (botão
+chama atenção com brilho), e toda animação tem de terminar num quadro que faça
+sentido parado, porque "Reduzir animações" zera todas.
 
 ---
 
@@ -155,6 +168,7 @@ telas dos minijogos e do combate (estrutura e alvo de toque, sim; arte, não).
 src/core/      regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
 src/minigames/ <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
 src/ui/        MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
+src/fx/        som sintetizado (Web Audio) e efeitos de tela; nada de regra de jogo
 src/store/     Zustand com persistência local
 src/data/      JSON gerado + módulos que o tipam
 tools/         geradores de conteúdo e de arte, e os scripts de nota

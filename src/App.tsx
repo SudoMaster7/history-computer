@@ -12,9 +12,12 @@ import { ERAS } from '@/core/powers';
 import { worldOfEra } from '@/data/worlds';
 import { registerMinigames } from '@/minigames';
 import { useGameStore } from '@/store';
+import { play, setMuted } from '@/fx';
+import type { SoundName } from '@/fx';
 import type { EraId } from '@/core/types';
 import ui from '@/data/ui.pt-BR.json';
 import './styles/app.css';
+import './styles/fx.css';
 
 registerMinigames();
 
@@ -52,6 +55,27 @@ export default function App() {
       window.removeEventListener('online', update);
       window.removeEventListener('offline', update);
     };
+  }, []);
+
+  // O som obedece ao ajuste salvo. `!== false`: save antigo pode nao ter a chave.
+  useEffect(() => {
+    setMuted(settings.muted !== false);
+  }, [settings.muted]);
+
+  /*
+   * Todo botao responde com som, de um lugar so: assim nenhuma tela esquece.
+   * O botao pode escolher o proprio efeito com `data-sfx` (ou "none").
+   */
+  useEffect(() => {
+    const onDown = (event: PointerEvent): void => {
+      const target = event.target instanceof Element ? event.target.closest('button') : null;
+      if (!target || target.disabled) return;
+      const sfx = target.dataset.sfx;
+      if (sfx === 'none') return;
+      play((sfx as SoundName | undefined) ?? 'tap');
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
   }, []);
 
   const advance = useCallback(

@@ -25,6 +25,8 @@ import { carriedItems, countOf, itemById } from '@/core/items';
 import { getMinigame, hasMinigame } from '@/core/registry';
 import { bossScore } from '@/core/scoring';
 import { useGameStore } from '@/store';
+import { Burst, play } from '@/fx';
+import type { SoundName } from '@/fx';
 import { itemText } from './itemText';
 import ui from '@/data/ui.pt-BR.json';
 
@@ -54,6 +56,24 @@ type StageFx = 'idle' | 'hit' | 'miss' | 'blocked' | 'attack' | 'patch' | 'win' 
 /** Quanto tempo o efeito fica na tela antes de a arena voltar a encarar. */
 const FX_MS = 900;
 
+/** O som de cada momento da arena. `idle` nao toca nada. */
+const FX_SOUND: Partial<Record<StageFx, SoundName>> = {
+  hit: 'hit',
+  miss: 'erase',
+  blocked: 'block',
+  attack: 'hurt',
+  patch: 'hit',
+  win: 'win',
+  lose: 'lose',
+};
+
+/** Numero que sobe de quem levou o golpe. E so visual, como o resto da arena. */
+interface DamagePop {
+  id: number;
+  side: 'bug' | 'bit';
+  amount: number;
+}
+
 /**
  * BUG Day 0.
  *
@@ -73,7 +93,22 @@ export default function BossScreen({ seed, onExit }: Props) {
   const [stage, setStage] = useState<Stage>({ kind: 'turn' });
   /** O que a arena esta mostrando: e so visual, nunca muda a regra. */
   const [fx, setFx] = useState<StageFx>('idle');
+  const [pop, setPop] = useState<DamagePop | null>(null);
+  const vibration = useGameStore((s) => s.settings.vibration);
   const t = ui.boss;
+
+  /** Mostra o dano subindo de quem levou o golpe. */
+  function showDamage(side: DamagePop['side'], amount: number): void {
+    if (amount <= 0) return;
+    setPop((current) => ({ id: (current?.id ?? 0) + 1, side, amount }));
+  }
+
+  // Cada momento da arena tem o seu som; o golpe que passa tambem vibra.
+  useEffect(() => {
+    const sound = FX_SOUND[fx];
+    if (sound) play(sound);
+    if (fx === 'attack' && vibration) navigator.vibrate?.([30, 40, 30]);
+  }, [fx, vibration]);
 
   /*
    * No modo desenvolvedor os seis poderes entram na luta, no nivel maximo: sem
@@ -109,6 +144,7 @@ export default function BossScreen({ seed, onExit }: Props) {
     const result = strike(from, power, levelOf(power), evaluation);
     setBoss(result.state);
     setFx(result.blocked ? 'blocked' : result.damage > 0 ? 'hit' : 'miss');
+    showDamage('bug', result.damage);
     setStage({ kind: 'strike', damage: result.damage, blocked: result.blocked });
   }
 
@@ -118,6 +154,7 @@ export default function BossScreen({ seed, onExit }: Props) {
     setBoss(result.state);
     syncPlayer(result.player);
     setFx(result.damage > 0 ? 'attack' : 'blocked');
+    showDamage('bit', result.damage);
     setStage({ kind: 'turnEnd', damage: result.damage });
   }
 
@@ -129,6 +166,7 @@ export default function BossScreen({ seed, onExit }: Props) {
       return;
     }
     setFx(result.damage > 0 ? 'patch' : 'miss');
+    showDamage('bug', result.damage);
     setStage({ kind: 'patchEnd', damage: result.damage, failed: result.damage === 0 });
   }
 
@@ -145,9 +183,12 @@ export default function BossScreen({ seed, onExit }: Props) {
   if (boss.over) {
     const won = boss.over === 'win';
     return (
-      <section className="boss game-surface pad" aria-label={t.title}>
-        <BossStage boss={boss} player={player} fx={fx} />
-        <h2>{won ? t.win : t.lose}</h2>
+      <section
+        className={won ? 'boss boss--won game-surface pad' : 'boss boss--lost game-surface pad'}
+        aria-label={t.title}
+      >
+        <BossStage boss={boss} player={player} fx={fx} pop={pop} />
+        <h2 className="boss__verdict">{won ? t.win : t.lose}</h2>
         <p>{won ? t.winText : t.loseText}</p>
         <p className="boss__score">
           {t.score}: {won ? score : 0}
@@ -162,6 +203,7 @@ export default function BossScreen({ seed, onExit }: Props) {
             onClick={() => {
               setBoss(initialBoss(seed, player));
               setFx('idle');
+              setPop(null);
               setStage({ kind: 'turn' });
             }}
           >
@@ -201,7 +243,7 @@ export default function BossScreen({ seed, onExit }: Props) {
     const closing = stage.kind === 'strike' && turnDone(boss);
     return (
       <section className="boss game-surface pad" aria-label={t.title}>
-        <BossStage boss={boss} player={player} fx={fx} />
+        <BossStage boss={boss} player={player} fx={fx} pop={pop} />
         <BossMeter boss={boss} />
 
         {stage.kind === 'strike' ? (
@@ -255,10 +297,10 @@ export default function BossScreen({ seed, onExit }: Props) {
         <p className="boss__sub">{t.subtitle}</p>
       </header>
 
-      <BossStage boss={boss} player={player} fx={fx} />
+      <BossStage boss={boss} player={player} fx={fx} pop={pop} />
       <BossMeter boss={boss} />
 
-      <div className="boss__block">
+      <div className="boss__block boss__block--attack">
         <h3>{t.announced}</h3>
         <p className="boss__attack">{attack.name}</p>
         <p className="boss__attackText">{attack.text}</p>
@@ -275,10 +317,14 @@ export default function BossScreen({ seed, onExit }: Props) {
               key={power}
               type="button"
               className={power === right ? 'boss__power boss__power--right' : 'boss__power'}
+              data-era={ERA_OF_POWER[power]}
               onClick={() => setStage({ kind: 'micro', power })}
               aria-label={`${t.answerWith} ${ui.powers[power]}`}
             >
-              {ui.powers[power]}
+              <span>{ui.powers[power]}</span>
+              <small className="boss__powerLevel" aria-hidden="true">
+                {t.levelShort} {levelOf(power)}
+              </small>
             </button>
           ))}
         </div>
@@ -304,6 +350,7 @@ export default function BossScreen({ seed, onExit }: Props) {
             <button
               type="button"
               className="boss__patch"
+              data-ready="true"
               onClick={() => {
                 setBoss(startPatch(boss));
                 setStage({ kind: 'patch', step: 0 });
@@ -365,7 +412,17 @@ export default function BossScreen({ seed, onExit }: Props) {
  * desenhados por `background-position` em vez de canvas: o combate nao precisa
  * de laco de animacao, so de quadro certo e um efeito curto de CSS.
  */
-function BossStage({ boss, player, fx }: { boss: BossState; player: PlayerState; fx: StageFx }) {
+function BossStage({
+  boss,
+  player,
+  fx,
+  pop,
+}: {
+  boss: BossState;
+  player: PlayerState;
+  fx: StageFx;
+  pop: DamagePop | null;
+}) {
   const t = ui.boss;
 
   /** Quadro do BUG: 0 parado, 1 atingido, 2 desfeito. */
@@ -391,6 +448,11 @@ function BossStage({ boss, player, fx }: { boss: BossState; player: PlayerState;
     <div className={`bossStage bossStage--${fx}`} aria-label={t.stage}>
       <div className="bossStage__row">
         <div className="bossStage__side">
+          {pop?.side === 'bit' ? (
+            <span key={pop.id} className="bossStage__pop bossStage__pop--bit" aria-hidden="true">
+              -{pop.amount}
+            </span>
+          ) : null}
           <span
             className="bossStage__bit"
             style={{ '--frame': bitFrame } as React.CSSProperties}
@@ -405,6 +467,11 @@ function BossStage({ boss, player, fx }: { boss: BossState; player: PlayerState;
             aria-valuemax={player.hpMax}
             aria-label={`${t.yourHp} ${Math.max(0, player.hp)} ${ui.hud.of} ${player.hpMax}`}
           >
+            {/* A sombra da barra desce atrasada: da para ver o tamanho do golpe. */}
+            <span
+              className="bossStage__ghost"
+              style={{ width: `${Math.round(playerRatio * 100)}%` }}
+            />
             <span
               className="bossStage__fill bossStage__fill--bit"
               style={{ width: `${Math.round(playerRatio * 100)}%` }}
@@ -413,6 +480,12 @@ function BossStage({ boss, player, fx }: { boss: BossState; player: PlayerState;
         </div>
 
         <div className="bossStage__side bossStage__side--bug">
+          {pop?.side === 'bug' ? (
+            <span key={pop.id} className="bossStage__pop bossStage__pop--bug" aria-hidden="true">
+              -{pop.amount}
+            </span>
+          ) : null}
+          {fx === 'win' ? <Burst count={28} spread={110} /> : null}
           <span
             className="bossStage__bug"
             style={{ '--frame': bugFrame } as React.CSSProperties}
@@ -427,6 +500,10 @@ function BossStage({ boss, player, fx }: { boss: BossState; player: PlayerState;
             aria-valuemax={boss.hpMax}
             aria-label={`${t.hp} ${Math.max(0, boss.hp)} ${ui.hud.of} ${boss.hpMax}`}
           >
+            <span
+              className="bossStage__ghost"
+              style={{ width: `${Math.round(bossRatio * 100)}%` }}
+            />
             <span
               className="bossStage__fill bossStage__fill--bug"
               style={{ width: `${Math.round(bossRatio * 100)}%` }}
@@ -460,8 +537,17 @@ function BossMeter({ boss }: { boss: BossState }) {
       <li>
         {t.actions}: {Math.max(0, boss.actionsLeft)}/{boss.clock}
       </li>
-      <li>
+      <li
+        className={
+          boss.patch >= BOSS.PATCH_REQUIRED ? 'boss__charge boss__charge--full' : 'boss__charge'
+        }
+      >
         {t.patchCharges}: {boss.patch}/{BOSS.PATCH_REQUIRED}
+        <span className="boss__cells" aria-hidden="true">
+          {Array.from({ length: BOSS.PATCH_REQUIRED }, (_, i) => (
+            <i key={i} className="boss__cell" data-on={i < boss.patch} />
+          ))}
+        </span>
       </li>
     </ul>
   );

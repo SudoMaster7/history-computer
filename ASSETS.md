@@ -14,6 +14,9 @@ Assets de terceiros apenas CC0 ou compativeis.
 | `public/sprites/npc-<pessoa>.png`               | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | 18 personagens historicos |
 | `public/sprites/bug.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o BUG Day 0, 3 quadros    |
 | Fonte                                           | pilha do sistema (`system-ui`)       | n/a       | toda a UI                 |
+| Curiosidades (`src/data/fragments.pt-BR.json`)  | escritas neste projeto               | CC BY 4.0 | fragmentos de memoria     |
+| Efeitos sonoros                                 | sintetizados em `src/fx/sound.ts`    | MIT       | todo o jogo               |
+| Marcadores e particulas do mapa                 | desenhados em `src/ui/worldArt.ts`   | MIT       | mapa e faixa do menu      |
 
 ## Fonte
 
@@ -34,16 +37,24 @@ dependencia nova e sem download. Regenerar com `npm run sprites` produz exatamen
 mesmos arquivos (o gerador de ruido e deterministico). Nao ha asset de terceiros no
 projeto, portanto nao ha licenca pendente de atribuicao.
 
+## Som
+
+Nao ha arquivo de audio no projeto. Os 16 efeitos sao notas de oscilador geradas
+na hora pela Web Audio API (`src/fx/sound.ts`): o som e codigo, entao segue a
+licenca do codigo e nao ha nada de terceiros para atribuir. Comeca desligado; o
+jogador liga no menu.
+
 ## Pendente
 
 - Icones PWA definitivos (os atuais sao placeholders solidos).
 - Retratos maiores dos personagens para a caixa de fala (hoje so o sprite do mapa).
 - Conferencia em fonte primaria das falas e das perguntas.
-- Audio: nenhum asset ainda; som entra na Fase 7, mudo por padrao.
+- Musica de fundo: ha efeitos, nao ha trilha.
+- Capturas de tela do `README.md` (`docs/img/`): sao de antes do acabamento visual.
 
 ## Conteudo historico
 
-As falas dos personagens e as perguntas das provas foram escritas para este projeto a partir
+As falas dos personagens, as perguntas das provas e as curiosidades dos fragmentos foram escritas para este projeto a partir
 de conhecimento consolidado sobre a historia da computacao. **Ainda nao passaram por
 conferencia em fonte primaria**: datas, atribuicoes e numeros (como as 18 mil valvulas do
 ENIAC) precisam ser checados antes do congelamento de escopo.

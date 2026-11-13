@@ -35,7 +35,9 @@
     "of": "de",
     "open": "Ver estado da máquina",
     "close": "Fechar o estado",
-    "yearShort": "Ano"
+    "yearShort": "Ano",
+    "xpToast": "de conhecimento",
+    "levelUpToast": "Subiu de nível!"
   },
   "powers": {
     "repetir": "Repetir",
@@ -81,7 +83,16 @@
     "success": "Missão concluída!",
     "failure": "Ainda não: o resultado não bateu.",
     "efficiency": "Eficiência",
-    "score": "Pontuação"
+    "score": "Pontuação",
+    "newRecord": "Novo recorde!",
+    "xpGained": "de conhecimento",
+    "levelUp": "Subiu para o nível",
+    "powerUp": "Poder",
+    "powerLevel": "nível",
+    "perfect": "Solução ideal: não dá para fazer melhor que isso.",
+    "nextStar": "Para mais estrelas, gaste menos recursos. A terceira estrela pede eficiência de 100%.",
+    "tryHint": "Travou? O botão Dica, dentro do desafio, mostra o caminho sem entregar a resposta.",
+    "best": "Recorde"
   },
   "help": {
     "what": "O que é isto?",
@@ -100,7 +111,8 @@
     "muted": "Som desligado",
     "devMode": "Modo desenvolvedor",
     "devModeText": "Desligado. Ligue para abrir as seis zonas, as portas das provas e o BUG Day 0 sem jogar as eras anteriores — serve para testar uma fase direto.",
-    "devModeOn": "Ligado: todas as zonas, as portas e o BUG Day 0 estão abertos, e no combate os seis poderes valem no nível máximo. Seu progresso salvo não muda."
+    "devModeOn": "Ligado: todas as zonas, as portas e o BUG Day 0 estão abertos, e no combate os seis poderes valem no nível máximo. Seu progresso salvo não muda.",
+    "sound": "Som"
   },
   "status": {
     "coreReady": "Núcleo pronto: RPG, poderes, pontuação, seed, portão e fases de plataforma."
@@ -325,7 +337,10 @@
         "name": "Camuflagem",
         "text": "Ele se disfarça de tráfego normal. Só um detector treinado em exemplos separa o ataque do barulho de sempre."
       }
-    }
+    },
+    "patchReady": "Patch pronto para lançar!",
+    "yourTurn": "Sua vez",
+    "levelShort": "nív."
   },
   "menu": {
     "title": "Da Válvula à IA",
@@ -340,7 +355,16 @@
     "aboutText": "Jogo educacional sobre a história da computação, feito como TCC. Código sob MIT, conteúdo sob CC BY 4.0.",
     "locked": "Conclua a era anterior",
     "boss": "Enfrentar o BUG Day 0",
-    "bossAgain": "Encarar o BUG Day 0 de novo"
+    "bossAgain": "Encarar o BUG Day 0 de novo",
+    "journey": "Sua jornada",
+    "starsTotal": "Estrelas",
+    "fragmentsTotal": "Fragmentos",
+    "erasTotal": "Eras",
+    "soundOn": "Ligar o som",
+    "soundOff": "Desligar o som",
+    "eraDone": "Era concluída",
+    "eraCurrent": "Era atual",
+    "eraLocked": "Era trancada"
   },
   "world": {
     "title": "Zona",
@@ -359,7 +383,21 @@
     "enterDoor": "Fazer a prova da era",
     "backToWorld": "Voltar para a zona",
     "missionsDone": "missões feitas",
-    "missionsLeft": "Falta concluir"
+    "missionsLeft": "Falta concluir",
+    "trackerTitle": "Objetivos da zona",
+    "missionShort": "Missão",
+    "fragments": "Fragmentos",
+    "fragmentsOf": "de",
+    "quiz": "Prova",
+    "quizLocked": "trancada",
+    "quizOpen": "liberada",
+    "quizDone": "aprovado",
+    "nextStation": "Próximo passo: vá até um terminal com “!” e conclua a missão.",
+    "nextDoor": "Próximo passo: a porta lá em cima abriu. Faça a prova da era.",
+    "nextFragments": "Era concluída. Ainda há fragmentos de memória escondidos por aqui.",
+    "allDone": "Tudo feito nesta zona: missões, prova e fragmentos.",
+    "fragmentFound": "Fragmento de memória recuperado",
+    "fragmentXp": "de conhecimento"
   },
   "tutorial": {
     "title": "Como jogar",
@@ -390,7 +428,9 @@
     "retry": "Refazer a prova",
     "continue": "Seguir para a próxima era",
     "backToWorld": "Voltar para a zona",
-    "lockedDoor": "Conclua as duas missões da zona antes da prova."
+    "lockedDoor": "Conclua as duas missões da zona antes da prova.",
+    "streak": "Acertos seguidos",
+    "rewards": "Recompensas"
   },
   "items": {
     "title": "Mochila",

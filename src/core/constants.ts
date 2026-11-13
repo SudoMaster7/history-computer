@@ -23,6 +23,8 @@ export const RPG = {
   CLOCK_LEVEL_UPS: [4, 8] as readonly number[],
   /** Ano inicial do mundo (relogio do HUD). */
   START_YEAR: 1642,
+  /** XP por fragmento de memoria recolhido no mapa. */
+  FRAGMENT_XP: 15,
 } as const;
 
 export const SCORING = {
@@ -115,6 +117,12 @@ export const WORLD = {
   WALK_FRAMES: 3,
   /** Troca de quadro da caminhada, em milissegundos. */
   FRAME_MS: 130,
+  /** Fragmentos de memoria espalhados em cada zona. */
+  FRAGMENTS_PER_ZONE: 3,
+  /** Distancia minima (em celulas) entre dois fragmentos e do ponto de entrada. */
+  FRAGMENT_MIN_GAP: 4,
+  /** Linhas do topo sem fragmento: os botoes de canto flutuam sobre elas. */
+  FRAGMENT_TOP_MARGIN: 2,
 } as const;
 
 export const CIRCUIT = {

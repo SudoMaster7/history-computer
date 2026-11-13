@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [dar vida ao jogo: mapa animado, fragmentos de memoria, som, telas dos minijogos e resultado com recompensa](changes/2026-11-13-dar-vida-ao-jogo-mapa-animado-fragmentos-de-memoria-som-tela.md) — 2026-11-13
+
 - [corrigir o README: numeros da suite, efeitos dos itens e acentos da secao da Vercel](changes/2026-11-11-corrigir-o-readme-numeros-da-suite-efeitos-dos-itens-e-acent.md) — 2026-11-11
 
 - [acentuar os textos do jogo e dar arena visual ao BUG Day 0](changes/2026-11-10-acentuar-os-textos-do-jogo-e-dar-arena-visual-ao-bug-day-0.md) — 2026-11-10

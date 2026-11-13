@@ -8,6 +8,8 @@ import { isWalkable, validateWorld } from '@/core/world';
 import { WORLDS, worldOfEra } from '@/data/worlds';
 import { NPCS, npcProfile } from '@/data/npcs';
 import { QUIZ_BANK } from '@/data/quizzes';
+import { FRAGMENT_FACTS } from '@/data/fragments';
+import { WORLD } from '@/core/constants';
 import missions from '@/data/missions.json';
 import { MINIGAME_BRIEFS } from '@/data/minigameBriefs';
 import { registerMinigames } from '@/minigames';
@@ -195,6 +197,27 @@ describe('contrato: itens', () => {
       });
       expect(texto?.name?.length ?? 0).toBeGreaterThan(0);
       expect(texto?.text?.length ?? 0).toBeGreaterThan(10);
+    }
+  });
+});
+
+describe('contrato: fragmentos de memoria', () => {
+  /*
+   * Cada zona espalha FRAGMENTS_PER_ZONE fragmentos, e cada um mostra uma
+   * curiosidade da era. Se faltar texto, dois fragmentos da mesma zona repetem
+   * a mesma frase -- o jogador acha que o jogo travou num so.
+   */
+  it.each(ERAS)('a era %s tem uma curiosidade por fragmento', (era) => {
+    const facts = FRAGMENT_FACTS[era];
+    expect(Array.isArray(facts)).toBe(true);
+    expect({ era, textos: facts.length >= WORLD.FRAGMENTS_PER_ZONE }).toEqual({
+      era,
+      textos: true,
+    });
+    expect(new Set(facts).size).toBe(facts.length);
+    for (const fact of facts) {
+      // Frase de verdade, que ensine alguma coisa.
+      expect(fact.length, `curiosidade curta demais na era ${era}`).toBeGreaterThan(60);
     }
   });
 });

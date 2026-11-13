@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   TILE,
+  approachPath,
   atDoor,
   cellAtPoint,
   facingTo,
   findPath,
+  fragmentAt,
+  fragmentsOf,
   inBounds,
   isDoorOpen,
+  isOccupied,
   isWalkable,
   missionsLeft,
   npcAt,
@@ -319,5 +323,158 @@ describe('as 6 zonas do jogo', () => {
   it('as zonas sao plantas diferentes umas das outras', () => {
     const shapes = WORLDS.map((w) => w.tiles.join(''));
     expect(new Set(shapes).size).toBe(WORLDS.length);
+  });
+});
+
+describe('world: fragmentos de memoria', () => {
+  it('cada zona tem a quantidade combinada, em celulas diferentes', () => {
+    for (const w of WORLDS) {
+      const fragments = fragmentsOf(w);
+      expect({ zone: w.id, total: fragments.length }).toEqual({
+        zone: w.id,
+        total: WORLD.FRAGMENTS_PER_ZONE,
+      });
+      const cells = new Set(fragments.map((f) => `${f.col},${f.row}`));
+      expect(cells.size).toBe(fragments.length);
+      expect(fragments.map((f) => f.id)).toEqual(fragments.map((_, i) => `${w.id}:${i}`));
+    }
+  });
+
+  it('todo fragmento e alcancavel a pe e nao fica em cima de nada', () => {
+    for (const w of WORLDS) {
+      for (const fragment of fragmentsOf(w)) {
+        expect(isWalkable(w, fragment.col, fragment.row)).toBe(true);
+        expect(approachPath(w, w.spawn, fragment)).not.toBeNull();
+        expect(sameCell(fragment, w.spawn)).toBe(false);
+        expect(sameCell(fragment, w.door)).toBe(false);
+        expect(w.stations.some((s) => sameCell(s, fragment))).toBe(false);
+        expect(w.npcs.some((n) => sameCell(n, fragment))).toBe(false);
+        // Fora da faixa dos botoes de canto, que cobririam o toque.
+        expect(fragment.row).toBeGreaterThanOrEqual(WORLD.FRAGMENT_TOP_MARGIN);
+      }
+    }
+  });
+
+  it('a mesma zona da sempre os mesmos lugares', () => {
+    for (const w of WORLDS) {
+      expect(fragmentsOf(w)).toEqual(fragmentsOf(w));
+    }
+  });
+
+  it('fragmentAt acha o fragmento pela celula exata', () => {
+    const w = WORLDS[0]!;
+    const first = fragmentsOf(w)[0]!;
+    expect(fragmentAt(w, { col: first.col, row: first.row })?.id).toBe(first.id);
+    expect(fragmentAt(w, w.spawn)).toBeUndefined();
+  });
+
+  it('zona apertada completa a conta mesmo sem espaco para espalhar', () => {
+    // Um corredor so: nao ha como manter a distancia entre todos.
+    const tight = parseWorld({
+      id: 'apertada',
+      era: 'mecanica',
+      map: ['###########', '###########', '#,,,,,,,,,#', '#,#########'],
+      spawn: { col: 1, row: 2 },
+      // Terminal e porta fora do meio do corredor, para nao tamparem a passagem.
+      stations: [{ id: 's', missionId: 'mecanica-A', col: 1, row: 3 }],
+      npcs: [],
+      door: { col: 9, row: 2 },
+    });
+    const fragments = fragmentsOf(tight);
+    expect(fragments).toHaveLength(WORLD.FRAGMENTS_PER_ZONE);
+    expect(new Set(fragments.map((f) => f.col)).size).toBe(fragments.length);
+  });
+});
+
+describe('world: o Bit nao atravessa terminal, personagem nem porta', () => {
+  // Corredor de 5 celulas com um terminal no meio e uma volta por baixo.
+  const lane = parseWorld({
+    id: 'corredor',
+    era: 'mecanica',
+    map: [',,,,,', ',###,', ',,,,,'],
+    spawn: { col: 0, row: 0 },
+    stations: [{ id: 's', missionId: 'mecanica-A', col: 2, row: 0 }],
+    npcs: [{ id: 'n', col: 4, row: 2 }],
+    door: { col: 2, row: 2 },
+  });
+
+  it('isOccupied acusa terminal, personagem e porta, e so eles', () => {
+    expect(isOccupied(lane, 2, 0)).toBe(true);
+    expect(isOccupied(lane, 4, 2)).toBe(true);
+    expect(isOccupied(lane, 2, 2)).toBe(true);
+    expect(isOccupied(lane, 0, 0)).toBe(false);
+  });
+
+  it('tocar num terminal leva a celula livre ao lado, nao para cima dele', () => {
+    expect(approachPath(lane, { col: 0, row: 0 }, { col: 2, row: 0 })).toEqual([
+      { col: 1, row: 0 },
+    ]);
+  });
+
+  it('quem ja esta ao lado nao precisa andar', () => {
+    expect(approachPath(lane, { col: 1, row: 0 }, { col: 2, row: 0 })).toEqual([]);
+    expect(approachPath(lane, { col: 0, row: 0 }, { col: 0, row: 0 })).toEqual([]);
+  });
+
+  it('sem outra rota, o Bit nao passa por cima do terminal', () => {
+    // De (0,0) a (3,0): o terminal em (2,0) fecha a linha de cima.
+    const path = approachPath(lane, { col: 0, row: 0 }, { col: 3, row: 0 });
+    expect(path).toBeNull();
+    // findPath, que so olha o chao, continua achando a linha reta.
+    expect(findPath(lane, { col: 0, row: 0 }, { col: 3, row: 0 })).toHaveLength(3);
+  });
+
+  it('destino bloqueado, origem bloqueada ou alvo cercado nao tem rota', () => {
+    expect(approachPath(lane, { col: 0, row: 0 }, { col: 1, row: 1 })).toBeNull();
+    expect(approachPath(lane, { col: 1, row: 1 }, { col: 0, row: 0 })).toBeNull();
+    const walled = parseWorld({
+      id: 'cercado',
+      era: 'mecanica',
+      map: [',#,', '###', ',,,'],
+      spawn: { col: 0, row: 0 },
+      stations: [{ id: 's', missionId: 'mecanica-A', col: 2, row: 0 }],
+      npcs: [],
+      door: { col: 2, row: 2 },
+    });
+    expect(approachPath(walled, { col: 0, row: 0 }, { col: 2, row: 0 })).toBeNull();
+  });
+
+  it('nas 6 zonas da para chegar ao lado de todo terminal, personagem e da porta', () => {
+    for (const w of WORLDS) {
+      for (const target of [...w.stations, ...w.npcs, w.door]) {
+        const path = approachPath(w, w.spawn, target);
+        expect({ zone: w.id, to: target, alcancavel: path !== null }).toEqual({
+          zone: w.id,
+          to: target,
+          alcancavel: true,
+        });
+        // E o Bit nunca termina em cima de nada.
+        const end = path && path.length > 0 ? path[path.length - 1]! : w.spawn;
+        expect(isOccupied(w, end.col, end.row)).toBe(false);
+      }
+    }
+  });
+
+  it('validateWorld acusa zona em que um personagem tampa a passagem', () => {
+    const blocked = parseWorld({
+      id: 'tampada',
+      era: 'mecanica',
+      map: [',,,,,'],
+      spawn: { col: 0, row: 0 },
+      stations: [{ id: 's', missionId: 'mecanica-A', col: 4, row: 0 }],
+      npcs: [{ id: 'n', col: 2, row: 0 }],
+      door: { col: 1, row: 0 },
+    });
+    expect(validateWorld(blocked).some((p) => p.startsWith('sem acesso a pe'))).toBe(true);
+    const onSpawn = parseWorld({
+      id: 'em-cima',
+      era: 'mecanica',
+      map: [',,,'],
+      spawn: { col: 0, row: 0 },
+      stations: [{ id: 's', missionId: 'mecanica-A', col: 0, row: 0 }],
+      npcs: [],
+      door: { col: 2, row: 0 },
+    });
+    expect(validateWorld(onSpawn)).toContain('spawn em celula ocupada');
   });
 });

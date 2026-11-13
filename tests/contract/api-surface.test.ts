@@ -65,12 +65,16 @@ describe('contrato: superficie publica do nucleo', () => {
   it('core/world', () => {
     expect(exported(world)).toEqual([
       'TILE',
+      'approachPath',
       'atDoor',
       'cellAtPoint',
       'facingTo',
       'findPath',
+      'fragmentAt',
+      'fragmentsOf',
       'inBounds',
       'isDoorOpen',
+      'isOccupied',
       'isWalkable',
       'missionsLeft',
       'npcAt',
@@ -148,6 +152,7 @@ describe('contrato: superficie publica do nucleo', () => {
       'applyMissionResult',
       'applyQuizResult',
       'clockFor',
+      'collectFragment',
       'consumeItem',
       'eraOfMissionId',
       'fullHeal',
@@ -186,6 +191,7 @@ describe('contrato: formato das constantes de balanceamento', () => {
     expect(Object.keys(constants.RPG).sort()).toEqual([
       'CLOCK_BASE',
       'CLOCK_LEVEL_UPS',
+      'FRAGMENT_XP',
       'HP_BASE',
       'HP_PER_LEVEL',
       'MAX_LEVEL',
@@ -202,6 +208,9 @@ describe('contrato: formato das constantes de balanceamento', () => {
       'XP_PER_CORRECT',
     ]);
     expect(Object.keys(constants.WORLD).sort()).toEqual([
+      'FRAGMENTS_PER_ZONE',
+      'FRAGMENT_MIN_GAP',
+      'FRAGMENT_TOP_MARGIN',
       'FRAME_MS',
       'SCALE',
       'TILE',

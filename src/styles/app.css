@@ -422,31 +422,6 @@
 
 /* ------------------------------------------------------------- menu ---- */
 
-.menu__art {
-  position: relative;
-  /* Uma fileira de tiles do jogo, em tamanho exato (16px x 3 = 48px). */
-  height: 48px;
-  border-radius: 10px;
-  overflow: hidden;
-  background-image: url('/sprites/tiles-mecanica.png');
-  background-size: 384px 48px;
-  background-repeat: repeat-x;
-  image-rendering: pixelated;
-}
-
-.menu__hero {
-  position: absolute;
-  /* Em pe sobre o segundo tile da fileira, que e o caminho de terra. */
-  left: 48px;
-  bottom: 0;
-  width: 48px;
-  height: 48px;
-  background-image: url('/sprites/bit.png');
-  background-size: 144px 192px;
-  background-position: -48px 0;
-  image-rendering: pixelated;
-}
-
 .menu {
   display: flex;
   flex-direction: column;
@@ -582,6 +557,7 @@
   left: 8px;
   right: 8px;
   bottom: 8px;
+  z-index: 5;
   background: #10131c;
   border: 2px solid var(--accent);
   border-radius: 10px;
@@ -1139,11 +1115,7 @@
  * ========================================================================== */
 
 .console {
-  position: absolute;
-  left: var(--space-2);
-  right: var(--space-2);
-  bottom: var(--space-2);
-  z-index: 4;
+  /* A posicao e de `.world__below` (fx.css), que empilha objetivos e console. */
   display: flex;
   flex-direction: column;
   gap: var(--space-2);

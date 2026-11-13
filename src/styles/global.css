@@ -49,6 +49,8 @@
   /* 7.4:1 sobre --surface: passa o minimo de 4.5:1 para texto normal. */
   --text-dim: #9fb0cf;
   --text-faint: #6c7da0;
+  /* Texto de apoio. Varias regras ja usavam este nome sem ele existir. */
+  --muted: var(--text-dim);
 
   /* --- acao e estado --- */
   --accent: #58e0c8;

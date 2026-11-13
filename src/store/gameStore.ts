@@ -3,7 +3,13 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { EraId, Evaluation, PlayerState } from '@/core/types';
 import type { QuizInstance, QuizResult } from '@/core/quiz';
 import { STORAGE } from '@/core/constants';
-import { applyMissionResult, applyQuizResult, consumeItem, initialState } from '@/core/rpg';
+import {
+  applyMissionResult,
+  applyQuizResult,
+  collectFragment,
+  consumeItem,
+  initialState,
+} from '@/core/rpg';
 import { ERAS, eraUnlocked } from '@/core/powers';
 import { buildQuiz, gradeQuiz } from '@/core/quiz';
 import { QUIZ_BANK } from '@/data/quizzes';
@@ -31,6 +37,8 @@ interface GameStore {
   bossDefeated: boolean;
   /** Melhor pontuacao no chefao. */
   bossBestScore: number;
+  /** Fragmentos de memoria ja recolhidos, por id ("<zona>:<indice>"). */
+  fragments: string[];
   /** Prova em andamento, se houver. Nao e salva de proposito. */
   quiz: QuizInstance | null;
   settings: Settings;
@@ -39,6 +47,8 @@ interface GameStore {
   // --- acoes ---
   resetGame(): void;
   completeMission(missionId: string, evaluation: Evaluation): void;
+  /** Recolhe um fragmento do mapa. Devolve false se ele ja tinha sido recolhido. */
+  collectFragment(id: string): boolean;
   /** Grava no save o estado do jogador que o combate devolveu. */
   syncPlayer(player: PlayerState): void;
   /** Registra o fim de uma luta contra o chefao. */
@@ -63,6 +73,7 @@ export const useGameStore = create<GameStore>()(
       clearedEras: [],
       bossDefeated: false,
       bossBestScore: 0,
+      fragments: [],
       quiz: null,
       settings: { reduceMotion: false, vibration: true, muted: true, devMode: false },
       tutorialDone: false,
@@ -73,6 +84,7 @@ export const useGameStore = create<GameStore>()(
           clearedEras: [],
           bossDefeated: false,
           bossBestScore: 0,
+          fragments: [],
           quiz: null,
           tutorialDone: false,
         });
@@ -80,6 +92,13 @@ export const useGameStore = create<GameStore>()(
 
       completeMission(missionId, evaluation) {
         set((s) => ({ player: applyMissionResult(s.player, missionId, evaluation) }));
+      },
+
+      collectFragment(id) {
+        // `?? []`: save antigo foi gravado antes de existir esta lista.
+        const result = collectFragment(get().player, get().fragments ?? [], id);
+        if (result.gained) set({ player: result.player, fragments: result.collected });
+        return result.gained;
       },
 
       syncPlayer(player) {
@@ -147,6 +166,7 @@ export const useGameStore = create<GameStore>()(
         const s = get();
         return (
           s.clearedEras.length > 0 ||
+          (s.fragments ?? []).length > 0 ||
           s.bossDefeated ||
           Object.keys(s.player.missions).length > 0 ||
           s.player.xp > 0 ||
@@ -159,7 +179,7 @@ export const useGameStore = create<GameStore>()(
       version: STORAGE.VERSION,
       storage: createJSONStorage(() => globalThis.localStorage),
       /*
-       * Campos novos (bossDefeated, bossBestScore) nao invalidam save antigo:
+       * Campos novos (bossDefeated, bossBestScore, fragments) nao invalidam save antigo:
        * o que falta no armazenamento fica com o valor inicial, entao a versao
        * do save nao sobe e ninguem perde progresso.
        */
@@ -168,6 +188,7 @@ export const useGameStore = create<GameStore>()(
         clearedEras: s.clearedEras,
         bossDefeated: s.bossDefeated,
         bossBestScore: s.bossBestScore,
+        fragments: s.fragments,
         settings: s.settings,
         tutorialDone: s.tutorialDone,
       }),
