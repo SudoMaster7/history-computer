@@ -6,7 +6,6 @@ import { drawBang, drawFragment } from './worldArt';
 
 interface Props {
   era: EraId;
-  reduceMotion: boolean;
 }
 
 /** Tamanho da cena, em tiles. */
@@ -49,9 +48,9 @@ function chance(column: number, salt: number): number {
  * fazer la dentro.
  *
  * Canvas 2D, como o mapa; a paisagem sai de uma conta sobre a coluna, sem
- * sorteio. Com "Reduzir animacoes" a cena e desenhada uma vez, parada.
+ * sorteio.
  */
-export default function MenuBanner({ era, reduceMotion }: Props) {
+export default function MenuBanner({ era }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -68,12 +67,12 @@ export default function MenuBanner({ era, reduceMotion }: Props) {
         let last = 0;
         const draw = (now: number): void => {
           // A faixa e enfeite: 30 quadros por segundo bastam e poupam bateria.
-          if (!reduceMotion && now - last < FRAME_MS) {
+          if (now - last < FRAME_MS) {
             frame = requestAnimationFrame(draw);
             return;
           }
           last = now;
-          const t = reduceMotion ? 0 : now / 1000;
+          const t = now / 1000;
           const scroll = t * SPEED;
           const first = Math.floor(scroll / size);
           const shift = scroll - first * size;
@@ -111,13 +110,11 @@ export default function MenuBanner({ era, reduceMotion }: Props) {
             }
           }
 
-          const step = reduceMotion ? 1 : Math.floor(now / WORLD.FRAME_MS) % WORLD.WALK_FRAMES;
-          const hop = reduceMotion
-            ? 0
-            : -Math.abs(Math.sin((now / WORLD.WALK_MS_PER_TILE) * Math.PI)) * 1.2;
+          const step = Math.floor(now / WORLD.FRAME_MS) % WORLD.WALK_FRAMES;
+          const hop = -Math.abs(Math.sin((now / WORLD.WALK_MS_PER_TILE) * Math.PI)) * 1.2;
           sprite(bit, step, BIT_ROW_RIGHT, BIT_COL * size, PATH_ROW * size + hop);
 
-          if (!reduceMotion) frame = requestAnimationFrame(draw);
+          frame = requestAnimationFrame(draw);
         };
 
         frame = requestAnimationFrame(draw);
@@ -130,7 +127,7 @@ export default function MenuBanner({ era, reduceMotion }: Props) {
       alive = false;
       cancelAnimationFrame(frame);
     };
-  }, [era, reduceMotion]);
+  }, [era]);
 
   return (
     <canvas

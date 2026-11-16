@@ -697,3 +697,13 @@ de pontinhos.
 `global.css` já pedia `width: min(100%, 560px)` no desktop, mas `.layout` tinha
 `flex: 1` dentro de um contêiner flex e a largura era ignorada: o jogo esticava
 pela janela inteira. Corrigido com `flex: 0 1 560px`.
+
+## 2026-11-16 — Sem ajuste de reduzir animações
+
+### D68. O jogo sempre anima
+
+O ajuste "Reduzir animações" saiu, e com ele a resposta a
+`prefers-reduced-motion` do sistema: a pedido de Leticia, não fazia mais
+sentido. Isso revoga o trecho da D56 ("Reduzir animações zera a duração") e o
+final da D57 (o laço do mapa que não começava). A regra de que nenhuma animação
+em laço mexe em `transform` ou tamanho de botão continua valendo.

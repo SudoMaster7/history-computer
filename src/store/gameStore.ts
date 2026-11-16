@@ -15,7 +15,6 @@ import { buildQuiz, gradeQuiz } from '@/core/quiz';
 import { QUIZ_BANK } from '@/data/quizzes';
 
 export interface Settings {
-  reduceMotion: boolean;
   vibration: boolean;
   muted: boolean;
   /** Musica de fundo. So toca com o som ligado (`muted` falso). */
@@ -77,7 +76,7 @@ export const useGameStore = create<GameStore>()(
       bossBestScore: 0,
       fragments: [],
       quiz: null,
-      settings: { reduceMotion: false, vibration: true, muted: true, music: true, devMode: false },
+      settings: { vibration: true, muted: true, music: true, devMode: false },
       tutorialDone: false,
 
       resetGame() {

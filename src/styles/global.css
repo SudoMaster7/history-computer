@@ -103,21 +103,6 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-/* Quem pediu menos movimento recebe menos movimento, do sistema ou do jogo. */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --dur-fast: 0ms;
-    --dur-base: 0ms;
-    --dur-panel: 0ms;
-  }
-}
-
-.reduce-motion {
-  --dur-fast: 0ms;
-  --dur-base: 0ms;
-  --dur-panel: 0ms;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -271,23 +256,4 @@ button[disabled] {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
-}
-
-/* Opcao "Reduzir animacoes" e preferencia do sistema. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
-.reduce-motion *,
-.reduce-motion *::before,
-.reduce-motion *::after {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001ms !important;
 }

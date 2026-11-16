@@ -157,10 +157,9 @@ como proposta em `docs/MULTIPLAYER.md`), e a conferência em fonte primária das
 falas, das provas e das curiosidades dos fragmentos. As faixas de música foram
 escritas em código e ninguém as afinou de ouvido ainda.
 
-Duas regras de animação, que estão explicadas no topo de `src/styles/fx.css`:
-nenhuma animação em laço mexe em `transform` ou tamanho de **botão** (botão
-chama atenção com brilho), e toda animação tem de terminar num quadro que faça
-sentido parado, porque "Reduzir animações" zera todas.
+Uma regra de animação, explicada no topo de `src/styles/fx.css`: nenhuma
+animação em laço mexe em `transform` ou tamanho de **botão** (botão chama
+atenção com brilho). Não há ajuste de reduzir animações (D68).
 
 ---
 

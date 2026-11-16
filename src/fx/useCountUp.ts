@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 
 /**
  * Conta de 0 ate `target` em `ms` milissegundos, para o numero "subir" na tela
- * em vez de aparecer pronto. Com `enabled` falso (ajuste "Reduzir animacoes")
- * devolve o valor final direto.
+ * em vez de aparecer pronto.
  */
-export function useCountUp(target: number, ms: number, enabled: boolean, delay = 0): number {
-  const [value, setValue] = useState(enabled ? 0 : target);
+export function useCountUp(target: number, ms: number, delay = 0): number {
+  const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!enabled || ms <= 0) {
+    if (ms <= 0) {
       setValue(target);
       return;
     }
@@ -25,7 +24,7 @@ export function useCountUp(target: number, ms: number, enabled: boolean, delay =
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [target, ms, enabled, delay]);
+  }, [target, ms, delay]);
 
   return value;
 }

@@ -19,7 +19,6 @@ interface Props {
  */
 export default function MissionRunner({ missionId, onExit }: Props) {
   const completeMission = useGameStore((s) => s.completeMission);
-  const reduceMotion = useGameStore((s) => s.settings.reduceMotion);
   const [outcome, setOutcome] = useState<MissionOutcome | null>(null);
   const [attempt, setAttempt] = useState(0);
 
@@ -76,7 +75,6 @@ export default function MissionRunner({ missionId, onExit }: Props) {
     return (
       <MissionResult
         outcome={outcome}
-        reduceMotion={reduceMotion}
         onRetry={() => {
           setOutcome(null);
           setAttempt((n) => n + 1);

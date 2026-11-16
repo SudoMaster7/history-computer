@@ -1,16 +1,12 @@
 /* ============================================================================
  * Acabamento: movimento, resposta ao toque e a "cara" de cada era.
  *
- * Duas regras valem para tudo neste arquivo:
+ * Uma regra vale para tudo neste arquivo:
  *
- * 1. Nenhuma animacao em laco mexe em `transform` ou em tamanho de BOTAO. O
- *    jogo e medido por teste (alvo de 44 px) e tocado por dedo: botao que
- *    pulsa de tamanho e botao que escapa do toque. Botao chama atencao com
- *    brilho (`box-shadow`), nunca com escala.
- * 2. Tudo some com "Reduzir animacoes": a regra geral em global.css encurta
- *    qualquer animacao para zero, e o estado continua legivel pela cor e pelo
- *    texto. Por isso toda animacao daqui termina num quadro que faz sentido
- *    parado.
+ * Nenhuma animacao em laco mexe em `transform` ou em tamanho de BOTAO. O
+ * jogo e medido por teste (alvo de 44 px) e tocado por dedo: botao que pulsa
+ * de tamanho e botao que escapa do toque. Botao chama atencao com brilho
+ * (`box-shadow`), nunca com escala.
  * ========================================================================== */
 
 /* A cor da era chega a zona e ao minijogo dela pela mesma variavel. */
@@ -481,7 +477,6 @@ button:not([disabled]):active,
   align-items: flex-end;
   gap: 4px;
   pointer-events: none;
-  /* Sem `forwards`: parado (Reduzir animacoes) o aviso fica visivel ate sair. */
   animation: gain-float 2.3s var(--ease);
 }
 
@@ -1814,25 +1809,4 @@ button[data-ready='true']:not([disabled]) {
 
 .menu__toggle.menu__dev--on::after {
   background: radial-gradient(circle at 28px 50%, #080c18 0 7px, transparent 7.5px), var(--danger);
-}
-
-/* ====================================================== reduzir animacoes ==== */
-
-/*
- * A regra geral (global.css) zera a duracao; aqui some tambem o atraso, senao
- * estrela e recompensa continuariam chegando em fila para quem pediu sem
- * movimento.
- */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-delay: 0s !important;
-  }
-}
-
-.reduce-motion *,
-.reduce-motion *::before,
-.reduce-motion *::after {
-  animation-delay: 0s !important;
 }

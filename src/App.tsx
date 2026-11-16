@@ -154,7 +154,7 @@ export default function App() {
 
   return (
     <div
-      className={settings.reduceMotion ? 'app reduce-motion' : 'app'}
+      className="app"
       /* Faixa que esta tocando, para o teste de ponta a ponta conferir. */
       data-music={track ?? 'off'}
     >

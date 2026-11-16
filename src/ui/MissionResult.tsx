@@ -23,7 +23,6 @@ export interface MissionOutcome {
 
 interface Props {
   outcome: MissionOutcome;
-  reduceMotion: boolean;
   onRetry(): void;
   onExit(): void;
 }
@@ -41,7 +40,7 @@ const STAR_START_MS = 260;
  * texto com "★☆☆" dizia a mesma coisa e nao dava vontade de voltar pela
  * terceira estrela.
  */
-export default function MissionResult({ outcome, reduceMotion, onRetry, onExit }: Props) {
+export default function MissionResult({ outcome, onRetry, onExit }: Props) {
   const { evaluation } = outcome;
   const ok = evaluation.ok;
   const stars = starsFor(evaluation.efficiency, ok);
@@ -50,8 +49,8 @@ export default function MissionResult({ outcome, reduceMotion, onRetry, onExit }
   const leveled = outcome.levelTo > outcome.levelFrom;
   const powered = outcome.powerTo > outcome.powerFrom;
 
-  const shownScore = useCountUp(score, 900, !reduceMotion, STAR_START_MS);
-  const shownEfficiency = useCountUp(efficiency, 700, !reduceMotion, STAR_START_MS);
+  const shownScore = useCountUp(score, 900, STAR_START_MS);
+  const shownEfficiency = useCountUp(efficiency, 700, STAR_START_MS);
 
   // O som acompanha as estrelas: uma nota por estrela, cada uma mais aguda.
   useEffect(() => {
@@ -60,13 +59,10 @@ export default function MissionResult({ outcome, reduceMotion, onRetry, onExit }
       return;
     }
     const timers = Array.from({ length: stars }, (_, i) =>
-      setTimeout(
-        () => play('star', 1 + i * 0.12),
-        reduceMotion ? 0 : STAR_START_MS + i * STAR_GAP_MS,
-      ),
+      setTimeout(() => play('star', 1 + i * 0.12), STAR_START_MS + i * STAR_GAP_MS),
     );
     return () => timers.forEach(clearTimeout);
-  }, [ok, stars, reduceMotion]);
+  }, [ok, stars]);
 
   const tip = !ok ? ui.mission.tryHint : stars >= 3 ? ui.mission.perfect : ui.mission.nextStar;
 

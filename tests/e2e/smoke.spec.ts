@@ -94,7 +94,7 @@ async function seedEraTwoOpen(page: Page): Promise<void> {
             items: { 'cartao-perfurado': 1 },
           },
           clearedEras: ['mecanica'],
-          settings: { reduceMotion: false, vibration: true, muted: true },
+          settings: { vibration: true, muted: true },
           tutorialDone: true,
         },
       }),
@@ -153,7 +153,7 @@ async function seedZoneCleared(page: Page): Promise<void> {
             items: {},
           },
           clearedEras: [],
-          settings: { reduceMotion: false, vibration: true, muted: true },
+          settings: { vibration: true, muted: true },
           tutorialDone: true,
         },
       }),
@@ -630,7 +630,7 @@ async function seedCleared(page: Page, cleared: readonly string[]): Promise<void
             clearedEras: lista,
             bossDefeated: false,
             bossBestScore: 0,
-            settings: { reduceMotion: false, vibration: true, muted: true },
+            settings: { vibration: true, muted: true },
             tutorialDone: true,
           },
         }),
@@ -1080,23 +1080,6 @@ test('o som comeca desligado e liga pelo menu, ficando salvo', async ({ page }) 
     'aria-pressed',
     'true',
   );
-});
-
-test('com "Reduzir animações" o mapa continua jogavel e a fala aparece inteira', async ({
-  page,
-}) => {
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Ajustes' }).click();
-  await page.getByRole('button', { name: 'Reduzir animações' }).click();
-  await page.getByRole('button', { name: 'Voltar' }).click();
-  await page.getByRole('button', { name: 'Novo jogo' }).click();
-  await expect(page.locator('.world__canvas')).toBeVisible();
-  const pular = page.getByRole('button', { name: 'Pular tutorial' });
-  if (await pular.isVisible()) await pular.click();
-
-  await goToNpc(page, 8, 8);
-  // Sem animacao nao ha texto "por digitar": nada fica escondido na fala.
-  await expect(page.locator('.dialogue__rest')).toBeEmpty();
 });
 
 test('a musica acompanha a tela e obedece aos dois ajustes', async ({ page }) => {

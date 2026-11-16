@@ -1617,9 +1617,6 @@
  * Cena de combate em pixel art: o Bit de um lado, o BUG do outro. Os sprites
  * sao os mesmos PNG do mapa, desenhados por background-position -- sem canvas,
  * sem laco de animacao, so o quadro certo e um efeito curto.
- *
- * Toda animacao daqui esta desligada em .reduce-motion (ajuste do jogador): o
- * estado continua legivel pela cor, pelo quadro do sprite e pela frase embaixo.
  */
 .bossStage {
   /* Um lugar so decide o tamanho dos sprites: o quadro e recortado em cima
@@ -1864,12 +1861,6 @@
     opacity: 0.15;
     transform: translateY(10px) scale(0.9);
   }
-}
-
-/* Ajuste do jogador: sem movimento. A leitura continua pela cor e pelo texto. */
-.reduce-motion .bossStage__bit,
-.reduce-motion .bossStage__bug {
-  animation: none !important;
 }
 
 /* Tela estreita: os dois lados continuam lado a lado, so menores. */

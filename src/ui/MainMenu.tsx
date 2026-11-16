@@ -107,7 +107,7 @@ export default function MainMenu({ onPlay, onBoss }: Props) {
 
       {/* Faixa de abertura: a zona da era atual passando, com o Bit andando. */}
       <div className="menu__art" aria-hidden="true">
-        <MenuBanner era={now} reduceMotion={settings.reduceMotion} />
+        <MenuBanner era={now} />
       </div>
 
       {/* A jornada: as seis eras numa linha, da Pascalina a IA. */}
@@ -271,14 +271,6 @@ export default function MainMenu({ onPlay, onBoss }: Props) {
             onClick={() => setSettings({ music: settings.music === false })}
           >
             {ui.settings.music}
-          </button>
-          <button
-            type="button"
-            className="menu__toggle"
-            aria-pressed={settings.reduceMotion}
-            onClick={() => setSettings({ reduceMotion: !settings.reduceMotion })}
-          >
-            {ui.settings.reduceMotion}
           </button>
           <button
             type="button"

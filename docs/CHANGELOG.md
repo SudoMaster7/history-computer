@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [tirar o ajuste reduzir animacoes](changes/2026-11-16-tirar-o-ajuste-reduzir-animacoes.md) — 2026-11-16
+
 - [tirar o realce azulado do toque no mapa](changes/2026-11-13-tirar-o-realce-azulado-do-toque-no-mapa.md) — 2026-11-13
 
 - [musica de fundo, pixel art refeita e o Bit como robo](changes/2026-11-13-musica-de-fundo-pixel-art-refeita-e-o-bit-como-robo.md) — 2026-11-13

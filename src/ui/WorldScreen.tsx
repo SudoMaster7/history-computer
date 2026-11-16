@@ -106,16 +106,13 @@ function freshWalk(at: Cell): Walk {
  * core/world.ts); aqui so mora o desenho e a animacao.
  *
  * O mapa tem um laco de animacao proprio: agua que brilha, personagens que
- * respiram, marcadores que quicam, poeira no passo. Nada disso e regra -- com
- * "Reduzir animacoes" ligado o laco nao roda e o mapa e desenhado parado, com
- * os mesmos marcadores no mesmo lugar.
+ * respiram, marcadores que quicam, poeira no passo. Nada disso e regra.
  */
 export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, onEvent }: Props) {
   const player = useGameStore((s) => s.player);
   const collected = useGameStore((s) => s.fragments);
   const collectFragment = useGameStore((s) => s.collectFragment);
   const clearedEras = useGameStore((s) => s.clearedEras);
-  const reduceMotion = useGameStore((s) => s.settings.reduceMotion);
   const vibration = useGameStore((s) => s.settings.vibration);
   const devMode = useGameStore((s) => s.settings.devMode);
 
@@ -316,18 +313,16 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
 
       const size = WORLD.TILE;
       const state = walk.current;
-      /** Parado (ajuste do jogador): tempo zero, nada se mexe. */
-      const still = reduceMotion;
-      const t = still ? 0 : now / 1000;
+      const t = now / 1000;
 
       // Interpola a posicao entre a celula de origem e a de destino.
       const progress =
-        still || state.startedAt === 0
+        state.startedAt === 0
           ? 1
           : Math.min(1, (now - state.startedAt) / WORLD.WALK_MS_PER_TILE);
       const bitX = (state.from.col + (state.to.col - state.from.col) * progress) * size;
       const bitY = (state.from.row + (state.to.row - state.from.row) * progress) * size;
-      const moving = !still && (progress < 1 || state.queue.length > 0);
+      const moving = (progress < 1 || state.queue.length > 0);
 
       ctx.setTransform(RES, 0, 0, RES, 0, 0);
       ctx.imageSmoothingEnabled = false;
@@ -338,10 +333,8 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
 
       // Chao: a camada pronta, e por cima dela so o brilho da agua.
       if (groundLayer) ctx.drawImage(groundLayer, 0, 0);
-      if (!still) {
-        for (const spot of waterCells) {
-          drawShimmer(ctx, spot.col * size, spot.row * size, t, spot.col + spot.row * 3);
-        }
+      for (const spot of waterCells) {
+        drawShimmer(ctx, spot.col * size, spot.row * size, t, spot.col + spot.row * 3);
       }
 
       // Porta: aberta, ela pulsa e ganha a seta; trancada, o cadeado.
@@ -410,12 +403,10 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
       const hop = moving ? -Math.abs(Math.sin(progress * Math.PI)) * 1.2 : Math.sin(t * 2.6) * 0.4;
       sprite(art.bit, frame, FACING_ROW[state.facing], bitX, bitY + hop);
 
-      if (!still) {
-        particles.current = drawParticles(ctx, particles.current, now);
-        drawAmbient(ctx, world.era, world.cols * size, world.rows * size, t);
-      }
+      particles.current = drawParticles(ctx, particles.current, now);
+      drawAmbient(ctx, world.era, world.cols * size, world.rows * size, t);
     },
-    [art, reduceMotion, stars, world, doorOpen, pending, talked, groundLayer, waterCells],
+    [art, stars, world, doorOpen, pending, talked, groundLayer, waterCells],
   );
 
   /* ---------------------------------------------------------- animacao --- */
@@ -455,14 +446,9 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
     }
   }, []);
 
-  // O laco: anda, desenha, repete. Com "Reduzir animacoes" ele nem comeca --
-  // o mapa e desenhado uma vez, e de novo sempre que algo mudar.
+  // O laco: anda, desenha, repete.
   useEffect(() => {
     if (!art) return;
-    if (reduceMotion) {
-      draw(0);
-      return;
-    }
     let last = 0;
     let id = requestAnimationFrame(function loop(now: number) {
       advance(now);
@@ -480,32 +466,17 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
       id = requestAnimationFrame(loop);
     });
     return () => cancelAnimationFrame(id);
-  }, [art, draw, advance, reduceMotion]);
+  }, [art, draw, advance]);
 
   const run = useCallback(
     (path: Cell[]): void => {
       const state = walk.current;
 
-      if (reduceMotion) {
-        // Sem animacao: o Bit aparece no destino, e recolhe o que havia no caminho.
-        const last = path.at(-1);
-        if (!last) return;
-        state.facing = facingTo(state.to, last);
-        for (const step of path) stepOnRef.current(step, 0);
-        state.from = last;
-        state.to = last;
-        state.queue = [];
-        state.startedAt = 0;
-        setCell(last);
-        arrive(last);
-        return;
-      }
-
       // No meio de um passo, o passo termina antes de a rota nova comecar:
       // trocar a fila na hora faria o Bit saltar de uma celula para outra.
       state.queue = state.startedAt !== 0 ? [state.to, ...path] : path;
     },
-    [arrive, reduceMotion],
+    [],
   );
 
   /* --------------------------------------------------------------- fala -- */
@@ -517,10 +488,6 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
   // na pagina para leitor de tela, e "Entendi" avanca a qualquer momento.
   useEffect(() => {
     if (!speaking) return;
-    if (reduceMotion) {
-      setTyped(fullLine.length);
-      return;
-    }
     setTyped(0);
     let shown = 0;
     const id = setInterval(() => {
@@ -530,7 +497,7 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
       if (shown >= fullLine.length) clearInterval(id);
     }, TYPE_MS * 2);
     return () => clearInterval(id);
-  }, [speaking, fullLine, reduceMotion]);
+  }, [speaking, fullLine]);
 
   const nextLine = useCallback((): void => {
     if (!profile) {
