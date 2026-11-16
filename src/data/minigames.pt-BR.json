@@ -2,73 +2,73 @@
   "mecanica": {
     "machine": "Tear de cartões perfurados (Jacquard, 1804)",
     "represents": "O tear de Jacquard era programado por cartões de papelão furados: cada cartão mandava uma linha do desenho, e o rolo de cartões passava de novo e de novo para repetir o desenho no tecido inteiro. Foi a primeira máquina a seguir um programa guardado fora dela — e é por isso que Ada Lovelace olhou para esse tear quando escreveu, em 1843, o primeiro programa da história.",
-    "power": "A funcionalidade desta era é REPETIR. A máquina não escolhe nada: ela executa uma sequência gravada e volta ao começo quantas vezes mandarem. O cartão \"repetir xN\" é exatamente isso, e é o avô do laço de repetição de qualquer linguagem de hoje.",
-    "lesson": "Repetir é o que torna um programa mais curto que o resultado dele. Escrever 16 células na mão e mandar \"este par, 8 vezes\" dão o mesmo tecido — só que o segundo cabe numa pilha de cartões que a máquina aguenta.",
+    "power": "A funcionalidade desta era é REPETIR. A máquina não escolhe nada: ela executa uma sequência gravada e volta ao começo quantas vezes mandarem. É o avô do laço de repetição de qualquer linguagem de hoje.",
+    "lesson": "Quem enxerga o trecho que se repete não precisa decorar o tecido inteiro: basta saber o trecho e continuar dele. É assim que um programa curto produz um resultado comprido — e é isso que você faz ao completar os fios que faltam.",
     "hints": [
-      "Olhe o padrão pedido e procure um trecho que volta igual. Por exemplo, em A-B-A-B-A-B o trecho que volta é A-B, três vezes.",
-      "Para montar um grupo: toque nas cores do trecho e depois toque no \"x1\" dele até chegar ao número de voltas. Um grupo repetido custa só 1 cartão a mais, não 1 por volta.",
-      "Se os cartões não estão cabendo, é sinal de que falta repetição. Escrever 8 células na mão custa 8 cartões; as mesmas 8 como \"grupo de 2, x4\" custam 3.",
-      "Terminou um trecho e o próximo é diferente? Toque em \"Novo grupo\" antes de continuar, senão as cores entram no grupo anterior."
+      "Olhe o tecido desde o começo e procure o ponto em que as cores voltam a aparecer na mesma ordem. Esse pedaço é o trecho que se repete.",
+      "Em vermelho, azul, vermelho, azul, o trecho é vermelho e azul. O fio seguinte é sempre o que viria depois do último fio tecido, dentro do trecho.",
+      "Se o trecho tem três fios, o quarto fio é igual ao primeiro, o quinto é igual ao segundo, e assim por diante. Conte de três em três.",
+      "Achou o trecho? Diga as cores dele em voz baixa, como uma música, enquanto passa o dedo pelo tecido. Onde o tecido acaba, a música continua."
     ]
   },
   "logica": {
-    "machine": "Cofre de válvulas e relés (Shannon 1937, ENIAC 1945)",
-    "represents": "Nas máquinas de válvula não havia programa gravado para cada decisão: a decisão era o próprio circuito, montado com peças que só sabem ligar e desligar. Em 1937 Claude Shannon mostrou que a álgebra de verdadeiro e falso cabia inteira num arranjo de relés, e foi com portas NÃO, E e OU que o Colossus e o ENIAC passaram a decidir — inclusive dentro de Bletchley Park, onde o trabalho de Turing dependia disso.",
+    "machine": "Circuitos de válvulas e relés (Shannon 1937, ENIAC 1945)",
+    "represents": "Nas máquinas de válvula não havia programa gravado para cada decisão: a decisão era o próprio circuito, montado com peças que só sabem ligar e desligar. Em 1937 Claude Shannon mostrou que a álgebra de verdadeiro e falso cabia inteira num arranjo de relés, e foi com portas NÃO, E e OU que o Colossus e o ENIAC passaram a decidir.",
     "power": "A funcionalidade desta era é DECIDIR. A resposta não vem de uma ordem gravada, vem da combinação das entradas: ligar A e B dá um resultado, ligar só A dá outro. É a origem do \"se... então\" de qualquer programa.",
-    "lesson": "A tabela do cofre é o que um projetista daquela época recebia para trabalhar: a resposta certa para cada combinação de chaves. O trabalho era achar o arranjo de portas mais enxuto que respondesse a todas as linhas — cada válvula a menos era uma válvula que não queimava no meio da madrugada.",
+    "lesson": "Dá para acender a lâmpada no chute, mas cada teste errado custa. Quem sabe a regra de cada porta olha o circuito de baixo para cima — o que a lâmpada precisa, o que a porta antes dela precisa — e arma as chaves certas de primeira. Pensar antes de testar é o que um projetista de circuitos faz.",
     "hints": [
-      "Leia a tabela por linhas: em quais combinações o cofre tem de responder 1? São essas as linhas que o seu circuito precisa acertar.",
-      "As três portas, em uma frase cada: E responde 1 só quando as duas entradas são 1; OU responde 1 quando pelo menos uma é 1; NÃO troca 1 por 0.",
-      "Se o cofre responde 1 em quase todas as linhas, descreva o contrário — quando ele responde 0 — e inverta o resultado com um NÃO no fim. Costuma sair mais barato.",
-      "Monte a porta primeiro e ligue os fios depois: toque no encaixe vazio e a lista mostra só as origens válidas. No fim, aponte a Saída para a porta que fecha a conta."
+      "As três regras, em uma frase cada: E só deixa passar quando as duas entradas estão ligadas; OU deixa passar quando pelo menos uma está; NÃO inverte, ligado vira desligado.",
+      "Comece pela lâmpada e volte: de qual porta ela depende? Se é uma porta E, as duas entradas dela precisam chegar ligadas. Se é OU, basta uma.",
+      "Chave com NÃO no fio funciona ao contrário: para o sinal chegar ligado depois do NÃO, a chave tem de ficar desligada.",
+      "Chave travada não muda: trate-a como um fato e ajuste as outras em volta dela. Depois de um teste, o circuito mostra em que fio o sinal parou."
     ]
   },
   "codigo": {
-    "machine": "Fita magnética e o primeiro compilador (UNIVAC 1951, Grace Hopper 1952)",
-    "represents": "Com o transistor as máquinas ficaram pequenas e confiáveis o bastante para guardar programas e dados em fita magnética — e aí o problema virou outro: cada bit de fita custava, e a fita andava a uma velocidade fixa. Foi nesse mundo que Grace Hopper escreveu o primeiro compilador e que David Huffman, em 1952, achou a forma mais curta possível de escrever uma mensagem em bits. É esse cálculo que o jogo pede aqui.",
-    "power": "A funcionalidade desta era é CODIFICAR: trocar o que a máquina tem de guardar por uma representação em bits. Codificar bem não é escolher símbolos bonitos, é gastar menos bits para dizer a mesma coisa — e é por isso que áudio, foto e vídeo cabem num celular hoje.",
-    "lesson": "Duas regras brigam entre si. Dar código curto a todo mundo deixa a fita ambígua, porque o leitor não sabe onde um símbolo termina; dar código longo a todo mundo não cabe na fita. A saída é olhar a frequência: o símbolo que aparece muitas vezes paga pouco por aparição, e o que aparece uma vez pode pagar caro sem pesar no total.",
+    "machine": "O bit e o código binário (Shannon 1948; primeiro compilador, Grace Hopper 1952)",
+    "represents": "Com o transistor, a máquina passou a guardar tudo — número, letra, instrução — como fileiras de peças que só têm dois estados: ligado ou desligado. Cada uma dessas peças é um bit, nome que Claude Shannon usou em 1948. Programar direto em bits era lento e cheio de erro, e foi por isso que Grace Hopper escreveu em 1952 o primeiro compilador: um programa que traduz ordens escritas por gente para o código da máquina.",
+    "power": "A funcionalidade desta era é CODIFICAR: escrever uma coisa na língua da máquina. Tudo o que um computador guarda — foto, música, mensagem — é, lá no fundo, uma fileira de bits como a desta mesa.",
+    "lesson": "Com poucos bits se escreve muito número, porque cada bit vale o dobro do vizinho: 1, 2, 4, 8, 16. Quatro bits já dão para contar de 0 a 15, e cada bit a mais dobra o alcance. É a mesma ideia do nosso sistema de unidades, dezenas e centenas — só que de dois em dois, em vez de dez em dez.",
     "hints": [
-      "Olhe a coluna de aparições antes de escolher qualquer código. O símbolo que aparece mais vezes é o que precisa do código mais curto: cada bit que você tira dele é economizado uma vez por aparição.",
-      "Nenhum código pode ser o começo de outro. Se o A é \"0\", nenhum outro símbolo pode começar com 0 — então os outros têm de começar com 1, como \"10\" e \"11\".",
-      "Receita que costuma dar o melhor resultado: dê \"0\" ao mais frequente, \"10\" ao segundo, \"110\" ao terceiro, e assim por diante, sempre acrescentando um 1 na frente do próximo.",
-      "Se a fita não cabe no orçamento, compare o símbolo mais frequente com o mais raro: quase sempre dá para encurtar o código do frequente em um bit e alongar o do raro em um, e o total cai."
+      "Cada bit ligado vale o número escrito nele, e bit desligado vale zero. O número gravado é a soma dos bits ligados.",
+      "Comece pelo maior bit que cabe no número pedido. Para gravar 11 numa mesa de 8, 4, 2, 1: o 8 cabe, então ligue o 8.",
+      "Depois veja quanto falta. De 11 tirando 8 faltam 3. O 4 não cabe em 3, então fica desligado; o 2 cabe, e sobra 1; o 1 cabe. Ficou 8 + 2 + 1.",
+      "Antes de gravar, some os bits ligados que aparecem embaixo da mesa. Se a soma bate com o número pedido, pode gravar sem medo."
     ]
   },
   "redes": {
     "machine": "Os primeiros nós da ARPANET (1969) e a comutação de pacotes",
-    "represents": "Até 1969 ligar dois computadores era abrir um fio dedicado entre eles e rezar para o fio não cair. A ARPANET fez diferente: a mensagem é picada em pacotes, cada pacote viaja sozinho pela rede e cada máquina só sabe para quem ela está ligada diretamente. Em 29 de outubro de 1969 o primeiro pacote saiu da UCLA para Stanford — a máquina de Stanford travou depois de receber \"LO\" de \"LOGIN\", e mesmo assim a ideia estava provada.",
-    "power": "A funcionalidade desta era é CONECTAR: a máquina deixa de ser uma ilha. Nenhum roteador conhece a rede inteira; ele conhece os vizinhos e escolhe para qual deles empurrar o pacote. É assim que a internet funciona até hoje, inclusive agora.",
-    "lesson": "Chegar ao destino não é o difícil: qualquer volta chega. O difícil é chegar rápido escolhendo salto por salto, sem o mapa inteiro na mão — e é por isso que a rota com menos saltos muitas vezes não é a mais rápida: três ligações rápidas batem uma ligação lenta.",
+    "represents": "Até 1969 ligar dois computadores era abrir um fio dedicado entre eles e torcer para o fio não cair. A ARPANET fez diferente: a mensagem é picada em pacotes, e cada pacote viaja pela rede saltando de máquina em máquina até o destino. Em 29 de outubro de 1969 o primeiro pacote saiu da UCLA para Stanford — a máquina de Stanford travou depois de receber \"LO\" de \"LOGIN\", e mesmo assim a ideia estava provada.",
+    "power": "A funcionalidade desta era é CONECTAR: a máquina deixa de ser uma ilha. O pacote não precisa de um fio só dele; ele usa as ligações que existem, um salto de cada vez. É assim que a internet funciona até hoje, inclusive agora.",
+    "lesson": "Chegar ao destino não é o difícil: qualquer caminho chega. O difícil é chegar rápido — e o salto mais barato agora nem sempre leva ao caminho mais barato no total. Olhar o mapa inteiro antes de dar o primeiro salto é o que separa uma rota boa de uma rota qualquer.",
     "hints": [
-      "Conte o atraso, não os saltos. Uma ligação de atraso 9 custa mais que três ligações de atraso 1 — e no começo isso parece errado, porque a primeira parece \"mais direta\".",
-      "Experimente um salto e veja o atraso acumulado subir. Se o número ficar alto cedo, use o \"Voltar um salto\": a tentativa não custa nada na pontuação.",
-      "Quando duas opções levam ao mesmo lugar, a mais barata agora costuma ser a melhor — mas confira para onde cada uma te deixa, porque uma ligação barata que termina num canto da rede sai caro depois.",
-      "O orçamento de atraso mostrado em cima é a conta da rota mais curta mais uma folga. Se a sua rota passou do orçamento, existe caminho melhor: volte até a primeira escolha e tente o outro vizinho."
+      "Some o atraso, não conte os saltos. Uma ligação de atraso 9 custa mais que três ligações de atraso 1.",
+      "Antes do primeiro toque, siga com o dedo dois ou três caminhos inteiros da origem ao destino e some o atraso de cada um.",
+      "Cuidado com a ligação barata logo na saída: veja para onde ela te deixa. Se dali só sai ligação cara, a economia do começo se perde.",
+      "Tente também de trás para a frente: qual é a ligação mais barata que chega ao destino? Depois descubra o jeito mais barato de chegar até ela."
     ]
   },
   "seguranca": {
-    "machine": "Criptografia de chave pública e os primeiros firewalls (Diffie-Hellman 1976, RSA 1977, web comercial 1991)",
-    "represents": "Quando a rede deixou de ser um clube de universidades e virou a web aberta a qualquer pessoa, a conta mudou: a mesma ligação que traz um cliente traz um invasor. A defesa passou a ter duas pernas — embaralhar o conteúdo, com a criptografia de chave pública que Diffie, Hellman, Rivest, Shamir e Adleman tornaram prática nos anos 70, e controlar por onde o tráfego entra, com os firewalls que apareceram no começo dos anos 90.",
-    "power": "A funcionalidade desta era é PROTEGER. Proteger não é deixar a máquina mais rápida nem mais inteligente: é fechar caminho. E o invasor não precisa de todos os caminhos — um só que fique aberto já serve para ele.",
-    "lesson": "Defesa custa, então onde cortar é a decisão inteira. Perto da entrada a rede é larga e cortar ali gasta firewall atrás de firewall; no meio ela aperta num gargalo, e lá dois ou três firewalls fecham tudo. Reparar que essa é a mesma rede da Era 4 vista do outro lado — antes você abria um caminho, agora fecha todos — é a parte que fica.",
+    "machine": "Da cifra de César à criptografia de chave pública (Diffie-Hellman 1976, RSA 1977)",
+    "represents": "Embaralhar mensagens é coisa antiga: conta-se que Júlio César, há mais de dois mil anos, trocava cada letra por outra algumas casas adiante no alfabeto. Quando a rede virou a web aberta a qualquer pessoa, nos anos 1990, a mesma ideia — só lê quem tem a chave — passou a proteger senhas, compras e conversas, agora com a criptografia de chave pública que Diffie, Hellman, Rivest, Shamir e Adleman tornaram prática nos anos 1970.",
+    "power": "A funcionalidade desta era é PROTEGER. Proteger não é esconder a mensagem: é deixá-la à vista de todos sem que ninguém consiga ler. Quem tem a chave lê; quem não tem vê letras soltas.",
+    "lesson": "A cifra deste cofre é fraca de propósito: só existem 25 chaves possíveis, e dá para testar todas na mão. A criptografia de hoje usa a mesma ideia com chaves tão grandes que testar todas levaria mais tempo do que a idade do universo. O princípio que você usa aqui é o mesmo; o que mudou foi o tamanho da chave.",
     "hints": [
-      "Antes de instalar nada, siga com o dedo um caminho da entrada até o cofre e veja por quantas ligações ele passa. Repita com outro caminho: as ligações que aparecem em todos os caminhos são as candidatas boas.",
-      "Fechar metade dos caminhos não protege nada. O aviso embaixo mostra um caminho que continua aberto: feche aquele e veja se aparece outro.",
-      "Procure o aperto da rede. Se três caminhos diferentes passam todos pela mesma ligação, um firewall ali vale três instalados na entrada.",
-      "Quando o cofre já estiver isolado, tente tirar um firewall por vez. Se o cofre continuar fechado, aquele firewall estava sobrando — e eficiência aqui é justamente gastar o mínimo."
+      "A chave diz quantas casas cada letra andou para a frente. Para decifrar, ande o mesmo número de casas para trás.",
+      "Use o alfabeto que aparece na tela: ache a letra destacada e conte as casas para a esquerda, uma por uma.",
+      "Com chave 3, a letra D da senha cifrada veio do A: D, C, B, A — três casas para trás. Se passar do A, continue pelo Z.",
+      "As primeiras letras já decifradas ajudam: a senha é uma palavra de verdade, ligada a segurança. Se a palavra não está fazendo sentido, reconte a última letra."
     ]
   },
   "ia": {
     "machine": "Redes neurais e o ImageNet de 2012 (AlexNet, Krizhevsky, Sutskever e Hinton)",
-    "represents": "Até 2012 um detector era escrito à mão: alguém decidia, regra por regra, o que contava como suspeito. A virada foi mostrar exemplos rotulados à máquina e deixá-la escolher em quais sinais prestar atenção. A AlexNet venceu a competição ImageNet daquele ano com uma margem grande o bastante para mudar a área inteira — e o método é esse: aprender dos exemplos, não da regra escrita.",
-    "power": "A funcionalidade desta era é APRENDER. O detector não recebe a regra do ataque; ele recebe exemplos e tem de achar a regra. É por isso que o jogo guarda alguns exemplos escondidos: um detector que só acerta o que já viu não aprendeu nada.",
-    "lesson": "Observar mais sinais parece sempre melhor, e não é. Alguns sinais acertam o treino por coincidência — e é justamente neles que o detector tropeça nos exemplos guardados. Esse é o nome do problema mais comum da área: sobreajuste, quando o modelo decora em vez de aprender.",
+    "represents": "Até 2012 um detector era escrito à mão: alguém decidia, regra por regra, o que contava como suspeito. A virada foi mostrar exemplos rotulados à máquina e deixá-la descobrir sozinha o que eles têm em comum. A AlexNet venceu a competição ImageNet daquele ano com uma margem grande o bastante para mudar a área inteira — e o método é esse: aprender dos exemplos, não da regra escrita.",
+    "power": "A funcionalidade desta era é APRENDER. O detector não recebe a regra; ele recebe exemplos já carimbados e tem de achar a regra. Neste desafio o detector é você.",
+    "lesson": "Ninguém conta a regra — nem para você, nem para uma IA. E aprender de verdade só se prova com programas que não estavam nos exemplos: acertar o que já foi visto é decorar. Por isso os programas novos nunca repetem um carimbado.",
     "hints": [
-      "Procure, na tabela de treino, o sinal que está ligado em quase todo ataque e desligado em quase todo exemplo normal. Esse é o sinal que carrega informação de verdade.",
-      "Desconfie do sinal que acerta todos os exemplos de treino sozinho. Se ele fosse a causa, o ataque seria simples demais — muitas vezes é coincidência, e os exemplos guardados cobram isso.",
-      "Mexa no gatilho antes de acrescentar sinal. Com dois sinais observados, exigir \"os dois ligados\" é bem diferente de \"pelo menos um ligado\", e muitas vezes é só isso que falta.",
-      "Quando o treino estiver todo certo, tente tirar um sinal. Se continuar certo, aquele sinal estava sobrando — e detector enxuto é o que generaliza melhor."
+      "Olhe só os programas carimbados como vírus. O que todos eles têm igual: a cor, a forma ou a antena?",
+      "Agora confira com os seguros: nenhum deles pode ter essa mesma característica. Se algum tem, a regra é outra.",
+      "Cuidado com coincidência: se todos os vírus são verdes mas há um seguro verde, a cor não é a regra. Tente a forma.",
+      "Com a regra na cabeça, classifique sem se distrair com o resto: se a regra é a forma, a cor do programa novo não importa."
     ]
   }
 }

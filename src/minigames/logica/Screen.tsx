@@ -1,338 +1,242 @@
 import { useState } from 'react';
 import type { MinigameScreenProps } from '@/core/types';
-import type { CircuitInstance, CircuitRef, CircuitSolution, GateType } from './logic';
-import { arityOf, inputValue, rowCount, simulate } from './logic';
-import MinigameHelp from '@/ui/MinigameHelp';
-import Gauge from '@/ui/Gauge';
+import { play } from '@/fx';
 import ui from '@/data/ui.pt-BR.json';
+import Frame from '../shared/Frame';
+import { useRounds } from '../shared/useRounds';
+import type { CircuitInstance, CircuitRound, CircuitSolution } from './logic';
+import { gateOutputs, initialState, lights, signalsOf } from './logic';
 
-type Props = MinigameScreenProps<CircuitInstance, CircuitSolution>;
+/* Medidas do desenho do circuito, em unidades do viewBox. So aparencia. */
+const WIDTH = 300;
+const TOP = 6;
+const NOT_Y = 26;
+const FIRST_GATE_Y = 78;
+const GATE_GAP = 62;
+const GATE_W = 64;
+const GATE_H = 30;
+const PIN = 16;
+const LAMP_DROP = 50;
+const LAMP_R = 14;
 
-/** Porta em montagem: encaixe vazio e `null` ate o jogador ligar o fio. */
-interface DraftGate {
-  type: GateType;
-  in: (CircuitRef | null)[];
+function columnX(index: number, inputs: number): number {
+  return (WIDTH * (index + 0.5)) / inputs;
 }
 
-/** Qual encaixe espera um fio: um encaixe de porta ou a saida do cofre. */
-type Pending = { gate: number; slot: number } | { out: true } | null;
-
-const TYPES: GateType[] = ['NOT', 'AND', 'OR'];
-
-/**
- * Simbolo da porta, no tracado dos esquemas de eletronica: triangulo com bolinha
- * para NAO, meia-lua reta para E, meia-lua curva para OU. E enfeite ao lado do
- * nome, entao nao entra na leitura de tela.
- */
-function GateIcon({ type }: { type: GateType }) {
-  return (
-    <svg
-      className="gateIcon"
-      width={26}
-      height={18}
-      viewBox="0 0 26 18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      strokeLinejoin="round"
-      strokeLinecap="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {type === 'NOT' ? (
-        <>
-          <path d="M1 9h5M6 3v12l11-6L6 3ZM21.5 9H25" />
-          <circle cx="19.2" cy="9" r="2" />
-        </>
-      ) : null}
-      {type === 'AND' ? <path d="M1 5h5M1 13h5M6 2h6a7 7 0 0 1 0 14H6V2ZM19 9h6" /> : null}
-      {type === 'OR' ? (
-        <path d="M1 5h5.5M1 13h5.5M5 2h6c4 0 7 3 9 7-2 4-5 7-9 7H5c2.4-4.4 2.4-9.6 0-14ZM20 9h5" />
-      ) : null}
-    </svg>
-  );
+interface GateBox {
+  x: number;
+  y: number;
 }
 
-function sameRef(a: CircuitRef | null, b: CircuitRef): boolean {
-  if (!a) return false;
-  if ('input' in a && 'input' in b) return a.input === b.input;
-  if ('gate' in a && 'gate' in b) return a.gate === b.gate;
-  return false;
+/** Onde cada porta da cadeia fica: entre o que ela junta. */
+function layout(round: CircuitRound): GateBox[] {
+  const inputs = round.neg.length;
+  const boxes: GateBox[] = [];
+  round.gates.forEach((_, j) => {
+    const left = j === 0 ? columnX(0, inputs) : (boxes[j - 1] as GateBox).x;
+    const right = columnX(j + 1, inputs);
+    boxes.push({ x: (left + right) / 2, y: FIRST_GATE_Y + j * GATE_GAP });
+  });
+  return boxes;
+}
+
+function flag(value: boolean | undefined): string | undefined {
+  return value === undefined ? undefined : String(value);
 }
 
 /**
- * Circuitos Logicos. Tudo por toque, em dois toques por fio: tocar no encaixe
- * vazio e depois na origem. Nada de arrastar.
+ * Circuitos Logicos: chaves em cima, portas no meio, lampada embaixo. O
+ * circuito so mostra por onde o sinal passou DEPOIS de um teste -- antes disso
+ * o jogador tem de pensar na regra da porta, que e o que a era ensina.
  */
-export default function CircuitScreen({ instance, mode, onSubmit, onExit }: Props) {
-  const [gates, setGates] = useState<DraftGate[]>([]);
-  const [out, setOut] = useState<CircuitRef | null>(null);
-  const [pending, setPending] = useState<Pending>(null);
+export default function Screen({
+  instance,
+  mode,
+  onSubmit,
+  onExit,
+}: MinigameScreenProps<CircuitInstance, CircuitSolution>) {
   const t = ui.circuit;
+  const rounds = useRounds<boolean[]>(instance.rounds.length, onSubmit);
+  const current = instance.rounds[rounds.round] as CircuitRound;
 
-  const names = t.inputNames;
-  const gateLabel = (type: GateType): string => t.gates[type];
-  const refLabel = (ref: CircuitRef | null): string => {
-    if (!ref) return t.emptySlot;
-    if ('input' in ref) return `${t.input} ${names[ref.input] ?? ref.input + 1}`;
-    return `${t.gate} ${ref.gate + 1}`;
-  };
+  const [state, setState] = useState<boolean[]>(() => initialState(current));
+  /** As chaves do ultimo teste, enquanto ninguem mexeu nelas depois. */
+  const [tested, setTested] = useState<boolean[] | null>(null);
 
-  function addGate(type: GateType): void {
-    setGates((current) => [...current, { type, in: new Array(arityOf(type)).fill(null) }]);
-    setPending(null);
+  const inputs = current.neg.length;
+  const boxes = layout(current);
+  const lastBox = boxes[boxes.length - 1] as GateBox;
+  const lampY = lastBox.y + GATE_H / 2 + LAMP_DROP;
+  const height = lampY + LAMP_R + 8;
+
+  const signals = tested ? signalsOf(current, tested) : null;
+  const outputs = tested ? gateOutputs(current, tested) : null;
+  const lit = tested ? lights(current, tested) : undefined;
+
+  function toggle(index: number): void {
+    if (rounds.done || current.locked[index] !== null) return;
+    play('tap');
+    setState((now) => now.map((on, i) => (i === index ? !on : on)));
+    setTested(null);
   }
 
-  /** Apaga a porta e desliga os fios que apontavam para ela, sem baguncar o resto. */
-  function removeGate(index: number): void {
-    const fix = (ref: CircuitRef | null): CircuitRef | null => {
-      if (!ref || !('gate' in ref)) return ref;
-      if (ref.gate === index) return null;
-      return ref.gate > index ? { gate: ref.gate - 1 } : ref;
-    };
-    setGates((current) =>
-      current.filter((_, i) => i !== index).map((gate) => ({ ...gate, in: gate.in.map(fix) })),
-    );
-    setOut((current) => fix(current));
-    setPending(null);
+  function test(): void {
+    if (rounds.done) return;
+    const works = lights(current, state);
+    play(works ? 'ok' : 'erase');
+    setTested(state);
+    rounds.record(state.slice(), works, !works);
   }
 
-  /** Liga a origem tocada no encaixe que estava esperando. */
-  function wire(ref: CircuitRef): void {
-    if (!pending) return;
-    if ('out' in pending) {
-      setOut(ref);
-    } else {
-      const { gate, slot } = pending;
-      setGates((current) =>
-        current.map((g, i) =>
-          i === gate ? { ...g, in: g.in.map((value, s) => (s === slot ? ref : value)) } : g,
-        ),
-      );
-    }
-    setPending(null);
+  function next(): void {
+    const following = instance.rounds[rounds.round + 1];
+    if (following) setState(initialState(following));
+    setTested(null);
+    rounds.next();
   }
 
-  /** Origens validas para o encaixe que espera fio: so o que vem antes dele. */
-  function sourcesFor(target: Pending): CircuitRef[] {
-    if (!target) return [];
-    const until = 'out' in target ? gates.length : target.gate;
-    const refs: CircuitRef[] = [];
-    for (let i = 0; i < instance.inputs; i += 1) refs.push({ input: i });
-    for (let i = 0; i < until; i += 1) refs.push({ gate: i });
-    return refs;
-  }
+  const names = t.names;
+  const inputText = (i: number): string =>
+    current.neg[i] ? `${t.not} ${names[i] ?? i}` : `${t.switch} ${names[i] ?? i}`;
+  const description = current.gates
+    .map((gate, j) => {
+      const left = j === 0 ? inputText(0) : `${t.gate} ${j}`;
+      return `${t.gate} ${j + 1}, ${t.gates[gate]}: ${t.joins} ${left} ${t.and} ${inputText(j + 1)}.`;
+    })
+    .join(' ');
 
-  const complete =
-    gates.length > 0 && out !== null && gates.every((gate) => gate.in.every((ref) => ref !== null));
-
-  const solution: CircuitSolution | null = complete
-    ? { gates: gates.map((gate) => ({ type: gate.type, in: gate.in as CircuitRef[] })), out: out! }
-    : null;
-
-  const outputs = solution ? simulate(instance, solution) : null;
-  const rows = rowCount(instance.inputs);
-  const used = gates.length;
-  const full = used >= instance.maxGates;
-  const wrong = outputs ? outputs.filter((value, row) => value !== instance.table[row]).length : -1;
-  const sources = sourcesFor(pending);
+  const status = rounds.done
+    ? { text: t.lit, state: 'ok' as const }
+    : rounds.missed && tested
+      ? { text: t.dark, state: 'warn' as const }
+      : { text: t.prompt, state: 'idle' as const };
 
   return (
-    <section className="circuit game-surface" aria-label={ui.minigames.logica}>
-      <header className="circuit__head">
-        <h2>{ui.minigames.logica}</h2>
-        <p className="circuit__help">{mode === 'micro' ? t.microHelp : t.help}</p>
-      </header>
-
-      <MinigameHelp era="logica" mode={mode} />
-
-      <div className="circuit__block">
-        <h3>
-          {t.table} — {t.gatesUsed}: {used}/{instance.maxGates}
-        </h3>
-        <Gauge value={used} max={instance.maxGates} />
-        <table className="circuit__table">
-          <thead>
-            <tr>
-              {Array.from({ length: instance.inputs }, (_, i) => (
-                <th key={i} scope="col">
-                  {names[i] ?? i + 1}
-                </th>
-              ))}
-              <th scope="col">{t.wanted}</th>
-              <th scope="col">{t.yours}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: rows }, (_, row) => {
-              const mine = outputs ? outputs[row] : null;
-              const ok = mine === null ? null : mine === instance.table[row];
-              return (
-                <tr
-                  key={row}
-                  className={
-                    ok === false
-                      ? 'circuit__row circuit__row--wrong'
-                      : ok
-                        ? 'circuit__row circuit__row--ok'
-                        : 'circuit__row'
-                  }
-                >
-                  {Array.from({ length: instance.inputs }, (_, i) => (
-                    <td key={i} className="circuit__bit" data-on={inputValue(row, i)}>
-                      {inputValue(row, i) ? '1' : '0'}
-                    </td>
-                  ))}
-                  <td className="circuit__wanted" data-on={instance.table[row]}>
-                    {instance.table[row] ? '1' : '0'}
-                  </td>
-                  <td
-                    className="circuit__mine"
-                    aria-label={ok === null ? t.pending : ok ? t.rowOk : t.rowWrong}
-                  >
-                    {mine === null ? '–' : `${mine ? '1' : '0'} ${ok ? '✓' : '✗'}`}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <ul className="circuit__gates" aria-label={t.board}>
-        {gates.map((gate, index) => (
-          <li key={index} className="circuit__gate">
-            <span className="circuit__gateName">
-              <GateIcon type={gate.type} />
-              {index + 1}. {gateLabel(gate.type)}
-            </span>
-            <span className="circuit__slots">
-              {gate.in.map((ref, slot) => {
-                const waiting =
-                  pending !== null &&
-                  !('out' in pending) &&
-                  pending.gate === index &&
-                  pending.slot === slot;
-                return (
-                  <button
-                    key={slot}
-                    type="button"
-                    className={
-                      waiting
-                        ? 'circuit__slot circuit__slot--waiting'
-                        : ref
-                          ? 'circuit__slot circuit__slot--wired'
-                          : 'circuit__slot'
-                    }
-                    aria-pressed={waiting}
-                    onClick={() => setPending(waiting ? null : { gate: index, slot })}
-                    aria-label={`${t.wireInto} ${t.gate} ${index + 1}, ${t.slot} ${
-                      slot + 1
-                    }: ${refLabel(ref)}`}
-                  >
-                    {ref ? refLabel(ref) : t.emptySlot}
-                  </button>
-                );
-              })}
-            </span>
-            <button
-              type="button"
-              data-sfx="erase"
-              onClick={() => removeGate(index)}
-              aria-label={`${t.erase} ${t.gate} ${index + 1}`}
-            >
-              {t.eraseShort}
-            </button>
-          </li>
-        ))}
-        {gates.length === 0 ? <li className="circuit__empty">{t.emptyBoard}</li> : null}
-      </ul>
-
-      <div className="circuit__outRow">
-        <span>{t.out}:</span>
-        <button
-          type="button"
-          className={
-            pending !== null && 'out' in pending
-              ? 'circuit__slot circuit__slot--waiting'
-              : out
-                ? 'circuit__slot circuit__slot--wired'
-                : 'circuit__slot'
-          }
-          aria-pressed={pending !== null && 'out' in pending}
-          onClick={() =>
-            setPending((current) => (current && 'out' in current ? null : { out: true }))
-          }
-          aria-label={`${t.wireInto} ${t.out}: ${refLabel(out)}`}
+    <Frame
+      era="logica"
+      className="circuit"
+      mode={mode}
+      help={mode === 'micro' ? t.microHelp : t.help}
+      round={rounds.round}
+      total={rounds.total}
+      done={rounds.done}
+      mistakes={rounds.mistakes}
+      status={status}
+      onNext={next}
+      onExit={onExit}
+    >
+      <div className="mg__block">
+        <h3>{t.switches}</h3>
+        <div
+          className="circuit__switches"
+          style={{ gridTemplateColumns: `repeat(${inputs}, 1fr)` }}
+          role="group"
+          aria-label={t.switches}
         >
-          {refLabel(out)}
-        </button>
-      </div>
-
-      {pending ? (
-        <div className="controls circuit__sources" aria-label={t.pickSource}>
-          {sources.map((ref) => (
-            <button
-              key={'input' in ref ? `i${ref.input}` : `g${ref.gate}`}
-              type="button"
-              className={
-                sameRef(
-                  'out' in pending ? out : (gates[pending.gate]?.in[pending.slot] ?? null),
-                  ref,
-                )
-                  ? 'circuit__source circuit__source--current'
-                  : 'circuit__source'
-              }
-              data-sfx="place"
-              onClick={() => wire(ref)}
-            >
-              {refLabel(ref)}
-            </button>
-          ))}
-          {sources.length === 0 ? <p className="circuit__help">{t.noSources}</p> : null}
+          {state.map((on, i) => {
+            const locked = current.locked[i] !== null;
+            const word = on ? t.on : t.off;
+            return (
+              <button
+                key={i}
+                type="button"
+                className="circuit__switch"
+                data-on={on}
+                aria-pressed={on}
+                aria-label={`${t.switch} ${names[i] ?? i}: ${word}${locked ? `, ${t.locked}` : ''}`}
+                disabled={locked || rounds.done}
+                onClick={() => toggle(i)}
+              >
+                <strong>{names[i] ?? i}</strong>
+                <span>{locked ? `${word} (${t.locked})` : word}</span>
+              </button>
+            );
+          })}
         </div>
-      ) : (
-        <div className="controls circuit__palette" aria-label={t.palette}>
-          {TYPES.map((type) => (
-            <button
-              key={type}
-              type="button"
-              className="circuit__add"
-              disabled={full}
-              data-sfx="place"
-              onClick={() => addGate(type)}
-              aria-label={`${t.addGate} ${gateLabel(type)}`}
-            >
-              <GateIcon type={type} />
-              {gateLabel(type)}
-            </button>
-          ))}
-        </div>
-      )}
 
-      <p
-        className="circuit__status"
-        role="status"
-        data-state={!complete ? 'idle' : wrong === 0 ? 'ok' : 'warn'}
-      >
-        {!complete ? t.incomplete : wrong === 0 ? t.allRowsOk : `${t.rowsWrong}: ${wrong}`}
-      </p>
-
-      <div className="controls">
-        <button
-          type="button"
-          className="circuit__submit"
-          data-ready={complete && wrong === 0}
-          disabled={!solution}
-          onClick={() => solution && onSubmit(solution)}
+        <svg
+          className="circuit__diagram"
+          viewBox={`0 0 ${WIDTH} ${height}`}
+          role="img"
+          aria-label={`${t.diagram}. ${description}`}
         >
-          {ui.mission.submit}
-          {complete && wrong === 0 ? ' ✓' : ''}
-        </button>
-        <button type="button" onClick={onExit}>
-          {ui.mission.exit}
-        </button>
+          {current.neg.map((inverted, i) => {
+            const x = columnX(i, inputs);
+            const gate = boxes[Math.max(0, i - 1)] as GateBox;
+            const pin = gate.x + (i === 0 ? -PIN : PIN);
+            const bend = gate.y - GATE_H / 2 - 8;
+            return (
+              <g key={`in-${i}`}>
+                <path
+                  className="circuit__wire"
+                  data-on={flag(tested?.[i])}
+                  d={`M${x} ${TOP} V${NOT_Y}`}
+                />
+                <path
+                  className="circuit__wire"
+                  data-on={flag(signals?.[i])}
+                  d={`M${x} ${NOT_Y} V${bend} H${pin} V${gate.y - GATE_H / 2}`}
+                />
+                {inverted ? (
+                  <g className="circuit__not">
+                    <rect x={x - 19} y={NOT_Y - 9} width={38} height={18} rx={9} />
+                    <text x={x} y={NOT_Y + 4}>
+                      {t.not}
+                    </text>
+                  </g>
+                ) : null}
+              </g>
+            );
+          })}
+
+          {boxes.map((box, j) => {
+            const below = boxes[j + 1];
+            const on = flag(outputs?.[j]);
+            return (
+              <g key={`gate-${j}`}>
+                {below ? (
+                  <path
+                    className="circuit__wire"
+                    data-on={on}
+                    d={`M${box.x} ${box.y + GATE_H / 2} V${below.y - GATE_H / 2 - 8} H${below.x - PIN} V${below.y - GATE_H / 2}`}
+                  />
+                ) : (
+                  <path
+                    className="circuit__wire"
+                    data-on={on}
+                    d={`M${box.x} ${box.y + GATE_H / 2} V${lampY - LAMP_R}`}
+                  />
+                )}
+                <g className="circuit__gate" data-on={on}>
+                  <rect
+                    x={box.x - GATE_W / 2}
+                    y={box.y - GATE_H / 2}
+                    width={GATE_W}
+                    height={GATE_H}
+                    rx={8}
+                  />
+                  <text x={box.x} y={box.y + 5}>
+                    {t.gates[current.gates[j] as 'AND' | 'OR']}
+                  </text>
+                </g>
+              </g>
+            );
+          })}
+
+          <circle
+            className="circuit__lamp"
+            data-on={flag(lit)}
+            cx={lastBox.x}
+            cy={lampY}
+            r={LAMP_R}
+          />
+        </svg>
+        <p className="mg__note">{t.legend}</p>
       </div>
-    </section>
+
+      <button type="button" className="circuit__test" disabled={rounds.done} onClick={test}>
+        {t.test}
+      </button>
+    </Frame>
   );
 }

@@ -172,7 +172,13 @@ describe('contrato: superficie publica do nucleo', () => {
   });
 
   it('core/scoring', () => {
-    expect(exported(scoring)).toEqual(['bossScore', 'clampEfficiency', 'missionScore', 'starsFor']);
+    expect(exported(scoring)).toEqual([
+      'bossScore',
+      'clampEfficiency',
+      'missionScore',
+      'mistakeEfficiency',
+      'starsFor',
+    ]);
   });
 
   it('core/registry', () => {

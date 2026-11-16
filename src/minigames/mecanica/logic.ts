@@ -1,178 +1,101 @@
 import type { Difficulty, EraId, Evaluation, Minigame } from '@/core/types';
-import { LOOM, SCORING } from '@/core/constants';
+import { LOOM } from '@/core/constants';
 import { createRng, pick, randInt } from '@/core/rng';
+import { mistakeEfficiency } from '@/core/scoring';
+import { byDifficulty, replaySequence } from '../shared/logic';
 
 /**
  * Tear de Engrenagens (Era 1, poder Repetir).
  *
- * O jogador reproduz um padrao de cores na fita usando cartoes. Para caber no
- * limite de cartoes ele precisa usar REPETICAO: um grupo de cores com um
- * cartao "repetir xN" sai mais barato que escrever tudo na mao.
+ * O tear tece um desenho que se repete: um trecho curto de fios, de novo e de
+ * novo. O tecido chega com os ultimos fios faltando e o jogador os completa.
+ * Para acertar ele precisa enxergar o trecho que volta -- que e a ideia de
+ * repeticao, sem nenhuma conta.
  *
  * Puro e deterministico: sem React, DOM, relogio nem Math.random.
  */
 
+export interface LoomRound {
+  /** O tecido inteiro, fio por fio. */
+  cloth: string[];
+  /** Quantos fios do fim estao faltando. */
+  hidden: number;
+}
+
 export interface LoomInstance {
-  /** Padrao que a fita deve produzir, em cores. */
-  target: string[];
-  /** Cartoes disponiveis. Na missao B so cabe com repeticao. */
-  maxCards: number;
   colors: string[];
+  rounds: LoomRound[];
 }
 
-/** Um grupo da fita: uma sequencia de cores repetida `times` vezes. */
-export interface LoomGroup {
-  colors: string[];
-  times: number;
+/** Por rodada, as cores que o jogador tocou, na ordem (erros inclusive). */
+export type LoomSolution = string[][];
+
+/** Os fios que faltam numa rodada, na ordem em que entram. */
+export function missingOf(round: LoomRound): string[] {
+  return round.cloth.slice(round.cloth.length - round.hidden);
 }
 
-export type LoomSolution = LoomGroup[];
-
-/** Custo em cartoes: uma carta por cor, mais uma carta "repetir" se times > 1. */
-export function groupCost(group: LoomGroup): number {
-  return group.colors.length + (group.times > 1 ? 1 : 0);
-}
-
-export function solutionCost(solution: LoomSolution): number {
-  return solution.reduce((total, group) => total + groupCost(group), 0);
-}
-
-/** Resultado da fita: os grupos expandidos, em ordem. */
-export function expand(solution: LoomSolution): string[] {
-  const out: string[] = [];
-  for (const group of solution) {
-    const times = Math.max(0, Math.floor(group.times));
-    for (let i = 0; i < times; i += 1) out.push(...group.colors);
+/** Um trecho so serve se nao for ele mesmo uma repeticao de um trecho menor. */
+function isPrimitive(unit: readonly string[]): boolean {
+  for (let size = 1; size < unit.length; size += 1) {
+    if (unit.length % size !== 0) continue;
+    if (unit.every((color, i) => color === unit[i % size])) return false;
   }
-  return out;
+  return true;
 }
 
-function sameSequence(a: readonly string[], b: readonly string[]): boolean {
-  return a.length === b.length && a.every((value, i) => value === b[i]);
-}
-
-function isValidGroup(group: LoomGroup, colors: readonly string[]): boolean {
-  if (!Array.isArray(group.colors) || group.colors.length === 0) return false;
-  if (!Number.isInteger(group.times) || group.times < 1) return false;
-  if (group.times > LOOM.MAX_REPEAT) return false;
-  return group.colors.every((c) => colors.includes(c));
+function drawUnit(rng: () => number, colors: readonly string[], size: number): string[] {
+  for (let attempt = 0; attempt < LOOM.GEN_ATTEMPTS; attempt += 1) {
+    const unit = Array.from({ length: size }, () => pick(rng, colors));
+    if (isPrimitive(unit)) return unit;
+  }
+  // Reserva: uma cor, depois a outra ate o fim. Nunca e repeticao de trecho menor.
+  return Array.from({ length: size }, (_, i) => (i === 0 ? colors[0] : colors[1]) as string);
 }
 
 /**
- * Codificacao mais curta possivel do padrao, por programacao dinamica:
- * best[i] = menor custo para produzir target[i..]. Cada trecho candidato e uma
- * unidade repetida um numero inteiro de vezes.
- */
-export function reference(instance: LoomInstance): LoomSolution {
-  const target = instance.target;
-  const n = target.length;
-  const best: number[] = new Array(n + 1).fill(Number.POSITIVE_INFINITY);
-  const choice: (LoomGroup | null)[] = new Array(n + 1).fill(null);
-  best[n] = 0;
-
-  for (let i = n - 1; i >= 0; i -= 1) {
-    for (let end = i + 1; end <= n; end += 1) {
-      const segment = target.slice(i, end);
-      // A unidade mais curta que, repetida, forma o trecho.
-      for (let unitLen = 1; unitLen <= segment.length; unitLen += 1) {
-        if (segment.length % unitLen !== 0) continue;
-        const times = segment.length / unitLen;
-        if (times > LOOM.MAX_REPEAT) continue;
-        const unit = segment.slice(0, unitLen);
-        let repeats = true;
-        for (let k = 1; k < times && repeats; k += 1) {
-          for (let j = 0; j < unitLen; j += 1) {
-            if (segment[k * unitLen + j] !== unit[j]) {
-              repeats = false;
-              break;
-            }
-          }
-        }
-        if (!repeats) continue;
-
-        const group: LoomGroup = { colors: unit, times };
-        const cost = groupCost(group) + (best[end] as number);
-        if (cost < (best[i] as number)) {
-          best[i] = cost;
-          choice[i] = group;
-        }
-        // Unidades maiores que a minima nunca saem mais baratas para o mesmo trecho.
-        break;
-      }
-    }
-  }
-
-  const solution: LoomSolution = [];
-  let cursor = 0;
-  while (cursor < n) {
-    const group = choice[cursor];
-    if (!group) throw new Error('Tear: padrao sem codificacao possivel.');
-    solution.push(group);
-    cursor += group.colors.length * group.times;
-  }
-  return solution;
-}
-
-export function referenceCost(instance: LoomInstance): number {
-  return solutionCost(reference(instance));
-}
-
-function patternLength(difficulty: Difficulty): number {
-  return LOOM.LENGTH[String(difficulty)] ?? LOOM.LENGTH['1'] ?? 8;
-}
-
-/**
- * Gera um padrao sempre solucionavel: monta a partir de grupos repetidos, de
- * modo que exista uma codificacao com repeticao dentro do limite de cartoes.
+ * Cada rodada mostra o trecho pelo menos duas vezes inteiras antes dos fios que
+ * faltam: com menos que isso nao da para saber o que se repete. O trecho cresce
+ * da primeira para a ultima rodada.
  */
 export function generate(seed: string, difficulty: Difficulty): LoomInstance {
   const rng = createRng(`tear:${seed}:${difficulty}`);
   const colors = LOOM.COLORS.slice();
-  const wanted = patternLength(difficulty);
-  const target: string[] = [];
+  const total = byDifficulty(LOOM.ROUNDS, difficulty, 3);
+  const unitMin = byDifficulty(LOOM.UNIT_MIN, difficulty, 2);
+  const unitMax = byDifficulty(LOOM.UNIT_MAX, difficulty, 3);
+  const hidden = byDifficulty(LOOM.HIDDEN, difficulty, 3);
 
-  while (target.length < wanted) {
-    const remaining = wanted - target.length;
-    const unitLen = Math.min(randInt(rng, 1, 3), remaining);
-    const maxTimes = Math.min(LOOM.MAX_REPEAT, Math.floor(remaining / unitLen));
-    const times = maxTimes <= 1 ? 1 : randInt(rng, 2, maxTimes);
-    const unit = Array.from({ length: unitLen }, () => pick(rng, colors));
-    for (let i = 0; i < times; i += 1) target.push(...unit);
+  const rounds: LoomRound[] = [];
+  for (let index = 0; index < total; index += 1) {
+    const grow = total <= 1 ? 0 : Math.round(((unitMax - unitMin) * index) / (total - 1));
+    const size = unitMin + grow;
+    const unit = drawUnit(rng, colors, size);
+    const shown = size * 2 + randInt(rng, 0, size - 1);
+    const cloth = Array.from({ length: shown + hidden }, (_, i) => unit[i % size] as string);
+    rounds.push({ cloth, hidden });
   }
-
-  const draft: LoomInstance = { target, maxCards: target.length, colors };
-  const minimum = referenceCost(draft);
-
-  /*
-   * Missao A e a versao micro sao o tutorial: cabem escrevendo o padrao na mao,
-   * cartao por cartao (so que ai a eficiencia fica baixa e rende 1 estrela).
-   * Da missao B em diante o limite e o custo da referencia, ou seja, so fecha
-   * usando repeticao.
-   */
-  const handCost = target.length;
-  const maxCards =
-    difficulty === 1 || difficulty === 'micro' ? Math.max(handCost, minimum) : minimum;
-  return { target, maxCards, colors };
+  return { colors, rounds };
 }
 
-/**
- * Avalia a fita. `ok` exige o padrao exato dentro do limite de cartoes.
- * Eficiencia = cartoes da referencia / cartoes usados (1 = tao bom quanto a referencia).
- */
+export function reference(instance: LoomInstance): LoomSolution {
+  return instance.rounds.map(missingOf);
+}
+
+/** `ok` exige todos os tecidos completos; cada fio errado custa eficiencia. */
 export function evaluate(instance: LoomInstance, solution: LoomSolution): Evaluation {
-  if (!Array.isArray(solution) || solution.length === 0) {
+  if (!Array.isArray(solution) || solution.length !== instance.rounds.length) {
     return { ok: false, efficiency: 0 };
   }
-  if (!solution.every((group) => isValidGroup(group, instance.colors))) {
-    return { ok: false, efficiency: 0 };
+  let mistakes = 0;
+  for (let i = 0; i < instance.rounds.length; i += 1) {
+    const picks = solution[i];
+    if (!Array.isArray(picks)) return { ok: false, efficiency: 0 };
+    const replay = replaySequence(missingOf(instance.rounds[i] as LoomRound), picks);
+    if (!replay.done) return { ok: false, efficiency: 0 };
+    mistakes += replay.mistakes;
   }
-
-  const used = solutionCost(solution);
-  if (used > instance.maxCards) return { ok: false, efficiency: 0 };
-  if (!sameSequence(expand(solution), instance.target)) return { ok: false, efficiency: 0 };
-
-  const efficiency = Math.min(referenceCost(instance) / used, SCORING.EFFICIENCY_MAX);
-  return { ok: true, efficiency };
+  return { ok: true, efficiency: mistakeEfficiency(mistakes) };
 }
 
 export const era: EraId = 'mecanica';

@@ -707,3 +707,65 @@ O ajuste "Reduzir animações" saiu, e com ele a resposta a
 sentido. Isso revoga o trecho da D56 ("Reduzir animações zera a duração") e o
 final da D57 (o laço do mapa que não começava). A regra de que nenhuma animação
 em laço mexe em `transform` ou tamanho de botão continua valendo.
+
+## 2026-11-16 — Os seis minijogos refeitos em rodadas curtas
+
+### D69. Todo minijogo é jogado em rodadas, sempre fecha, e o erro custa estrela
+
+Os seis minijogos passaram a seguir um molde só:
+
+- **Rodadas curtas** (de 1 a 5, por dificuldade, em `constants.ts`), cada uma um
+  desafio pequeno que se resolve em poucos toques.
+- **Sempre concluível.** Toque errado não avança e não reprova: conta um erro. A
+  eficiência sai de `mistakeEfficiency` (`core/scoring`): 1 sem erro, menos
+  `MISTAKE_PENALTY` por erro, até o piso `MISTAKE_FLOOR`. Quem chega ao fim
+  passa; o capricho decide as estrelas.
+- **A solução enviada é o registro dos toques**, erros inclusive. Quem conta os
+  erros é o `evaluate`, não a tela — a tela continua sem calcular nota.
+- **A tela é uma moldura só** (`minigames/shared/Frame` + `useRounds`): título,
+  rodada, a peça da era, a frase de estado e o botão de seguir.
+
+O que cada era virou: Tear completa os fios que faltam de um desenho que se
+repete; Circuitos arma chaves até a lâmpada acender; Mesa de Bits liga os bits
+que somam um número; Rota leva o pacote de vizinha em vizinha; Cofre desfaz uma
+cifra de César letra por letra; Detector descobre a regra pelos exemplos.
+
+Duas exceções ao molde, de propósito:
+
+- **Rota dos Pacotes** não tem "erro": qualquer caminho chega. A eficiência é
+  atraso do melhor caminho ÷ atraso do caminho feito.
+- **Treinar o Detector** não deixa tentar de novo dentro da rodada (a resposta é
+  sim ou não; repetir seria acertar por eliminação). É o único que pode
+  reprovar: precisa de `MODEL.PASS_RATIO` de acertos.
+
+**Revoga:** D15 e D16 (cartões e referência ótima do Tear), D36 a D40 (montagem
+de circuito a partir da tabela), D45 (cada minijogo imita o algoritmo clássico
+e a referência é o ótimo — agora a referência é "jogar sem errar"), D46 (Era 5
+como a Era 4 de trás para a frente) e D47 (sinal-armadilha da Era 6). D41 a D44
+(explicação e dicas) e D48 (o chefão é a versão `micro` dos seis) continuam
+valendo.
+
+### D70. As senhas do Cofre moram no `logic.ts`, não em `data/`
+
+A regra é que texto de jogador mora em `src/data/*.pt-BR.json`. As palavras do
+Cofre Criptográfico são exceção: elas são **material do quebra-cabeça**, e o
+`evaluate` precisa delas para conferir a resposta — e `logic.ts` não pode ler
+`data/` (contrato de arquitetura). Só entram palavras que se escrevem sem acento
+e sem cedilha, para a senha decifrada ser português correto.
+
+### D71. O circuito só mostra o sinal depois do teste, e a Mesa só soma depois de gravar
+
+Nas eras 2 e 3 a tela poderia mostrar o resultado ao vivo (a lâmpada acendendo
+enquanto se mexe nas chaves, a soma dos bits subindo). Não mostra: com o
+resultado à vista o jogador mexe até dar certo e não erra nunca — nem aprende a
+regra da porta ou a conta dos bits. O retorno vem **depois** de "Testar" e de
+"Gravar": o circuito pinta por onde o sinal passou, e a Mesa diz o número que
+foi gravado. A Mesa mostra só quais bits estão ligados ("8 + 2"), não o total.
+
+### D72. Os testes de ponta a ponta jogam os minijogos no chute onde dá
+
+Como toque errado não reprova, o e2e do Tear e dos Circuitos fecha a missão
+tentando as opções em rodízio, sem repetir no teste a lógica do `core`. Isso
+cobre a promessa da D69 (sempre fecha) pela interface. Onde a tela escreve o que
+é preciso para jogar certo (o número pedido, a chave da cifra), o teste joga
+certo e cobra as 3 estrelas.

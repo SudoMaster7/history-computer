@@ -15,6 +15,16 @@ export function starsFor(efficiency: number, ok: boolean): Stars {
   return 1;
 }
 
+/**
+ * Eficiencia de um minijogo concluido com `mistakes` erros: 1 sem erro, e cada
+ * erro tira um pouco, ate o piso. Quem chega ao fim sempre passa; o capricho
+ * decide as estrelas.
+ */
+export function mistakeEfficiency(mistakes: number): number {
+  const count = Number.isFinite(mistakes) ? Math.max(0, Math.floor(mistakes)) : 0;
+  return Math.max(SCORING.MISTAKE_FLOOR, 1 - count * SCORING.MISTAKE_PENALTY);
+}
+
 /** round(1000 x eficiencia), limitada a 1500. */
 export function missionScore(efficiency: number): number {
   const raw = Math.round(clampEfficiency(efficiency) * SCORING.MISSION_SCORE_FACTOR);

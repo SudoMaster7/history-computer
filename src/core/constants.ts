@@ -41,6 +41,10 @@ export const SCORING = {
   BOSS_PER_HP: 10,
   BOSS_PER_TURN: 60,
   BOSS_SCORE_MIN: 200,
+  /** Nos minijogos, cada erro tira esta fracao da eficiencia... */
+  MISTAKE_PENALTY: 0.07,
+  /** ...ate este piso: quem conclui nunca fica abaixo dele. */
+  MISTAKE_FLOOR: 0.5,
 } as const;
 
 export const POWERS = {
@@ -125,83 +129,87 @@ export const WORLD = {
   FRAGMENT_TOP_MARGIN: 2,
 } as const;
 
-export const CIRCUIT = {
-  /** Portas disponiveis na paleta dos Circuitos Logicos. */
-  TYPES: ['NOT', 'AND', 'OR'] as readonly string[],
-  /** Chaves de entrada do cofre, por dificuldade. */
-  INPUTS: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
-  /** Faixa de portas que a tabela sorteada pode exigir, por dificuldade. */
-  MIN_GATES: { micro: 2, 1: 2, 2: 3, 3: 4 } as Record<string, number>,
-  TOP_GATES: { micro: 2, 1: 3, 2: 5, 3: 6 } as Record<string, number>,
-  /** Folga de portas acima da referencia que a solucao ainda aceita. */
-  SLACK: { micro: 1, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
-  /** Sorteios de tabela antes de cair na varredura deterministica. */
+/*
+ * Os seis minijogos seguem o mesmo molde (D69): rodadas curtas, sempre
+ * concluiveis, em que o erro custa estrela e nao a missao. O que muda por
+ * dificuldade e quantas rodadas ha e o tamanho de cada uma.
+ */
+
+export const LOOM = {
+  /** Cores de fio do Tear de Engrenagens. */
+  COLORS: ['a', 'b', 'c'] as readonly string[],
+  /** Tecidos (rodadas) por dificuldade. */
+  ROUNDS: { micro: 2, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
+  /** Faixa de tamanho do trecho que se repete. */
+  UNIT_MIN: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  UNIT_MAX: { micro: 2, 1: 3, 2: 4, 3: 4 } as Record<string, number>,
+  /** Fios que faltam no fim do tecido, para o jogador completar. */
+  HIDDEN: { micro: 2, 1: 3, 2: 4, 3: 4 } as Record<string, number>,
+  /** Sorteios de trecho antes de cair no trecho de reserva. */
   GEN_ATTEMPTS: 40,
 } as const;
 
+export const CIRCUIT = {
+  /** Portas que um circuito pode ter (o NAO entra como inversor de chave). */
+  TYPES: ['AND', 'OR'] as readonly string[],
+  /** Circuitos (rodadas) por dificuldade. */
+  ROUNDS: { micro: 2, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
+  /** Rodada (a partir de 0) em que os circuitos passam a ter tres chaves. */
+  THREE_FROM: { micro: 9, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
+  /** Rodada a partir da qual uma chave pode vir travada. */
+  LOCK_FROM: { micro: 9, 1: 9, 2: 2, 3: 1 } as Record<string, number>,
+  /** Sorteios de circuito antes de cair no circuito de reserva. */
+  GEN_ATTEMPTS: 60,
+} as const;
+
 export const BITS = {
-  /** Simbolos que a mensagem pode usar, na ordem em que entram na mesa. */
-  SYMBOLS: ['A', 'B', 'C', 'D', 'E'] as readonly string[],
-  /** Quantos simbolos diferentes a mensagem tem, por dificuldade. */
-  COUNT: { micro: 3, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
-  /** Faixa de repeticoes de um simbolo na mensagem. */
-  MIN_WEIGHT: 1,
-  MAX_WEIGHT: 9,
-  /** Comprimento maximo de um codigo, para a mesa caber na tela do celular. */
-  MAX_CODE_LEN: 6,
-  /** Bits acima do codigo otimo que a missao ainda aceita. */
-  SLACK: { micro: 4, 1: 4, 2: 2, 3: 0 } as Record<string, number>,
-  /** Sorteios de pesos antes de cair na mensagem deterministica de reserva. */
+  /** Numeros a gravar (rodadas) por dificuldade. */
+  ROUNDS: { micro: 2, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
+  /** Quantos bits a mesa tem. Com 4 bits cabem os numeros de 0 a 15. */
+  WIDTH: { micro: 3, 1: 4, 2: 5, 3: 6 } as Record<string, number>,
+  /** Sorteios de numero antes de cair na contagem de reserva. */
   GEN_ATTEMPTS: 40,
 } as const;
 
 export const ROUTE = {
-  /** Nos da rede, por dificuldade (contando origem e destino). */
-  NODES: { micro: 6, 1: 6, 2: 8, 3: 10 } as Record<string, number>,
-  /** Ligacoes extras sorteadas acima da arvore que garante a rede conexa. */
-  EXTRA_LINKS: { micro: 2, 1: 3, 2: 5, 3: 7 } as Record<string, number>,
-  /** Faixa de atraso de uma ligacao, em milissegundos de mentira. */
+  /** Mapas (rodadas) por dificuldade. */
+  ROUNDS: { micro: 1, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Fileiras de maquinas entre a origem e o destino. */
+  LAYERS: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Maquinas por fileira. */
+  WIDTH: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Faixa de atraso de uma ligacao. */
   MIN_COST: 1,
   MAX_COST: 9,
-  /** Folga de atraso acima da rota mais curta que a missao ainda aceita. */
-  SLACK: { micro: 6, 1: 6, 2: 3, 3: 0 } as Record<string, number>,
-  /** Sorteios de rede antes de cair na rede deterministica de reserva. */
+  /** Sorteios de mapa antes de aceitar o que vier. */
   GEN_ATTEMPTS: 40,
 } as const;
 
 export const VAULT = {
-  /** Camadas de maquinas entre a entrada da rede e o cofre, por dificuldade. */
-  LAYERS: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
-  /** Maquinas por camada. */
-  WIDTH: { micro: 2, 1: 2, 2: 2, 3: 3 } as Record<string, number>,
-  /** Ligacoes extras sorteadas entre camadas vizinhas. */
-  EXTRA_LINKS: { micro: 1, 1: 2, 2: 3, 3: 4 } as Record<string, number>,
-  /** Firewalls acima do corte minimo que a missao ainda aceita. */
-  SLACK: { micro: 2, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
-  /** Sorteios de rede antes de cair na rede deterministica de reserva. */
-  GEN_ATTEMPTS: 40,
+  /** Senhas (rodadas) por dificuldade. */
+  ROUNDS: { micro: 1, 1: 2, 2: 2, 3: 3 } as Record<string, number>,
+  /** Faixa da chave: quantas casas cada letra andou no alfabeto. */
+  SHIFT_MIN: { micro: 1, 1: 1, 2: 2, 3: 3 } as Record<string, number>,
+  SHIFT_MAX: { micro: 1, 1: 1, 2: 3, 3: 5 } as Record<string, number>,
+  /** Tamanho maximo da senha, em letras. */
+  MAX_LEN: { micro: 4, 1: 5, 2: 6, 3: 6 } as Record<string, number>,
+  /** Letras oferecidas a cada casa da senha (uma e a certa). */
+  CHOICES: 3,
 } as const;
 
 export const MODEL = {
-  /** Sinais que o detector pode observar, por dificuldade. */
-  SIGNALS: { micro: 4, 1: 4, 2: 5, 3: 6 } as Record<string, number>,
-  /** Sinais que de fato causam o ataque (os outros sao coincidencia). */
-  REAL: { micro: 2, 1: 2, 2: 2, 3: 3 } as Record<string, number>,
-  /** Exemplos rotulados mostrados ao jogador (o treino). */
-  TRAIN: { micro: 6, 1: 6, 2: 8, 3: 10 } as Record<string, number>,
-  /** Exemplos guardados para a prova do detector (o teste). */
-  TEST: { micro: 3, 1: 3, 2: 4, 3: 5 } as Record<string, number>,
-  /** Sinais acima do minimo que a missao ainda aceita. */
-  SLACK: { micro: 2, 1: 2, 2: 1, 3: 0 } as Record<string, number>,
-  /** Sorteios de conjunto antes de cair no conjunto deterministico de reserva. */
-  GEN_ATTEMPTS: 60,
-} as const;
-
-export const LOOM = {
-  /** Cores disponiveis na paleta do Tear de Engrenagens. */
-  COLORS: ['a', 'b', 'c'] as readonly string[],
-  /** Repeticao maxima que um cartao "repetir xN" aceita. */
-  MAX_REPEAT: 6,
-  /** Tamanho do padrao por dificuldade. */
-  LENGTH: { micro: 6, 1: 8, 2: 14, 3: 20 } as Record<string, number>,
+  /** Regras escondidas (rodadas) por dificuldade. */
+  ROUNDS: { micro: 1, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Caracteristicas que variam entre os programas (cor, forma, antena). */
+  ATTRS: { micro: 2, 1: 2, 2: 3, 3: 3 } as Record<string, number>,
+  /** Valores possiveis de cada caracteristica, na ordem. */
+  VALUES: [3, 3, 2] as readonly number[],
+  /** Exemplos ja rotulados mostrados ao jogador. */
+  TRAIN: { micro: 4, 1: 4, 2: 5, 3: 6 } as Record<string, number>,
+  /** Programas novos que o jogador classifica. */
+  TEST: { micro: 3, 1: 3, 2: 4, 3: 4 } as Record<string, number>,
+  /** Fracao de acertos para o detector ser aprovado. */
+  PASS_RATIO: 0.6,
+  /** Sorteios de exemplos antes de cair no conjunto de reserva. */
+  GEN_ATTEMPTS: 80,
 } as const;

@@ -11,5 +11,5 @@ export const segurancaModule: MinigameModule<VaultInstance, VaultSolution> = {
   Screen,
 };
 
-export type { VaultInstance, VaultSolution, VaultLink } from './logic';
+export type { VaultInstance, VaultSolution } from './logic';
 export default segurancaModule;

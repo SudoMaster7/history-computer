@@ -11,5 +11,5 @@ export const codigoModule: MinigameModule<BitsInstance, BitsSolution> = {
   Screen,
 };
 
-export type { BitsInstance, BitsSolution, BitsSymbol } from './logic';
+export type { BitsInstance, BitsSolution } from './logic';
 export default codigoModule;

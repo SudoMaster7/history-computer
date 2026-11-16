@@ -1,168 +1,124 @@
 import { useState } from 'react';
 import type { MinigameScreenProps } from '@/core/types';
-import type { BitsInstance, BitsSolution } from './logic';
-import { isPrefixFree, prefixClashes, solutionCost } from './logic';
-import { BITS } from '@/core/constants';
-import MinigameHelp from '@/ui/MinigameHelp';
-import Gauge from '@/ui/Gauge';
+import { play } from '@/fx';
 import ui from '@/data/ui.pt-BR.json';
-
-type Props = MinigameScreenProps<BitsInstance, BitsSolution>;
+import Frame from '../shared/Frame';
+import { useRounds } from '../shared/useRounds';
+import type { BitsInstance, BitsSolution } from './logic';
+import { bitValue, bitsOf, valueOf } from './logic';
 
 /**
- * Mesa de Bits. Cada simbolo tem dois botoes grandes (0 e 1) e um de apagar:
- * o codigo cresce bit a bit, por toque, sem teclado e sem arrastar.
+ * Mesa de Bits: uma fileira de bits, cada um valendo o dobro do vizinho. O
+ * jogador liga os que somam o numero pedido e manda gravar. A soma so aparece
+ * depois de gravar -- fazer a conta e o exercicio.
  */
-export default function BitsScreen({ instance, mode, onSubmit, onExit }: Props) {
-  const [codes, setCodes] = useState<Record<string, string>>(() =>
-    Object.fromEntries(instance.symbols.map((s) => [s.id, ''])),
-  );
+export default function Screen({
+  instance,
+  mode,
+  onSubmit,
+  onExit,
+}: MinigameScreenProps<BitsInstance, BitsSolution>) {
   const t = ui.bits;
+  const { width } = instance;
+  const rounds = useRounds<number>(instance.targets.length, onSubmit);
+  const target = instance.targets[rounds.round] as number;
 
-  function addBit(id: string, bit: '0' | '1'): void {
-    setCodes((current) => {
-      const code = current[id] ?? '';
-      if (code.length >= BITS.MAX_CODE_LEN) return current;
-      return { ...current, [id]: code + bit };
-    });
+  const [bits, setBits] = useState<boolean[]>(() => new Array<boolean>(width).fill(false));
+  /** A mesa foi mexida depois da ultima gravacao. */
+  const [dirty, setDirty] = useState(true);
+
+  const litValues = bits.flatMap((on, i) => (on ? [bitValue(width, i)] : []));
+  const lastWritten = rounds.entries[rounds.entries.length - 1];
+
+  function toggle(index: number): void {
+    if (rounds.done) return;
+    play('tap');
+    setBits((now) => now.map((on, i) => (i === index ? !on : on)));
+    setDirty(true);
   }
 
-  function erase(id: string): void {
-    setCodes((current) => ({ ...current, [id]: (current[id] ?? '').slice(0, -1) }));
+  function write(): void {
+    if (rounds.done) return;
+    const value = valueOf(bits);
+    const right = value === target;
+    play(right ? 'ok' : 'erase');
+    setDirty(false);
+    rounds.record(value, right, !right);
   }
 
-  const complete = instance.symbols.every((s) => (codes[s.id] ?? '').length > 0);
-  const solution: BitsSolution | null = complete ? codes : null;
+  function next(): void {
+    setBits(new Array<boolean>(width).fill(false));
+    setDirty(true);
+    rounds.next();
+  }
 
-  const used = solution ? solutionCost(instance, solution) : 0;
-  const clashes = prefixClashes(codes);
-  const ambiguous = clashes.length > 0;
-  const overBudget = used > instance.maxBits;
-  const ready = complete && !ambiguous && !overBudget;
-
-  /** Simbolos cujo codigo entra em conflito com o de outro. */
-  const inClash = new Set(clashes.flat());
+  const status = rounds.done
+    ? {
+        text: `${t.roundDone} ${bitsOf(target, width)
+          .map((on) => (on ? '1' : '0'))
+          .join('')}`,
+        state: 'ok' as const,
+      }
+    : rounds.missed && !dirty && lastWritten !== undefined
+      ? { text: `${t.wrote} ${lastWritten}. ${t.wanted} ${target}.`, state: 'warn' as const }
+      : { text: t.prompt, state: 'idle' as const };
 
   return (
-    <section className="bits game-surface" aria-label={ui.minigames.codigo}>
-      <header className="bits__head">
-        <h2>{ui.minigames.codigo}</h2>
-        <p className="bits__help">{mode === 'micro' ? t.microHelp : t.help}</p>
-      </header>
+    <Frame
+      era="codigo"
+      className="bits"
+      mode={mode}
+      help={mode === 'micro' ? t.microHelp : t.help}
+      round={rounds.round}
+      total={rounds.total}
+      done={rounds.done}
+      mistakes={rounds.mistakes}
+      status={status}
+      onNext={next}
+      onExit={onExit}
+    >
+      <p className="bits__target">
+        <span className="label">{t.target}</span>
+        <strong>{target}</strong>
+      </p>
 
-      <MinigameHelp era="codigo" mode={mode} />
-
-      <div className="bits__block">
-        <h3>
-          {t.budget}: {complete ? used : '–'}/{instance.maxBits} {t.bits}
-        </h3>
-        <Gauge value={complete ? used : 0} max={instance.maxBits} />
-        <ul className="bits__table" aria-label={t.message}>
-          {instance.symbols.map((symbol, order) => {
-            const code = codes[symbol.id] ?? '';
-            const clash = inClash.has(symbol.id);
+      <div className="mg__block">
+        <h3>{t.table}</h3>
+        <div
+          className="bits__row"
+          style={{ gridTemplateColumns: `repeat(${width}, 1fr)` }}
+          role="group"
+          aria-label={t.table}
+        >
+          {bits.map((on, i) => {
+            const value = bitValue(width, i);
             return (
-              <li
-                key={symbol.id}
-                className={clash ? 'bits__row bits__row--clash' : 'bits__row'}
-                aria-label={`${t.symbol} ${symbol.id}, ${symbol.weight} ${t.times}, ${t.code} ${
-                  code.length > 0 ? code : t.empty
-                }`}
+              <button
+                key={i}
+                type="button"
+                className="bits__bit"
+                data-on={on}
+                aria-pressed={on}
+                aria-label={`${t.bit} ${value}: ${on ? t.on : t.off}`}
+                disabled={rounds.done}
+                onClick={() => toggle(i)}
               >
-                <span className="bits__symbol" data-sym={order} aria-hidden="true">
-                  {symbol.id}
+                <span className="bits__led" aria-hidden="true">
+                  {on ? '1' : '0'}
                 </span>
-                <span className="bits__weight" aria-hidden="true">
-                  {symbol.weight}
-                  {t.timesShort}
-                </span>
-                {/* Cada bit e um transistor: aceso vale 1, apagado vale 0. */}
-                <span className="bits__code" aria-hidden="true">
-                  {code.length > 0
-                    ? code.split('').map((bit, i) => (
-                        <i key={i} className="bits__led" data-on={bit === '1'}>
-                          {bit}
-                        </i>
-                      ))
-                    : t.empty}
-                </span>
-                <span className="bits__buttons">
-                  <button
-                    type="button"
-                    data-sfx="place"
-                    onClick={() => addBit(symbol.id, '0')}
-                    aria-label={`${t.addZero} ${symbol.id}`}
-                  >
-                    0
-                  </button>
-                  <button
-                    type="button"
-                    data-sfx="place"
-                    onClick={() => addBit(symbol.id, '1')}
-                    aria-label={`${t.addOne} ${symbol.id}`}
-                  >
-                    1
-                  </button>
-                  <button
-                    type="button"
-                    disabled={code.length === 0}
-                    data-sfx="erase"
-                    onClick={() => erase(symbol.id)}
-                    aria-label={`${t.erase} ${symbol.id}`}
-                  >
-                    {t.eraseShort}
-                  </button>
-                </span>
-              </li>
+                <span className="bits__value">{value}</span>
+              </button>
             );
           })}
-        </ul>
-      </div>
-
-      {/* A fita, montada com os codigos escolhidos: e onde o gasto fica visivel. */}
-      <div className="bits__block">
-        <h3>{t.tape}</h3>
-        <p className="bits__tape" aria-label={t.tape}>
-          {complete
-            ? instance.symbols.map((s, order) => (
-                // Um trecho por simbolo, na cor dele: da para ver quem gasta a fita.
-                <span key={s.id} className="bits__run" data-sym={order}>
-                  {(codes[s.id] as string).repeat(s.weight)}
-                </span>
-              ))
-            : t.tapeEmpty}
+        </div>
+        <p className="mg__note">
+          {t.lit}: {litValues.length > 0 ? litValues.join(' + ') : t.none}
         </p>
       </div>
 
-      <p
-        className="bits__status"
-        role="status"
-        data-state={!complete ? 'idle' : ready ? 'ok' : 'warn'}
-      >
-        {!complete
-          ? t.incomplete
-          : ambiguous
-            ? `${t.ambiguous}: ${clashes.map(([a, b]) => `${a}/${b}`).join(', ')}`
-            : overBudget
-              ? `${t.overBudget} (${used}/${instance.maxBits})`
-              : t.allOk}
-      </p>
-
-      <div className="controls">
-        <button
-          type="button"
-          className="bits__submit"
-          data-ready={ready}
-          disabled={!solution}
-          onClick={() => solution && onSubmit(solution)}
-        >
-          {ui.mission.submit}
-          {ready && isPrefixFree(Object.values(codes)) ? ' ✓' : ''}
-        </button>
-        <button type="button" onClick={onExit}>
-          {ui.mission.exit}
-        </button>
-      </div>
-    </section>
+      <button type="button" className="bits__write" disabled={rounds.done} onClick={write}>
+        {t.write}
+      </button>
+    </Frame>
   );
 }

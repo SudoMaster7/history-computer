@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [refazer os seis minijogos em rodadas curtas](changes/2026-11-16-refazer-os-seis-minijogos-em-rodadas-curtas.md) — 2026-11-16
+
 - [tirar o ajuste reduzir animacoes](changes/2026-11-16-tirar-o-ajuste-reduzir-animacoes.md) — 2026-11-16
 
 - [tirar o realce azulado do toque no mapa](changes/2026-11-13-tirar-o-realce-azulado-do-toque-no-mapa.md) — 2026-11-13

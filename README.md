@@ -97,7 +97,7 @@ O que o contrato garante, e não é promessa: `tests/contract/progression.test.t
 campanha inteira resolvendo os seis minijogos pelas funções puras e vence o chefão. Se
 alguma era deixar de fechar, ele falha dizendo qual.
 
-Hoje a suíte está em **431 testes de unidade e de contrato** (20 arquivos) e **141 testes
+Hoje a suíte está em **325 testes de unidade e de contrato** (21 arquivos) e **147 testes
 de ponta a ponta** em Pixel 5, iPhone 12 e desktop — estes últimos cobrem os seis
 minijogos, a arena do chefão, o uso de item em combate, os fragmentos, o som e a música, o modo
 desenvolvedor e o alvo de toque mínimo de 44 px em cada tela.

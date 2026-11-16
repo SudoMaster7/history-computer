@@ -11,5 +11,5 @@ export const logicaModule: MinigameModule<CircuitInstance, CircuitSolution> = {
   Screen,
 };
 
-export type { CircuitInstance, CircuitSolution, Gate, GateType, CircuitRef } from './logic';
+export type { CircuitInstance, CircuitSolution, GateType } from './logic';
 export default logicaModule;

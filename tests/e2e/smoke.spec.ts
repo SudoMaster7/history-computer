@@ -48,18 +48,54 @@ async function goToNpc(page: Page, col: number, row: number): Promise<void> {
   expect(await bitCell(page)).not.toBe(col + ',' + row);
 }
 
-/** Vai do menu ate o mapa da primeira zona, com o tutorial fora do caminho. */
-/** Resolve o Tear escrevendo o padrao cor por cor (a missao A tem folga). */
-async function solveLoomByHand(page: Page): Promise<void> {
-  const colors = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('[aria-label="Padrão a reproduzir"] .loom__cell')).map(
-      (cell) => (cell.getAttribute('aria-label') ?? '').replace('cor ', ''),
+/**
+ * Os seis minijogos sao jogados em rodadas (D69). Joga cada rodada com
+ * `playRound` e toca no botao de seguir, ate a ultima ("Concluir").
+ */
+async function playRounds(page: Page, playRound: () => Promise<void>): Promise<void> {
+  const next = page.locator('.mg__next');
+  for (let guard = 0; guard < 8; guard += 1) {
+    await playRound();
+    await expect(next).toBeVisible();
+    const label = ((await next.textContent()) ?? '').trim();
+    await next.click();
+    if (label === 'Concluir') return;
+  }
+  throw new Error('o minijogo nao chegou na ultima rodada');
+}
+
+/**
+ * Completa um tecido do Tear no chute: toca nas cores em rodizio. Fio errado
+ * nao avanca e fio certo avanca, entao a rodada sempre fecha -- com erros.
+ */
+async function weaveByTrial(page: Page): Promise<void> {
+  const next = page.locator('.mg__next');
+  const threads = page.locator('.loom__thread');
+  const total = await threads.count();
+  for (let i = 0; i < 80 && !(await next.isVisible()); i += 1) {
+    await threads.nth(i % total).click();
+  }
+}
+
+/** Completa um tecido do Tear sem errar: le o trecho que se repete e continua dele. */
+async function weaveByReading(page: Page): Promise<void> {
+  const shown = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.loom__tape .loom__cell')).map((cell) =>
+      (cell.getAttribute('aria-label') ?? '').replace('fio ', ''),
     ),
   );
-  for (const color of colors) {
-    await page.getByRole('button', { name: `Adicionar cor ${color}` }).click();
+  const missing = await page.locator('.loom__tape .loom__ghost').count();
+  let period = 1;
+  while (!shown.every((color, i) => color === shown[i % period])) period += 1;
+  for (let i = 0; i < missing; i += 1) {
+    const color = shown[(shown.length + i) % period] as string;
+    await page.getByRole('button', { name: 'Tecer fio ' + color }).click();
   }
-  await page.getByRole('button', { name: /Enviar solução/ }).click();
+}
+
+/** Conclui a missao do Tear no chute e espera o resultado. */
+async function finishLoom(page: Page): Promise<void> {
+  await playRounds(page, () => weaveByTrial(page));
   await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
 }
 
@@ -102,12 +138,6 @@ async function seedEraTwoOpen(page: Page): Promise<void> {
   });
 }
 
-/** Liga um encaixe a uma origem: toca no encaixe, toca na origem. */
-async function wire(page: Page, slot: string, source: string): Promise<void> {
-  await page.getByRole('button', { name: new RegExp(`^Ligar fio em ${slot}:`) }).click();
-  await page.getByRole('button', { name: source, exact: true }).click();
-}
-
 /** Fecha a caixa de fala, que tem varias partes. */
 async function closeDialogue(page: Page): Promise<void> {
   const box = page.locator('.dialogue');
@@ -120,11 +150,8 @@ async function closeDialogue(page: Page): Promise<void> {
 /**
  * Monta um save com as duas missoes da primeira zona ja concluidas.
  *
- * A missao B so fecha usando repeticao (e assim de proposito), e resolver o
- * Tear pela interface aqui exigiria repetir no teste a logica de codificacao
- * otima que o `core` ja tem -- duplicata que daria falso verde se a logica
- * mudasse. Os testes de unidade cobrem o Tear; estes aqui cobrem a prova da
- * era, entao a zona comeca concluida.
+ * Os testes de unidade cobrem o Tear; estes aqui cobrem a prova da era, entao
+ * a zona comeca concluida em vez de jogar as duas missoes a cada teste.
  */
 async function seedZoneCleared(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -270,7 +297,8 @@ test('o terminal abre o minijogo da missao', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
   await expect(page.getByRole('heading', { name: 'Tear de Engrenagens' })).toBeVisible();
-  await expect(page.getByLabel('Padrão a reproduzir')).toBeVisible();
+  await expect(page.getByLabel('Tecido no tear')).toBeVisible();
+  await expect(page.getByText('Rodada 1 de 3')).toBeVisible();
 });
 
 test('o minijogo e jogavel por toque e da estrelas', async ({ page }) => {
@@ -278,8 +306,8 @@ test('o minijogo e jogavel por toque e da estrelas', async ({ page }) => {
   await goToStation(page, 3, 7);
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
 
-  // A missao A tem folga de cartoes: da para escrever o padrao cor por cor.
-  await solveLoomByHand(page);
+  // No chute a missao fecha do mesmo jeito: erro custa estrela, nao a missao.
+  await finishLoom(page);
   await expect(page.getByLabel(/estrelas/)).toBeVisible();
 
   // Volta para a zona com o XP creditado no painel de estado.
@@ -290,75 +318,90 @@ test('o minijogo e jogavel por toque e da estrelas', async ({ page }) => {
   ).toBeHidden();
 });
 
-test('o minijogo da Era 2 e jogavel por toque e fecha com 3 estrelas', async ({ page }) => {
-  await seedEraTwoOpen(page);
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.locator('.world__canvas')).toBeVisible();
-
-  // Terminal da missao A da zona de Logica.
-  await goToStation(page, 2, 7);
+test('fio errado no Tear conta como erro e nao avanca o tecido', async ({ page }) => {
+  await enterFirstZone(page);
+  await goToStation(page, 3, 7);
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
-  await expect(page.getByRole('heading', { name: 'Circuitos Lógicos' })).toBeVisible();
+  await expect(page.getByText('Erros: 0')).toBeVisible();
 
-  /*
-   * A seed `logica-A-v1` pede NAO (A E B). Se a seed ou o gerador mudarem, esta
-   * leitura falha aqui dizendo qual tabela veio -- e o circuito abaixo e que
-   * precisa ser refeito, nao a assercao apagada.
-   */
-  const pedido = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('.circuit__wanted')).map((cell) => cell.textContent),
-  );
-  expect(pedido).toEqual(['1', '1', '1', '0']);
+  // Das tres cores, duas estao erradas para o proximo fio: tocar em todas erra.
+  const faltam = await page.locator('.loom__ghost').count();
+  const threads = page.locator('.loom__thread');
+  for (let i = 0; i < 3; i += 1) {
+    if (await page.locator('.mg__next').isVisible()) break;
+    await threads.nth(i).click();
+  }
+  await expect(page.getByText(/Erros: [12]/)).toBeVisible();
+  expect(await page.locator('.loom__ghost').count()).toBeLessThan(faltam);
+});
 
-  await page.getByRole('button', { name: 'Adicionar porta E' }).click();
-  await wire(page, 'porta 1, encaixe 1', 'entrada A');
-  await wire(page, 'porta 1, encaixe 2', 'entrada B');
-  await page.getByRole('button', { name: 'Adicionar porta NÃO' }).click();
-  await wire(page, 'porta 2, encaixe 1', 'porta 1');
-  await wire(page, 'Saída', 'porta 2');
+test('quem enxerga o trecho que se repete fecha o Tear com 3 estrelas', async ({ page }) => {
+  await enterFirstZone(page);
+  await goToStation(page, 3, 7);
+  await page.getByRole('button', { name: 'Usar o terminal' }).click();
 
-  await expect(page.getByText('A tabela inteira bate. Pode enviar.')).toBeVisible();
-  await page.getByRole('button', { name: /Enviar solução/ }).click();
-
-  // Duas portas, o mesmo da referencia: eficiencia 1, tres estrelas.
+  await playRounds(page, () => weaveByReading(page));
   await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
   await expect(page.getByLabel('3 estrelas')).toBeVisible();
 });
 
-test('apagar uma porta desliga os fios que apontavam para ela', async ({ page }) => {
+/** Abre a missao A dos Circuitos, com a Era 1 ja concluida no save. */
+async function openCircuits(page: Page): Promise<void> {
   await seedEraTwoOpen(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.locator('.world__canvas')).toBeVisible();
   await goToStation(page, 2, 7);
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
+  await expect(page.getByRole('heading', { name: 'Circuitos Lógicos' })).toBeVisible();
+}
 
-  await page.getByRole('button', { name: 'Adicionar porta E' }).click();
-  await wire(page, 'porta 1, encaixe 1', 'entrada A');
-  await page.getByRole('button', { name: 'Adicionar porta NÃO' }).click();
-  await wire(page, 'porta 2, encaixe 1', 'porta 1');
+/**
+ * Acende a lampada de um circuito passando por todas as combinacoes das chaves
+ * livres, uma chave por vez (codigo de Gray). Todo circuito tem solucao, entao
+ * alguma combinacao acende.
+ */
+async function lightByTrial(page: Page): Promise<void> {
+  const next = page.locator('.mg__next');
+  const free = page.locator('.circuit__switch:not([disabled])');
+  const total = await free.count();
+  for (let k = 1; k < 2 ** total && !(await next.isVisible()); k += 1) {
+    let bit = 0;
+    while (Math.floor(k / 2 ** bit) % 2 === 0) bit += 1;
+    await free.nth(bit).click();
+    await page.getByRole('button', { name: 'Testar' }).click();
+  }
+}
 
-  // Apagar a porta 1 deixa a porta que era 2 sem origem, e nao com fio solto.
-  await page.getByRole('button', { name: 'Apagar porta 1' }).click();
+test('o minijogo da Era 2 e jogavel por toque e fecha a missao', async ({ page }) => {
+  await openCircuits(page);
+  await expect(page.getByRole('img', { name: /^Circuito\. Porta 1/ })).toBeVisible();
+
+  await playRounds(page, () => lightByTrial(page));
+  await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
+  await expect(page.getByLabel(/estrelas/)).toBeVisible();
+});
+
+test('nos Circuitos, teste que nao acende conta como erro', async ({ page }) => {
+  await openCircuits(page);
+
+  // Todo circuito comeca apagado: testar sem mexer em nada nunca acende.
+  await page.getByRole('button', { name: 'Testar' }).click();
   await expect(
-    page.getByRole('button', { name: 'Ligar fio em porta 1, encaixe 1: ligar' }),
+    page.getByText('A lâmpada não acendeu. Veja no circuito onde o sinal parou.'),
   ).toBeVisible();
-  await expect(page.getByText('Falta ligar algum fio.')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeDisabled();
+  await expect(page.getByText('Erros: 1')).toBeVisible();
+  await expect(page.locator('.mg__next')).toBeHidden();
+
+  // A chave responde ao toque e diz o estado dela.
+  await page.getByRole('button', { name: 'Chave A: desligada' }).click();
+  await expect(page.getByRole('button', { name: 'Chave A: ligada' })).toBeVisible();
 });
 
 test('a tela dos Circuitos cabe no celular: 44 px e sem rolagem lateral', async ({ page }) => {
-  await seedEraTwoOpen(page);
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await goToStation(page, 2, 7);
-  await page.getByRole('button', { name: 'Usar o terminal' }).click();
+  await openCircuits(page);
 
-  // Com o quadro cheio de portas e a ajuda aberta, que e quando mais aperta.
-  for (let i = 0; i < 3; i += 1) {
-    await page.getByRole('button', { name: 'Adicionar porta OU' }).click();
-  }
-  await expect(page.locator('.circuit__gate')).toHaveCount(3);
+  // Com a ajuda aberta e uma dica liberada, que e quando mais aperta.
   await page.getByRole('button', { name: 'O que é isto?' }).click();
   await page.getByRole('button', { name: 'Dica', exact: true }).click();
   await expect(page.locator('.help__panel')).toBeVisible();
@@ -375,8 +418,8 @@ test('a tela dos Circuitos cabe no celular: 44 px e sem rolagem lateral', async 
   for (let i = 0; i < count; i += 1) {
     const box = await buttons.nth(i).boundingBox();
     if (!box) continue;
-    expect(box.width, `botao ${i} estreito`).toBeGreaterThanOrEqual(43.5);
-    expect(box.height, `botao ${i} baixo`).toBeGreaterThanOrEqual(43.5);
+    expect(box.width, 'botao ' + i + ' estreito').toBeGreaterThanOrEqual(43.5);
+    expect(box.height, 'botao ' + i + ' baixo').toBeGreaterThanOrEqual(43.5);
   }
 });
 
@@ -430,9 +473,9 @@ test('a ajuda dos Circuitos explica a funcionalidade da Era 2', async ({ page })
   await expect(painel).toContainText('Shannon');
   await expect(painel).toContainText('DECIDIR');
 
-  // E a primeira dica ensina a ler a tabela, nao entrega a resposta.
+  // E a primeira dica ensina a regra das portas, nao entrega a resposta.
   await page.getByRole('button', { name: 'Dica', exact: true }).click();
-  await expect(page.locator('.help__hints li').first()).toContainText('tabela');
+  await expect(page.locator('.help__hints li').first()).toContainText('OU deixa passar');
 });
 
 test('fala com um personagem historico da zona', async ({ page }) => {
@@ -656,101 +699,125 @@ async function openStationOf(
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
 }
 
-test('o minijogo da Era 3 fecha a missao com codigo de tamanho fixo', async ({ page }) => {
+test('o minijogo da Era 3 grava os numeros em bits e fecha com 3 estrelas', async ({ page }) => {
   await openStationOf(page, 'codigo', 1, 7);
   await expect(page.getByRole('heading', { name: 'Mesa de Bits' })).toBeVisible();
 
-  /*
-   * A missao A cabe com codigo de tamanho fixo (A=00, B=01, C=10), que e a
-   * primeira ideia de qualquer um -- passa, mas com eficiencia baixa. O codigo
-   * de Huffman e o que rende as tres estrelas, e e isso que a era ensina.
-   */
-  const rows = page.locator('.bits__row');
-  const total = await rows.count();
-  expect(total).toBeGreaterThan(1);
-
-  const bits = Math.max(1, Math.ceil(Math.log2(total)));
-  for (let i = 0; i < total; i += 1) {
-    const code = i.toString(2).padStart(bits, '0');
-    for (const bit of code) {
-      await rows
-        .nth(i)
-        .getByRole('button', { name: new RegExp('^Acrescentar bit ' + bit + ' ao código de') })
-        .click();
+  // Do maior bit para o menor: liga o que ainda cabe no que falta somar.
+  await playRounds(page, async () => {
+    let falta = Number(await page.locator('.bits__target strong').textContent());
+    const bits = page.locator('.bits__bit');
+    const total = await bits.count();
+    for (let i = 0; i < total; i += 1) {
+      const vale = Number(await bits.nth(i).locator('.bits__value').textContent());
+      if (vale <= falta) {
+        await bits.nth(i).click();
+        falta -= vale;
+      }
     }
-  }
+    expect(falta).toBe(0);
+    await page.getByRole('button', { name: 'Gravar' }).click();
+  });
 
-  await expect(page.getByText('Cabe na fita e a leitura é única.')).toBeVisible();
-  await page.getByRole('button', { name: /Enviar solução/ }).click();
   await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
-  await expect(page.getByLabel(/estrelas/)).toBeVisible();
+  await expect(page.getByLabel('3 estrelas')).toBeVisible();
 });
 
-test('a Era 3 acusa codigo ambiguo antes de enviar', async ({ page }) => {
+test('a Era 3 diz o que foi gravado quando o numero nao bate', async ({ page }) => {
   await openStationOf(page, 'codigo', 1, 7);
-  const rows = page.locator('.bits__row');
-  const total = await rows.count();
 
-  // Todo mundo com o mesmo codigo: a fita fica ilegivel, e a tela diz isso.
-  for (let i = 0; i < total; i += 1) {
-    await rows
-      .nth(i)
-      .getByRole('button', { name: /^Acrescentar bit 0 ao código de/ })
-      .click();
-  }
-  await expect(page.getByText(/Código ambíguo/)).toBeVisible();
+  // Mesa toda desligada grava zero, e nenhum numero pedido e zero.
+  await page.getByRole('button', { name: 'Gravar' }).click();
+  await expect(page.getByText(/^Você gravou 0\. O número pedido é \d+\.$/)).toBeVisible();
+  await expect(page.getByText('Erros: 1')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Bit que vale 1: desligado' }).click();
+  await expect(page.getByRole('button', { name: 'Bit que vale 1: ligado' })).toBeVisible();
+  await expect(page.getByText('Bits ligados: 1')).toBeVisible();
 });
 
-test('a Era 4 leva o pacote de vizinho em vizinho, e da para voltar', async ({ page }) => {
+test('a Era 4 leva o pacote de vizinha em vizinha ate o destino', async ({ page }) => {
   await openStationOf(page, 'redes', 2, 8);
   await expect(page.getByRole('heading', { name: 'Rota dos Pacotes' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Mapa da rede' })).toBeVisible();
 
-  // O pacote comeca na origem e so ve os vizinhos dela.
-  await expect(page.getByLabel('Rota do pacote até agora')).toContainText('Origem');
-  const voltar = page.getByRole('button', { name: 'Voltar um salto' });
-  await expect(voltar).toBeDisabled();
+  // O pacote comeca na origem, sem atraso nenhum.
+  const rota = page.getByLabel('Rota do pacote até agora');
+  await expect(rota).toContainText('Origem');
+  await expect(page.getByText('Atraso até agora: 0')).toBeVisible();
 
   const opcoes = page.locator('.route__option');
-  await expect(opcoes.first()).toBeVisible();
   const primeiro = (
     (await opcoes.first().locator('.route__optionName').textContent()) ?? ''
   ).trim();
   await opcoes.first().click();
+  await expect(rota).toContainText(primeiro);
+  await expect(page.getByText('Atraso até agora: 0')).toBeHidden();
 
-  await expect(page.getByLabel('Rota do pacote até agora')).toContainText(primeiro);
-  await expect(voltar).toBeEnabled();
-  await voltar.click();
-  await expect(page.getByLabel('Rota do pacote até agora')).not.toContainText(primeiro);
+  // A ultima vizinha da lista esta sempre mais perto do destino: seguir por ela chega.
+  await playRounds(page, async () => {
+    const next = page.locator('.mg__next');
+    for (let i = 0; i < 12 && !(await next.isVisible()); i += 1) {
+      await opcoes.last().click();
+    }
+    await expect(page.getByText(/^O pacote chegou/)).toBeVisible();
+  });
+  await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
 });
 
-test('a Era 5 so considera o cofre fechado quando nao sobra caminho', async ({ page }) => {
+/** A letra de verdade da casa destacada do Cofre: a cifrada, voltando a chave. */
+async function plainLetter(page: Page): Promise<string> {
+  const alfabeto = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const chave = Number(await page.locator('.vault__key strong').textContent());
+  const cifrada = (
+    (await page.locator('.vault__tile[data-state="now"]').textContent()) ?? ''
+  ).trim();
+  return alfabeto[(alfabeto.indexOf(cifrada) - chave + 26) % 26] as string;
+}
+
+test('a Era 5 abre o cofre decifrando letra por letra', async ({ page }) => {
   await openStationOf(page, 'seguranca', 1, 7);
   await expect(page.getByRole('heading', { name: 'Cofre Criptográfico' })).toBeVisible();
+  await expect(page.getByLabel('Senha cifrada')).toBeVisible();
 
-  // Com a rede aberta, a tela diz que o cofre esta exposto.
-  await expect(page.getByText('Nenhum firewall instalado: o cofre está aberto.')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeDisabled();
+  // Letra errada nao abre a casa, e conta.
+  const certa = await plainLetter(page);
+  await page.locator('.vault__choice').filter({ hasNotText: certa }).first().click();
+  await expect(page.getByText('Não é essa. Conte as casas para trás no alfabeto.')).toBeVisible();
+  await expect(page.getByText('Erros: 1')).toBeVisible();
+  await expect(page.locator('.vault__tile--open')).toHaveCount(0);
 
-  // Bloquear tudo fecha o cofre (gasta firewall demais, mas fecha).
-  const links = page.locator('.vault__link');
-  const total = await links.count();
-  expect(total).toBeGreaterThan(1);
-  for (let i = 0; i < total; i += 1) await links.nth(i).click();
-
-  await expect(page.getByText('Nenhum caminho chega ao cofre.')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeEnabled();
+  await playRounds(page, async () => {
+    const next = page.locator('.mg__next');
+    for (let i = 0; i < 8 && !(await next.isVisible()); i += 1) {
+      await page.getByRole('button', { name: 'Letra ' + (await plainLetter(page)) }).click();
+    }
+    await expect(page.getByText(/^Cofre aberto! A senha era [A-Z]+\.$/)).toBeVisible();
+  });
+  await expect(page.getByRole('heading', { name: 'Missão concluída!' })).toBeVisible();
 });
 
-test('a Era 6 esconde os exemplos guardados e conta os acertos do treino', async ({ page }) => {
+test('a Era 6 mostra exemplos carimbados e so conta a regra no fim da rodada', async ({ page }) => {
   await openStationOf(page, 'ia', 1, 7);
   await expect(page.getByRole('heading', { name: 'Treinar o Detector' })).toBeVisible();
 
-  await expect(page.getByText('Escolha pelo menos um sinal.')).toBeVisible();
-  await expect(page.getByText(/Os exemplos guardados só são conferidos/)).toBeVisible();
+  // Os exemplos vem carimbados, dos dois tipos; os programas novos, nao.
+  const carimbados = page.getByLabel('Programas já carimbados').locator('.model__card');
+  expect(await carimbados.count()).toBeGreaterThanOrEqual(4);
+  await expect(carimbados.filter({ hasText: 'Vírus' }).first()).toBeVisible();
+  await expect(carimbados.filter({ hasText: 'Seguro' }).first()).toBeVisible();
+  await expect(page.getByText(/A regra era/)).toBeHidden();
 
-  await page.getByRole('button', { name: 'Passar a observar o sinal 1' }).click();
-  await expect(page.getByRole('button', { name: /Enviar solução/ })).toBeEnabled();
-  await expect(page.locator('.model__example').first()).toBeVisible();
+  const novos = page.getByLabel('Programas novos').locator('.model__card');
+  const total = await novos.count();
+  await page.getByRole('button', { name: 'Vírus' }).click();
+  await expect(novos.first()).toContainText(/Vírus: (acertou|errou)/);
+
+  for (let i = 1; i < total; i += 1) {
+    await page.getByRole('button', { name: 'Seguro' }).click();
+  }
+  await expect(page.getByText(/^A regra era: todo programa .+ é vírus\.$/)).toBeVisible();
+  await expect(page.locator('.mg__next')).toBeVisible();
 });
 
 test('o chefao abre no menu com as seis eras concluidas', async ({ page }) => {
@@ -1039,7 +1106,7 @@ test('os objetivos da zona acompanham as missoes e a prova', async ({ page }) =>
 
   await goToStation(page, 3, 7);
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
-  await solveLoomByHand(page);
+  await finishLoom(page);
   await page.getByRole('button', { name: 'Voltar para a zona' }).click();
 
   await expect(
@@ -1051,7 +1118,7 @@ test('o resultado da missao diz o que ela rendeu', async ({ page }) => {
   await enterFirstZone(page);
   await goToStation(page, 3, 7);
   await page.getByRole('button', { name: 'Usar o terminal' }).click();
-  await solveLoomByHand(page);
+  await finishLoom(page);
 
   const resultado = page.getByRole('region', { name: 'Resultado da missão' });
   await expect(resultado.getByText(/\+\d+ de conhecimento/)).toBeVisible();

@@ -1,236 +1,203 @@
 import type { Difficulty, EraId, Evaluation, Minigame } from '@/core/types';
-import { MODEL, SCORING } from '@/core/constants';
+import { MODEL } from '@/core/constants';
 import { createRng, randInt, shuffle } from '@/core/rng';
+import { mistakeEfficiency } from '@/core/scoring';
+import { byDifficulty } from '../shared/logic';
 
 /**
  * Treinar o Detector (Era 6, poder Aprender).
  *
- * Ninguem entrega ao jogador a regra do ataque. Ele recebe exemplos rotulados e
- * tem de descobrir em quais sinais o detector deve prestar atencao, e quantos
- * sinais ligados bastam para acusar.
+ * Ninguem conta a regra ao jogador. Ele ve alguns programas ja carimbados como
+ * "virus" ou "seguro", repara no que os virus tem em comum (a cor, a forma ou
+ * a antena) e entao classifica programas novos. E o que uma IA faz: aprende a
+ * regra olhando exemplos, em vez de receber a regra escrita.
  *
- * Parte dos exemplos fica guardada (o teste) e so e conferida no envio. Isso e
- * de proposito: um detector que acerta o treino e erra o resto nao aprendeu, so
- * decorou -- e e o erro mais comum da area, o sobreajuste.
+ * Um programa e uma lista de caracteristicas: [cor, forma, antena].
  *
  * Puro e deterministico: sem React, DOM, relogio nem Math.random.
  */
 
+export type ModelItem = number[];
+
+export interface ModelRule {
+  /** Qual caracteristica decide (indice em [cor, forma, antena]). */
+  attr: number;
+  /** O valor dela que faz do programa um virus. */
+  value: number;
+}
+
 export interface ModelExample {
-  /** Quais sinais estavam ligados neste episodio. */
-  signals: boolean[];
-  /** Era ataque de verdade? */
-  attack: boolean;
+  item: ModelItem;
+  virus: boolean;
+}
+
+export interface ModelRound {
+  /** A regra escondida. A tela so a mostra depois da rodada. */
+  rule: ModelRule;
+  /** Exemplos ja carimbados. */
+  train: ModelExample[];
+  /** Programas novos, para o jogador classificar. */
+  test: ModelItem[];
 }
 
 export interface ModelInstance {
-  /** Quantos sinais o detector pode observar. */
-  signals: number;
-  /** Exemplos visiveis. */
-  train: ModelExample[];
-  /** Exemplos guardados, conferidos so no envio. */
-  test: ModelExample[];
-  /** Sinais que o detector aguenta observar. Na missao B so cabe o minimo. */
-  maxSignals: number;
+  rounds: ModelRound[];
 }
 
-export interface ModelSolution {
-  /** Indices dos sinais observados. */
-  watched: number[];
-  /** Sinais ligados necessarios para acusar ataque. */
-  trigger: number;
+/** Por rodada, a resposta para cada programa novo: `true` = virus. */
+export type ModelSolution = boolean[][];
+
+export function isVirus(rule: ModelRule, item: ModelItem): boolean {
+  return item[rule.attr] === rule.value;
 }
 
-/** Forma da solucao: sinais que existem, sem repetir, e gatilho possivel. */
-export function isWellFormed(instance: ModelInstance, solution: ModelSolution): boolean {
-  if (typeof solution !== 'object' || solution === null) return false;
-  const { watched, trigger } = solution;
-  if (!Array.isArray(watched) || watched.length === 0) return false;
-  if (!watched.every((i) => Number.isInteger(i) && i >= 0 && i < instance.signals)) return false;
-  if (new Set(watched).size !== watched.length) return false;
-  if (!Number.isInteger(trigger)) return false;
-  return trigger >= 1 && trigger <= watched.length;
-}
-
-/** O detector acusa ataque neste exemplo? */
-export function classify(solution: ModelSolution, example: ModelExample): boolean {
-  let on = 0;
-  for (const index of solution.watched) {
-    if (example.signals[index]) on += 1;
-  }
-  return on >= solution.trigger;
-}
-
-/** Exemplos em que o detector erra (base 0), para a tela mostrar onde. */
-export function missedExamples(
-  solution: ModelSolution,
-  examples: readonly ModelExample[],
-): number[] {
-  const wrong: number[] = [];
-  examples.forEach((example, index) => {
-    if (classify(solution, example) !== example.attack) wrong.push(index);
+/** Todos os programas possiveis variando so as `attrs` primeiras caracteristicas. */
+function allItems(attrs: number): ModelItem[] {
+  let items: ModelItem[] = [[]];
+  MODEL.VALUES.forEach((count, attr) => {
+    const values = attr < attrs ? Array.from({ length: count }, (_, v) => v) : [0];
+    items = items.flatMap((item) => values.map((value) => [...item, value]));
   });
-  return wrong;
+  return items;
 }
 
-/** Acerta todos os exemplos desta lista? */
-export function fits(solution: ModelSolution, examples: readonly ModelExample[]): boolean {
-  return missedExamples(solution, examples).length === 0;
-}
-
-/**
- * Menor detector que acerta treino E teste, procurado por tamanho crescente.
- * Observar menos sinais, com o mesmo resultado, e sempre melhor: sinal a mais e
- * chance a mais de o detector se apoiar numa coincidencia.
- */
-export function reference(instance: ModelInstance): ModelSolution {
-  const todos = instance.train.concat(instance.test);
-
-  for (let size = 1; size <= instance.signals; size += 1) {
-    const found = searchBySize(instance, todos, size);
-    if (found) return found;
+/** Todas as regras de uma caracteristica so que o jogador poderia imaginar. */
+function candidateRules(attrs: number): ModelRule[] {
+  const rules: ModelRule[] = [];
+  for (let attr = 0; attr < attrs; attr += 1) {
+    for (let value = 0; value < (MODEL.VALUES[attr] as number); value += 1) {
+      rules.push({ attr, value });
+    }
   }
-  throw new Error('Treinar o Detector: nenhum detector acerta os exemplos.');
+  return rules;
 }
 
-/** Primeiro detector de exatamente `size` sinais que acerta `examples`. */
-function searchBySize(
-  instance: ModelInstance,
-  examples: readonly ModelExample[],
-  size: number,
-): ModelSolution | null {
-  const combine = (start: number, chosen: number[]): ModelSolution | null => {
-    if (chosen.length === size) {
-      for (let trigger = 1; trigger <= size; trigger += 1) {
-        const candidate: ModelSolution = { watched: chosen, trigger };
-        if (fits(candidate, examples)) return candidate;
-      }
-      return null;
-    }
-    for (let index = start; index < instance.signals; index += 1) {
-      const found = combine(index + 1, [...chosen, index]);
-      if (found) return found;
-    }
-    return null;
+/** As regras que batem com todos os exemplos carimbados. */
+export function consistentRules(train: readonly ModelExample[], attrs: number): ModelRule[] {
+  return candidateRules(attrs).filter((rule) =>
+    train.every((example) => isVirus(rule, example.item) === example.virus),
+  );
+}
+
+/** Rodada de reserva: "todo programa da primeira cor e virus", com exemplos fixos. */
+function fallbackRound(): ModelRound {
+  return {
+    rule: { attr: 0, value: 0 },
+    train: [
+      { item: [0, 0, 0], virus: true },
+      { item: [0, 1, 0], virus: true },
+      { item: [1, 0, 0], virus: false },
+      { item: [2, 1, 0], virus: false },
+    ],
+    test: [
+      [0, 2, 0],
+      [1, 1, 0],
+      [2, 0, 0],
+    ],
   };
-  return combine(0, []);
 }
 
-/** Quantos sinais o menor detector observa; e o que a eficiencia compara. */
-export function referenceCost(instance: ModelInstance): number {
-  return reference(instance).watched.length;
+function drawRound(
+  rng: () => number,
+  attrs: number,
+  trainSize: number,
+  testSize: number,
+  rule: ModelRule,
+): ModelRound | null {
+  const items = shuffle(rng, allItems(attrs));
+  const viruses = items.filter((item) => isVirus(rule, item));
+  const safes = items.filter((item) => !isVirus(rule, item));
+
+  // Pelo menos dois de cada lado: com um exemplo so nao da para ver o padrao.
+  const virusCount = randInt(rng, 2, trainSize - 2);
+  const safeCount = trainSize - virusCount;
+  if (viruses.length < virusCount + 1 || safes.length < safeCount + 1) return null;
+
+  const train: ModelExample[] = shuffle(rng, [
+    ...viruses.slice(0, virusCount).map((item) => ({ item, virus: true })),
+    ...safes.slice(0, safeCount).map((item) => ({ item, virus: false })),
+  ]);
+
+  // So vale se os exemplos apontam para UMA regra: senao a resposta seria chute.
+  if (consistentRules(train, attrs).length !== 1) return null;
+
+  // Os programas novos nunca repetem um exemplo, e tem dos dois tipos.
+  const freshViruses = viruses.slice(virusCount);
+  const freshSafes = safes.slice(safeCount);
+  const rest = shuffle(rng, [...freshViruses.slice(1), ...freshSafes.slice(1)]);
+  const test = shuffle(rng, [
+    freshViruses[0] as ModelItem,
+    freshSafes[0] as ModelItem,
+    ...rest.slice(0, testSize - 2),
+  ]);
+  if (test.length < testSize) return null;
+
+  return { rule, train, test };
 }
 
-/**
- * Sorteia os exemplos a partir de uma regra escondida: o ataque acontece quando
- * ao menos `hiddenTrigger` dos sinais causadores estao ligados.
- *
- * Um dos sinais sobrantes vira armadilha: no treino ele coincide exatamente com
- * o rotulo, e nos exemplos guardados ele faz o contrario. Quem escolher o
- * atalho acerta o treino inteiro e reprova no envio -- que e a licao da era.
- */
 export function generate(seed: string, difficulty: Difficulty): ModelInstance {
   const rng = createRng(`detector:${seed}:${difficulty}`);
-  const key = String(difficulty);
-  const signals = Math.max(3, MODEL.SIGNALS[key] ?? MODEL.SIGNALS['1'] ?? 4);
-  const real = Math.min(signals - 1, Math.max(2, MODEL.REAL[key] ?? 2));
-  const trainSize = Math.max(4, MODEL.TRAIN[key] ?? 6);
-  const testSize = Math.max(2, MODEL.TEST[key] ?? 3);
-  const slack = MODEL.SLACK[key] ?? 0;
+  const total = byDifficulty(MODEL.ROUNDS, difficulty, 2);
+  const attrs = byDifficulty(MODEL.ATTRS, difficulty, 2);
+  const trainSize = byDifficulty(MODEL.TRAIN, difficulty, 4);
+  const testSize = byDifficulty(MODEL.TEST, difficulty, 3);
 
-  const build = (): ModelInstance | null => {
-    const order = shuffle(
-      rng,
-      Array.from({ length: signals }, (_, i) => i),
-    );
-    const causes = order.slice(0, real);
-    const trap = order[real] as number;
-    const hiddenTrigger = randInt(rng, Math.max(1, real - 1), real);
+  // Cada rodada tem uma regra diferente, senao a segunda sai de graca.
+  const rules = shuffle(rng, candidateRules(attrs));
 
-    const label = (values: boolean[]): boolean =>
-      causes.filter((index) => values[index]).length >= hiddenTrigger;
-
-    const draw = (count: number, trapFollowsLabel: boolean): ModelExample[] =>
-      Array.from({ length: count }, () => {
-        const values = Array.from({ length: signals }, () => randInt(rng, 0, 1) === 1);
-        const attack = label(values);
-        values[trap] = trapFollowsLabel ? attack : !attack;
-        return { signals: values, attack };
-      });
-
-    const train = draw(trainSize, true);
-    const test = draw(testSize, false);
-
-    // Exemplo so de uma classe nao ensina nada: o detector acerta sem pensar.
-    const bothClasses = (examples: ModelExample[]): boolean =>
-      examples.some((e) => e.attack) && examples.some((e) => !e.attack);
-    if (!bothClasses(train) || !bothClasses(test)) return null;
-
-    const draft: ModelInstance = { signals, train, test, maxSignals: signals };
-    // A regra escondida tem de continuar sendo uma resposta valida.
-    if (!fits({ watched: causes, trigger: hiddenTrigger }, train.concat(test))) return null;
-    // Detector de um sinal so tornaria a fase trivial.
-    if (referenceCost(draft) < 2) return null;
-    return draft;
-  };
-
-  let instance: ModelInstance | null = null;
-  for (let attempt = 0; attempt < MODEL.GEN_ATTEMPTS && !instance; attempt += 1) {
-    instance = build();
+  const rounds: ModelRound[] = [];
+  for (let index = 0; index < total; index += 1) {
+    const rule = rules[index % rules.length] as ModelRule;
+    let chosen: ModelRound | null = null;
+    for (let attempt = 0; attempt < MODEL.GEN_ATTEMPTS && !chosen; attempt += 1) {
+      chosen = drawRound(rng, attrs, trainSize, testSize, rule);
+    }
+    rounds.push(chosen ?? fallbackRound());
   }
+  return { rounds };
+}
 
-  if (!instance) {
-    /*
-     * Reserva deterministica: o ataque e "os dois primeiros sinais ligados", e o
-     * ultimo sinal e a armadilha. As quatro combinacoes dos dois sinais estao no
-     * treino, entao a regra e achavel.
-     */
-    const combos: [boolean, boolean][] = [
-      [false, false],
-      [false, true],
-      [true, false],
-      [true, true],
-    ];
-    const make = (pair: [boolean, boolean], trapFollowsLabel: boolean): ModelExample => {
-      const attack = pair[0] && pair[1];
-      const values = Array.from({ length: signals }, (_, i) =>
-        i < 2 ? (pair[i] as boolean) : false,
-      );
-      values[signals - 1] = trapFollowsLabel ? attack : !attack;
-      return { signals: values, attack };
-    };
-    instance = {
-      signals,
-      train: combos.map((pair) => make(pair, true)),
-      test: combos.map((pair) => make(pair, false)),
-      maxSignals: signals,
-    };
-  }
+export function reference(instance: ModelInstance): ModelSolution {
+  return instance.rounds.map((round) => round.test.map((item) => isVirus(round.rule, item)));
+}
 
-  return { ...instance, maxSignals: referenceCost(instance) + slack };
+/** Quantos acertos o detector precisa, de `total` programas, para ser aprovado. */
+export function neededToPass(total: number): number {
+  return Math.ceil(total * MODEL.PASS_RATIO);
 }
 
 /**
- * Avalia o detector. `ok` exige acertar treino E exemplos guardados dentro do
- * limite de sinais observados.
- * Eficiencia = sinais do menor detector / sinais observados (1 = o mais enxuto).
+ * Aqui a resposta e sim ou nao, entao nao ha "tentar de novo" dentro da rodada:
+ * `ok` exige que o detector acerte a maioria dos programas novos, e cada erro
+ * custa eficiencia.
  */
 export function evaluate(instance: ModelInstance, solution: ModelSolution): Evaluation {
-  if (!isWellFormed(instance, solution)) return { ok: false, efficiency: 0 };
-  if (solution.watched.length > instance.maxSignals) return { ok: false, efficiency: 0 };
-  if (!fits(solution, instance.train)) return { ok: false, efficiency: 0 };
-  if (!fits(solution, instance.test)) return { ok: false, efficiency: 0 };
-
-  const efficiency = Math.min(
-    referenceCost(instance) / solution.watched.length,
-    SCORING.EFFICIENCY_MAX,
-  );
-  return { ok: true, efficiency };
+  if (!Array.isArray(solution) || solution.length !== instance.rounds.length) {
+    return { ok: false, efficiency: 0 };
+  }
+  let total = 0;
+  let mistakes = 0;
+  for (let i = 0; i < instance.rounds.length; i += 1) {
+    const round = instance.rounds[i] as ModelRound;
+    const answers = solution[i];
+    if (!Array.isArray(answers) || answers.length !== round.test.length) {
+      return { ok: false, efficiency: 0 };
+    }
+    if (!answers.every((answer) => typeof answer === 'boolean')) {
+      return { ok: false, efficiency: 0 };
+    }
+    round.test.forEach((item, j) => {
+      total += 1;
+      if (answers[j] !== isVirus(round.rule, item)) mistakes += 1;
+    });
+  }
+  if (total - mistakes < neededToPass(total)) return { ok: false, efficiency: 0 };
+  return { ok: true, efficiency: mistakeEfficiency(mistakes) };
 }
 
 export const era: EraId = 'ia';
 
-export const detector: Minigame<ModelInstance, ModelSolution> = {
+export const model: Minigame<ModelInstance, ModelSolution> = {
   era,
   generate,
   evaluate,

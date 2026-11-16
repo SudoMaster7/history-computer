@@ -1,249 +1,117 @@
-import { useState } from 'react';
 import type { MinigameScreenProps } from '@/core/types';
-import type { VaultInstance, VaultSolution } from './logic';
-import { entry, openPath, reachable, vault, vaultExposed } from './logic';
-import MinigameHelp from '@/ui/MinigameHelp';
-import Gauge from '@/ui/Gauge';
+import { play } from '@/fx';
 import ui from '@/data/ui.pt-BR.json';
-
-type Props = MinigameScreenProps<VaultInstance, VaultSolution>;
-
-/* ----------------------------------------------------------- o mapa ---- */
-
-const MAP_W = 320;
-const MAP_H = 140;
+import Frame from '../shared/Frame';
+import { replaySequence } from '../shared/logic';
+import { useRounds } from '../shared/useRounds';
+import type { VaultInstance, VaultRound, VaultSolution } from './logic';
+import { ALPHABET } from './logic';
 
 /**
- * Onde cada maquina fica no desenho. A rede e em camadas (toda ligacao aponta
- * para a camada seguinte), entao a coluna de cada maquina e a distancia dela
- * ate a entrada. E so desenho: a regra de quem alcanca quem fica em `logic`.
+ * Cofre Criptografico: a senha cifrada em cima, a decifrada embaixo, letra por
+ * letra. O alfabeto fica a vista para o jogador contar as casas com o dedo.
  */
-function layout(instance: VaultInstance): { x: number; y: number }[] {
-  const depth: number[] = new Array(instance.nodes).fill(-1);
-  depth[entry()] = 0;
-  const queue = [entry()];
-  while (queue.length > 0) {
-    const node = queue.shift() as number;
-    for (const link of instance.links) {
-      if (link.from !== node || (depth[link.to] as number) >= 0) continue;
-      depth[link.to] = (depth[node] as number) + 1;
-      queue.push(link.to);
-    }
-  }
-  const last = Math.max(1, ...depth);
-  const columns = new Map<number, number[]>();
-  depth.forEach((d, node) => {
-    const column = d < 0 ? last : d;
-    columns.set(column, [...(columns.get(column) ?? []), node]);
-  });
-
-  const spots: { x: number; y: number }[] = new Array(instance.nodes);
-  for (const [column, nodes] of columns) {
-    nodes.forEach((node, index) => {
-      spots[node] = {
-        x: 30 + (column * (MAP_W - 60)) / last,
-        y: ((index + 1) * MAP_H) / (nodes.length + 1),
-      };
-    });
-  }
-  return spots;
-}
-
-/**
- * A rede, desenhada: a entrada do invasor a esquerda, o cofre a direita. As
- * ligacoes por onde o invasor ainda passa aparecem em vermelho correndo; as
- * bloqueadas, cortadas por um firewall. E o mesmo estado dos botoes abaixo,
- * que continuam sendo o controle.
- */
-function VaultMap({
+export default function Screen({
   instance,
-  firewalls,
-}: {
-  instance: VaultInstance;
-  firewalls: readonly number[];
-}) {
-  const spots = layout(instance);
-  const reached = reachable(instance, firewalls);
-  const target = vault(instance);
-  const sealed = !reached.has(target);
-
-  return (
-    <svg
-      className="vaultMap"
-      viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-      aria-hidden="true"
-      focusable="false"
-    >
-      {instance.links.map((link, index) => {
-        const a = spots[link.from] as { x: number; y: number };
-        const b = spots[link.to] as { x: number; y: number };
-        const cut = firewalls.includes(index);
-        const hot = !cut && reached.has(link.from);
-        const mx = (a.x + b.x) / 2;
-        const my = (a.y + b.y) / 2;
-        return (
-          <g key={index}>
-            <line
-              className={
-                cut
-                  ? 'vaultMap__link vaultMap__link--cut'
-                  : hot
-                    ? 'vaultMap__link vaultMap__link--hot'
-                    : 'vaultMap__link'
-              }
-              x1={a.x}
-              y1={a.y}
-              x2={b.x}
-              y2={b.y}
-            />
-            {cut ? (
-              <g className="vaultMap__wall">
-                <rect x={mx - 6} y={my - 6} width={12} height={12} rx={2} />
-                <path d={`M${mx - 3} ${my - 3}l6 6m0-6-6 6`} />
-              </g>
-            ) : null}
-          </g>
-        );
-      })}
-
-      {spots.map((spot, node) => {
-        const kind = node === entry() ? 'entry' : node === target ? 'vault' : 'machine';
-        const state =
-          node === target ? (sealed ? 'safe' : 'exposed') : reached.has(node) ? 'hot' : 'safe';
-        return (
-          <g key={node} className={`vaultMap__node vaultMap__node--${kind}`} data-state={state}>
-            {kind === 'vault' ? (
-              <rect x={spot.x - 12} y={spot.y - 12} width={24} height={24} rx={4} />
-            ) : (
-              <circle cx={spot.x} cy={spot.y} r={kind === 'entry' ? 11 : 10} />
-            )}
-            <text x={spot.x} y={spot.y + 3.5}>
-              {kind === 'entry' ? '!' : kind === 'vault' ? '$' : node}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-/* ------------------------------------------------------------ a tela --- */
-
-/**
- * Cofre Criptografico. Cada ligacao da rede e um botao que liga e desliga o
- * firewall: um toque por ligacao, e a tela diz na hora se ainda sobrou caminho
- * aberto para o invasor.
- */
-export default function VaultScreen({ instance, mode, onSubmit, onExit }: Props) {
-  const [firewalls, setFirewalls] = useState<number[]>([]);
+  mode,
+  onSubmit,
+  onExit,
+}: MinigameScreenProps<VaultInstance, VaultSolution>) {
   const t = ui.vault;
+  const rounds = useRounds<string>(instance.rounds.length, onSubmit);
 
-  const nodeName = (node: number): string => {
-    if (node === entry()) return t.entryName;
-    if (node === vault(instance)) return t.vaultName;
-    return `${t.machine} ${node}`;
-  };
+  const current = instance.rounds[rounds.round] as VaultRound;
+  const plain = [...current.plain];
+  const cipher = [...current.cipher];
+  const at = replaySequence(plain, rounds.entries).at;
+  const choices = current.choices[at] ?? [];
 
-  function toggle(index: number): void {
-    setFirewalls((current) =>
-      current.includes(index) ? current.filter((i) => i !== index) : [...current, index],
-    );
+  function choose(letter: string): void {
+    if (rounds.done) return;
+    const right = letter === plain[at];
+    play(right ? 'place' : 'erase');
+    rounds.record(letter, right && at + 1 >= plain.length, !right);
   }
 
-  const exposed = vaultExposed(instance, firewalls);
-  const leak = exposed ? openPath(instance, firewalls) : null;
-  const used = firewalls.length;
-  const overBudget = used > instance.maxFirewalls;
-  const ready = !exposed && !overBudget && used > 0;
+  const status = rounds.done
+    ? { text: `${t.opened} ${current.plain}.`, state: 'ok' as const }
+    : rounds.missed
+      ? { text: t.wrong, state: 'warn' as const }
+      : { text: t.prompt, state: 'idle' as const };
+
+  const columns = { gridTemplateColumns: `repeat(${plain.length}, 1fr)` };
 
   return (
-    <section className="vault game-surface" aria-label={ui.minigames.seguranca}>
-      <header className="vault__head">
-        <h2>{ui.minigames.seguranca}</h2>
-        <p className="vault__help">{mode === 'micro' ? t.microHelp : t.help}</p>
-      </header>
-
-      <MinigameHelp era="seguranca" mode={mode} />
-
-      <VaultMap instance={instance} firewalls={firewalls} />
-
-      <div className="vault__block">
-        <h3>
-          {t.firewalls}: {used}/{instance.maxFirewalls}
-        </h3>
-        <Gauge value={used} max={instance.maxFirewalls} />
-        <ul className="vault__links" aria-label={t.linksLabel}>
-          {instance.links.map((link, index) => {
-            const on = firewalls.includes(index);
-            return (
-              <li key={index}>
-                <button
-                  type="button"
-                  className={on ? 'vault__link vault__link--cut' : 'vault__link'}
-                  aria-pressed={on}
-                  data-sfx={on ? 'erase' : 'place'}
-                  onClick={() => toggle(index)}
-                  aria-label={`${on ? t.removeFirewall : t.putFirewall}: ${nodeName(
-                    link.from,
-                  )} ${t.toward} ${nodeName(link.to)}`}
-                >
-                  <span className="vault__linkName">
-                    {nodeName(link.from)}
-                    <span aria-hidden="true"> → </span>
-                    {nodeName(link.to)}
-                  </span>
-                  <span className="vault__linkState" aria-hidden="true">
-                    {on ? t.cut : t.openLink}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <p
-        className="vault__status"
-        role="status"
-        data-state={used === 0 ? 'idle' : ready ? 'ok' : 'warn'}
-      >
-        {/*
-          O que o jogador precisa saber primeiro e se sobrou caminho aberto --
-          cofre fechado gastando firewall demais ainda e cofre fechado, e o
-          excesso aparece depois, como aviso de eficiencia.
-        */}
-        {used === 0
-          ? t.nothingDone
-          : leak
-            ? `${t.stillOpen}: ${leak.map(nodeName).join(' → ')}`
-            : overBudget
-              ? `${t.sealed} ${t.overBudget} (${used}/${instance.maxFirewalls})`
-              : t.sealed}
+    <Frame
+      era="seguranca"
+      className="vault"
+      mode={mode}
+      help={mode === 'micro' ? t.microHelp : t.help}
+      round={rounds.round}
+      total={rounds.total}
+      done={rounds.done}
+      mistakes={rounds.mistakes}
+      status={status}
+      onNext={rounds.next}
+      onExit={onExit}
+    >
+      <p className="vault__key">
+        {t.keyA} <strong>{current.shift}</strong> {current.shift === 1 ? t.stepOne : t.stepMany}{' '}
+        {t.keyB}
       </p>
 
-      <div className="controls">
-        <button
-          type="button"
-          disabled={used === 0}
-          data-sfx="erase"
-          onClick={() => setFirewalls([])}
-        >
-          {t.clear}
-        </button>
-        <button
-          type="button"
-          className="vault__submit"
-          data-ready={ready}
-          disabled={exposed || used === 0}
-          onClick={() => onSubmit(firewalls)}
-        >
-          {ui.mission.submit}
-          {ready ? ' ✓' : ''}
-        </button>
-        <button type="button" onClick={onExit}>
-          {ui.mission.exit}
-        </button>
+      <div className="mg__block">
+        <h3>{t.cipher}</h3>
+        <ol className="vault__tiles" style={columns} aria-label={t.cipher}>
+          {cipher.map((letter, i) => (
+            <li
+              key={i}
+              className="vault__tile"
+              data-state={i < at ? 'done' : i === at && !rounds.done ? 'now' : 'todo'}
+            >
+              {letter}
+            </li>
+          ))}
+        </ol>
+        <h3>{t.plain}</h3>
+        <ol className="vault__tiles" style={columns} aria-label={t.plain}>
+          {plain.map((letter, i) =>
+            i < at ? (
+              <li key={i} className="vault__tile vault__tile--open">
+                {letter}
+              </li>
+            ) : (
+              <li key={i} className="vault__tile vault__tile--closed" aria-label={t.hidden}>
+                ?
+              </li>
+            ),
+          )}
+        </ol>
       </div>
-    </section>
+
+      <p className="vault__alphabet" aria-label={t.alphabet}>
+        {[...ALPHABET].map((letter) => (
+          <span key={letter} data-now={!rounds.done && letter === cipher[at]}>
+            {letter}
+          </span>
+        ))}
+      </p>
+
+      {rounds.done ? null : (
+        <div className="controls vault__choices" role="group" aria-label={t.choices}>
+          {choices.map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              className="vault__choice"
+              aria-label={`${t.letter} ${letter}`}
+              onClick={() => choose(letter)}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      )}
+    </Frame>
   );
 }

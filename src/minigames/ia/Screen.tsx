@@ -1,173 +1,152 @@
-import { useState } from 'react';
 import type { MinigameScreenProps } from '@/core/types';
-import type { ModelInstance, ModelSolution } from './logic';
-import { classify, missedExamples } from './logic';
-import MinigameHelp from '@/ui/MinigameHelp';
-import Gauge from '@/ui/Gauge';
+import { play } from '@/fx';
 import ui from '@/data/ui.pt-BR.json';
+import Frame from '../shared/Frame';
+import { useRounds } from '../shared/useRounds';
+import type { ModelInstance, ModelItem, ModelRound, ModelSolution } from './logic';
+import { isVirus } from './logic';
 
-type Props = MinigameScreenProps<ModelInstance, ModelSolution>;
+const t = ui.model;
+
+/** Um programa em palavras: cor, forma e, quando tem, a antena. */
+function nameOf(item: ModelItem): string {
+  const parts = [t.colors[item[0] ?? 0], t.shapes[item[1] ?? 0]];
+  if (item[2] === 1) parts.push(t.antenna[1]);
+  return `${t.program} ${parts.join(', ')}`;
+}
+
+/** O desenho de um programa: a forma, pintada da cor, com ou sem antena. */
+function Program({ item }: { item: ModelItem }) {
+  const shape = item[1] ?? 0;
+  return (
+    <svg
+      className="program"
+      data-color={item[0] ?? 0}
+      viewBox="0 0 40 44"
+      role="img"
+      aria-label={nameOf(item)}
+    >
+      {item[2] === 1 ? (
+        <g className="program__antenna">
+          <line x1={20} y1={14} x2={20} y2={5} />
+          <circle cx={20} cy={4} r={3} />
+        </g>
+      ) : null}
+      {shape === 0 ? <circle className="program__body" cx={20} cy={28} r={14} /> : null}
+      {shape === 1 ? (
+        <rect className="program__body" x={6} y={14} width={28} height={28} rx={3} />
+      ) : null}
+      {shape === 2 ? <polygon className="program__body" points="20,12 36,42 4,42" /> : null}
+      <circle className="program__eye" cx={15} cy={31} r={2} />
+      <circle className="program__eye" cx={25} cy={31} r={2} />
+    </svg>
+  );
+}
 
 /**
- * Treinar o Detector. Um toque liga e desliga cada sinal observado, dois botoes
- * mexem no gatilho. A tabela de treino mostra na hora o que o detector diria --
- * mas os exemplos guardados ficam escondidos ate o envio, de proposito.
+ * Treinar o Detector: exemplos carimbados em cima, programas novos embaixo. A
+ * regra nunca e escrita antes; a tela so a conta quando a rodada acaba.
  */
-export default function ModelScreen({ instance, mode, onSubmit, onExit }: Props) {
-  const [watched, setWatched] = useState<number[]>([]);
-  const [trigger, setTrigger] = useState(1);
-  const t = ui.model;
+export default function Screen({
+  instance,
+  mode,
+  onSubmit,
+  onExit,
+}: MinigameScreenProps<ModelInstance, ModelSolution>) {
+  const rounds = useRounds<boolean>(instance.rounds.length, onSubmit);
+  const current = instance.rounds[rounds.round] as ModelRound;
+  const answered = rounds.entries.length;
 
-  const ordered = [...watched].sort((a, b) => a - b);
-  const safeTrigger = Math.min(Math.max(1, trigger), Math.max(1, ordered.length));
-  const solution: ModelSolution | null =
-    ordered.length > 0 ? { watched: ordered, trigger: safeTrigger } : null;
-
-  function toggle(index: number): void {
-    setWatched((current) =>
-      current.includes(index) ? current.filter((i) => i !== index) : [...current, index],
-    );
+  function answer(virus: boolean): void {
+    if (rounds.done) return;
+    const item = current.test[answered] as ModelItem;
+    const right = isVirus(current.rule, item) === virus;
+    play(right ? 'place' : 'erase');
+    rounds.record(virus, answered + 1 >= current.test.length, !right);
   }
 
-  const wrong = solution ? missedExamples(solution, instance.train) : [];
-  const overBudget = ordered.length > instance.maxSignals;
-  const trained = solution !== null && wrong.length === 0 && !overBudget;
+  const { attr, value } = current.rule;
+  const ruleName = [t.colors, t.shapes, t.antenna][attr]?.[value] ?? '';
+
+  const status = rounds.done
+    ? { text: `${t.ruleWas} ${ruleName} ${t.ruleEnd}`, state: 'ok' as const }
+    : answered === 0
+      ? { text: t.prompt, state: 'idle' as const }
+      : rounds.missed
+        ? { text: t.wrongAnswer, state: 'warn' as const }
+        : { text: t.rightAnswer, state: 'ok' as const };
 
   return (
-    <section className="model game-surface" aria-label={ui.minigames.ia}>
-      <header className="model__head">
-        <h2>{ui.minigames.ia}</h2>
-        <p className="model__help">{mode === 'micro' ? t.microHelp : t.help}</p>
-      </header>
-
-      <MinigameHelp era="ia" mode={mode} />
-
-      <div className="model__block">
-        <h3>
-          {t.signals}: {ordered.length}/{instance.maxSignals}
-        </h3>
-        <Gauge value={ordered.length} max={instance.maxSignals} />
-        <div className="controls model__signals" aria-label={t.signals}>
-          {Array.from({ length: instance.signals }, (_, index) => {
-            const on = watched.includes(index);
-            return (
-              <button
-                key={index}
-                type="button"
-                className={on ? 'model__signal model__signal--on' : 'model__signal'}
-                aria-pressed={on}
-                data-sfx={on ? 'erase' : 'place'}
-                onClick={() => toggle(index)}
-                aria-label={`${on ? t.unwatch : t.watch} ${index + 1}`}
-              >
-                <i className="model__lamp" data-s={on ? 'on' : 'ignored'} aria-hidden="true" />
-                {t.signalName} {index + 1}
-              </button>
-            );
-          })}
-        </div>
+    <Frame
+      era="ia"
+      className="model"
+      mode={mode}
+      help={mode === 'micro' ? t.microHelp : t.help}
+      round={rounds.round}
+      total={rounds.total}
+      done={rounds.done}
+      mistakes={rounds.mistakes}
+      status={status}
+      onNext={rounds.next}
+      onExit={onExit}
+    >
+      <div className="mg__block">
+        <h3>{t.train}</h3>
+        <ul className="model__cards" aria-label={t.train}>
+          {current.train.map((example, i) => (
+            <li key={i} className="model__card" data-virus={example.virus}>
+              <Program item={example.item} />
+              <span className="model__stamp">{example.virus ? t.virus : t.safe}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="model__block model__trigger">
-        <h3>
-          {t.trigger}: {ordered.length === 0 ? '–' : safeTrigger} {t.triggerText}
-        </h3>
-        <div className="controls">
-          <button
-            type="button"
-            disabled={safeTrigger <= 1}
-            onClick={() => setTrigger((v) => Math.max(1, v - 1))}
-            aria-label={t.triggerDown}
-          >
-            −
-          </button>
-          <button
-            type="button"
-            disabled={safeTrigger >= ordered.length}
-            onClick={() => setTrigger((v) => v + 1)}
-            aria-label={t.triggerUp}
-          >
-            +
-          </button>
-        </div>
-      </div>
-
-      <div className="model__block">
-        <h3>
-          {t.trainTitle} — {t.trainScore}: {instance.train.length - wrong.length}/
-          {instance.train.length}
-        </h3>
-        <ul className="model__examples" aria-label={t.trainTitle}>
-          {instance.train.map((item, index) => {
-            const said = solution ? classify(solution, item) : null;
-            const miss = wrong.includes(index);
+      <div className="mg__block">
+        <h3>{t.test}</h3>
+        <ol className="model__cards" aria-label={t.test}>
+          {current.test.map((item, i) => {
+            const given = rounds.entries[i];
+            const right = given === undefined ? undefined : given === isVirus(current.rule, item);
             return (
               <li
-                key={index}
-                className={miss ? 'model__example model__example--wrong' : 'model__example'}
-                aria-label={`${index + 1}: ${item.attack ? t.attack : t.normal}, ${t.says} ${
-                  said === null ? '–' : said ? t.attack : t.normal
-                }`}
+                key={i}
+                className="model__card model__card--test"
+                data-state={given === undefined ? (i === answered ? 'now' : 'todo') : 'done'}
+                data-right={right}
               >
-                {/* Uma lampada por sinal: acesa, apagada, ou fosca se o detector nao olha. */}
-                <span className="model__bits" aria-hidden="true">
-                  {item.signals.map((on, signal) => (
-                    <i
-                      key={signal}
-                      className="model__lamp"
-                      data-s={watched.includes(signal) ? (on ? 'on' : 'off') : 'ignored'}
-                    />
-                  ))}
-                </span>
-                <span className="model__truth" data-attack={item.attack} aria-hidden="true">
-                  {item.attack ? t.attack : t.normal}
-                </span>
-                <span
-                  className="model__said"
-                  data-ok={said === null ? 'none' : said === item.attack}
-                  aria-hidden="true"
-                >
-                  {said === null ? '–' : said === item.attack ? '✓' : '✗'}
+                <Program item={item} />
+                <span className="model__stamp">
+                  {given === undefined
+                    ? '?'
+                    : `${given ? t.virus : t.safe}: ${right ? t.right : t.wrongMark}`}
                 </span>
               </li>
             );
           })}
-        </ul>
+        </ol>
       </div>
 
-      <p className="model__hidden">
-        {t.testTitle}: {instance.test.length} — {t.testHidden}
-      </p>
-
-      <p
-        className="model__status"
-        role="status"
-        data-state={ordered.length === 0 ? 'idle' : trained ? 'ok' : 'warn'}
-      >
-        {ordered.length === 0
-          ? t.noSignals
-          : overBudget
-            ? `${t.overBudget} (${ordered.length}/${instance.maxSignals})`
-            : wrong.length > 0
-              ? `${t.trainWrong}: ${wrong.length}`
-              : t.trainOk}
-      </p>
-
-      <div className="controls">
-        <button
-          type="button"
-          className="model__submit"
-          data-ready={trained}
-          disabled={!solution}
-          onClick={() => solution && onSubmit(solution)}
-        >
-          {ui.mission.submit}
-          {trained ? ' ✓' : ''}
-        </button>
-        <button type="button" onClick={onExit}>
-          {ui.mission.exit}
-        </button>
-      </div>
-    </section>
+      {rounds.done ? null : (
+        <div className="controls model__answers">
+          <button
+            type="button"
+            className="model__answer"
+            data-kind="virus"
+            onClick={() => answer(true)}
+          >
+            {t.virus}
+          </button>
+          <button
+            type="button"
+            className="model__answer"
+            data-kind="safe"
+            onClick={() => answer(false)}
+          >
+            {t.safe}
+          </button>
+        </div>
+      )}
+    </Frame>
   );
 }

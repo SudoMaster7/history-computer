@@ -18,6 +18,7 @@ import type { EraId } from '@/core/types';
 import ui from '@/data/ui.pt-BR.json';
 import './styles/app.css';
 import './styles/fx.css';
+import './styles/minigames.css';
 
 registerMinigames();
 

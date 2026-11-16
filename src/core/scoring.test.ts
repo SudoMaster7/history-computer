@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bossScore, clampEfficiency, missionScore, starsFor } from './scoring';
+import { bossScore, clampEfficiency, missionScore, mistakeEfficiency, starsFor } from './scoring';
 import { SCORING } from './constants';
 
 describe('scoring', () => {
@@ -36,5 +36,19 @@ describe('scoring', () => {
     expect(bossScore(0, 0)).toBe(2000);
     expect(bossScore(0, 100)).toBe(SCORING.BOSS_SCORE_MIN);
     expect(bossScore(-50, -5)).toBe(2000);
+  });
+
+  it('erro em minijogo custa estrela, nunca a missao', () => {
+    expect(mistakeEfficiency(0)).toBe(1);
+    expect(starsFor(mistakeEfficiency(0), true)).toBe(3);
+    expect(starsFor(mistakeEfficiency(1), true)).toBe(2);
+    expect(starsFor(mistakeEfficiency(2), true)).toBe(2);
+    expect(starsFor(mistakeEfficiency(3), true)).toBe(1);
+    // Por mais erros que haja, a eficiencia para no piso.
+    expect(mistakeEfficiency(50)).toBe(SCORING.MISTAKE_FLOOR);
+    // Valor invalido conta como nenhum erro, e fracao e arredondada para baixo.
+    expect(mistakeEfficiency(Number.NaN)).toBe(1);
+    expect(mistakeEfficiency(-3)).toBe(1);
+    expect(mistakeEfficiency(1.9)).toBe(mistakeEfficiency(1));
   });
 });

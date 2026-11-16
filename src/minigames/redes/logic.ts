@@ -1,214 +1,215 @@
 import type { Difficulty, EraId, Evaluation, Minigame } from '@/core/types';
-import { ROUTE, SCORING } from '@/core/constants';
+import { ROUTE } from '@/core/constants';
 import { createRng, randInt } from '@/core/rng';
+import { byDifficulty } from '../shared/logic';
 
 /**
  * Rota dos Pacotes (Era 4, poder Conectar).
  *
- * O pacote sai da maquina de origem e tem de chegar na de destino pulando de
- * vizinho em vizinho. Cada ligacao cobra um atraso, e o pacote tem um orcamento
- * de atraso: chegar nao basta, tem de chegar pela rota curta.
- *
- * O jogador so ve os vizinhos de onde o pacote esta -- que e exatamente o que um
- * roteador sabe. Ninguem na ARPANET tinha o mapa inteiro da rede na mao.
+ * Um mapa pequeno de maquinas ligadas entre si: a origem em cima, o destino
+ * embaixo. Cada ligacao tem um atraso. O jogador leva o pacote de maquina em
+ * maquina, tocando numa vizinha de cada vez. Qualquer caminho que chega
+ * conclui a rodada; o caminho de menor atraso e o que rende as tres estrelas.
  *
  * Puro e deterministico: sem React, DOM, relogio nem Math.random.
  */
 
+export interface RouteNode {
+  id: number;
+  /** Fileira do mapa: 0 e a origem, a ultima e o destino. */
+  row: number;
+  /** Posicao horizontal dentro da fileira, de 0 (esquerda) a 1 (direita). */
+  x: number;
+}
+
 export interface RouteLink {
-  /** Indices das duas maquinas ligadas. A ligacao vale nos dois sentidos. */
   a: number;
   b: number;
-  /** Atraso da ligacao. */
+  /** Atraso para atravessar a ligacao, nos dois sentidos. */
   cost: number;
 }
 
-export interface RouteInstance {
-  /** Quantas maquinas a rede tem. A 0 e a origem, a ultima e o destino. */
-  nodes: number;
+export interface RouteMap {
+  nodes: RouteNode[];
   links: RouteLink[];
-  /** Orcamento de atraso. Na missao B so cabe a rota mais curta. */
-  maxCost: number;
+  origin: number;
+  dest: number;
+  /** Fileiras do mapa, contando origem e destino. */
+  rows: number;
 }
 
-/** A rota, em maquinas visitadas: comeca na origem e termina no destino. */
-export type RouteSolution = number[];
-
-export function origin(): number {
-  return 0;
+export interface RouteInstance {
+  rounds: RouteMap[];
 }
 
-export function destination(instance: RouteInstance): number {
-  return instance.nodes - 1;
+/** Por rodada, as maquinas por onde o pacote passou, da origem ao destino. */
+export type RouteSolution = number[][];
+
+/** Atraso da ligacao entre duas maquinas, ou `null` se nao sao vizinhas. */
+export function linkCost(map: RouteMap, from: number, to: number): number | null {
+  const link = map.links.find((l) => (l.a === from && l.b === to) || (l.a === to && l.b === from));
+  return link ? link.cost : null;
 }
 
-/** Atraso da ligacao entre duas maquinas, ou null se elas nao se ligam. */
-export function linkCost(instance: RouteInstance, a: number, b: number): number | null {
-  for (const link of instance.links) {
-    if ((link.a === a && link.b === b) || (link.a === b && link.b === a)) return link.cost;
-  }
-  return null;
+/** As vizinhas de uma maquina, com o atraso de cada ligacao. */
+export function neighborsOf(map: RouteMap, node: number): { id: number; cost: number }[] {
+  return map.links.flatMap((l) => {
+    if (l.a === node) return [{ id: l.b, cost: l.cost }];
+    if (l.b === node) return [{ id: l.a, cost: l.cost }];
+    return [];
+  });
 }
 
-/** Vizinhos de uma maquina, em ordem crescente: e o que o roteador conhece. */
-export function neighbors(instance: RouteInstance, node: number): number[] {
-  const out: number[] = [];
-  for (const link of instance.links) {
-    if (link.a === node) out.push(link.b);
-    else if (link.b === node) out.push(link.a);
-  }
-  return [...new Set(out)].sort((x, y) => x - y);
-}
-
-/**
- * Forma da rota: comeca na origem, termina no destino, cada passo usa uma
- * ligacao que existe e nenhuma maquina aparece duas vezes (passar duas vezes
- * pelo mesmo roteador e laco de roteamento, nao rota).
- */
-export function isWellFormed(instance: RouteInstance, solution: RouteSolution): boolean {
-  if (!Array.isArray(solution) || solution.length < 2) return false;
-  if (!solution.every((node) => Number.isInteger(node) && node >= 0 && node < instance.nodes)) {
-    return false;
-  }
-  if (solution[0] !== origin()) return false;
-  if (solution[solution.length - 1] !== destination(instance)) return false;
-  if (new Set(solution).size !== solution.length) return false;
-
-  for (let i = 0; i + 1 < solution.length; i += 1) {
-    if (linkCost(instance, solution[i] as number, solution[i + 1] as number) === null) return false;
-  }
-  return true;
-}
-
-/** Atraso total da rota, ou infinito se a rota nao e valida. */
-export function pathCost(instance: RouteInstance, solution: RouteSolution): number {
-  if (!isWellFormed(instance, solution)) return Number.POSITIVE_INFINITY;
+/** Atraso total de um caminho, ou `null` se algum salto nao e uma ligacao. */
+export function pathCost(map: RouteMap, path: readonly number[]): number | null {
   let total = 0;
-  for (let i = 0; i + 1 < solution.length; i += 1) {
-    total += linkCost(instance, solution[i] as number, solution[i + 1] as number) as number;
+  for (let i = 1; i < path.length; i += 1) {
+    const cost = linkCost(map, path[i - 1] as number, path[i] as number);
+    if (cost === null) return null;
+    total += cost;
   }
   return total;
 }
 
-/**
- * Rota de menor atraso, por Dijkstra. O empate e resolvido pelo menor indice de
- * maquina, para a referencia ser sempre a mesma na mesma rede.
- */
-export function shortestPath(instance: RouteInstance): RouteSolution | null {
-  const total = instance.nodes;
-  const dist: number[] = new Array(total).fill(Number.POSITIVE_INFINITY);
-  const before: number[] = new Array(total).fill(-1);
-  const seen: boolean[] = new Array(total).fill(false);
-  dist[origin()] = 0;
-
-  for (let step = 0; step < total; step += 1) {
-    let current = -1;
-    for (let node = 0; node < total; node += 1) {
-      if (seen[node]) continue;
-      if (current < 0 || (dist[node] as number) < (dist[current] as number)) current = node;
-    }
-    if (current < 0 || !Number.isFinite(dist[current] as number)) break;
-    seen[current] = true;
-
-    for (const next of neighbors(instance, current)) {
-      const edge = linkCost(instance, current, next) as number;
-      const candidate = (dist[current] as number) + edge;
-      if (candidate < (dist[next] as number)) {
-        dist[next] = candidate;
-        before[next] = current;
+/** Caminho de menor atraso da origem ao destino (o mapa e pequeno: relaxa ate parar). */
+export function shortestPath(map: RouteMap): number[] {
+  const dist = map.nodes.map(() => Number.POSITIVE_INFINITY);
+  const prev = map.nodes.map(() => -1);
+  dist[map.origin] = 0;
+  for (let pass = 0; pass < map.nodes.length; pass += 1) {
+    for (const link of map.links) {
+      for (const [from, to] of [
+        [link.a, link.b],
+        [link.b, link.a],
+      ] as const) {
+        const candidate = (dist[from] as number) + link.cost;
+        if (candidate < (dist[to] as number)) {
+          dist[to] = candidate;
+          prev[to] = from;
+        }
       }
     }
   }
-
-  const target = destination(instance);
-  if (!Number.isFinite(dist[target] as number)) return null;
-
   const path: number[] = [];
-  for (let node = target; node >= 0; node = before[node] as number) {
-    path.unshift(node);
-    if (node === origin()) break;
-  }
-  return path[0] === origin() ? path : null;
-}
-
-/** Rota de referencia: a de menor atraso. */
-export function reference(instance: RouteInstance): RouteSolution {
-  const path = shortestPath(instance);
-  if (!path) throw new Error('Rota dos Pacotes: rede sem caminho ate o destino.');
+  for (let at = map.dest; at !== -1; at = prev[at] as number) path.unshift(at);
   return path;
 }
 
-/** Atraso da rota de referencia; e o que a eficiencia compara. */
-export function referenceCost(instance: RouteInstance): number {
-  return pathCost(instance, reference(instance));
-}
-
-function linkKey(a: number, b: number): string {
-  return a < b ? `${a}-${b}` : `${b}-${a}`;
+export function bestCost(map: RouteMap): number {
+  return pathCost(map, shortestPath(map)) ?? 0;
 }
 
 /**
- * Sorteia a rede. Primeiro uma arvore (cada maquina nova se liga a uma que ja
- * esta na rede), que garante que todas se alcancam; depois ligacoes extras, que
- * e o que cria rota alternativa -- sem isso nao ha escolha a fazer.
+ * O que faria quem so olha o proximo salto: sempre a ligacao mais barata que
+ * desce uma fileira. Serve para garantir que o mapa tem uma armadilha -- o
+ * salto barato agora nem sempre e o melhor caminho.
+ */
+function greedyCost(map: RouteMap): number {
+  let at = map.origin;
+  let total = 0;
+  while (at !== map.dest) {
+    const row = (map.nodes[at] as RouteNode).row;
+    const down = neighborsOf(map, at).filter((n) => (map.nodes[n.id] as RouteNode).row > row);
+    const next = down.reduce((best, n) => (n.cost < best.cost ? n : best), down[0]!);
+    total += next.cost;
+    at = next.id;
+  }
+  return total;
+}
+
+function drawMap(rng: () => number, layers: number, width: number): RouteMap {
+  const nodes: RouteNode[] = [{ id: 0, row: 0, x: 0.5 }];
+  const grid: number[][] = [];
+  for (let layer = 0; layer < layers; layer += 1) {
+    const ids: number[] = [];
+    for (let slot = 0; slot < width; slot += 1) {
+      const id = nodes.length;
+      nodes.push({ id, row: layer + 1, x: (slot + 0.5) / width });
+      ids.push(id);
+    }
+    grid.push(ids);
+  }
+  const dest = nodes.length;
+  nodes.push({ id: dest, row: layers + 1, x: 0.5 });
+
+  const links: RouteLink[] = [];
+  const cost = (): number => randInt(rng, ROUTE.MIN_COST, ROUTE.MAX_COST);
+  const link = (a: number, b: number): void => {
+    links.push({ a, b, cost: cost() });
+  };
+
+  for (const id of grid[0] as number[]) link(0, id);
+  for (let layer = 0; layer + 1 < layers; layer += 1) {
+    const upper = grid[layer] as number[];
+    const lower = grid[layer + 1] as number[];
+    upper.forEach((id, slot) => {
+      // Reto para baixo sempre existe: nenhuma maquina fica sem entrada nem saida.
+      link(id, lower[slot] as number);
+      // Na diagonal, so para a direita: assim duas ligacoes nunca se cruzam.
+      if (slot + 1 < width && rng() < 0.6) link(id, lower[slot + 1] as number);
+    });
+  }
+  for (const ids of grid) {
+    for (let slot = 0; slot + 1 < width; slot += 1) {
+      if (rng() < 0.4) link(ids[slot] as number, ids[slot + 1] as number);
+    }
+  }
+  for (const id of grid[layers - 1] as number[]) link(id, dest);
+
+  return { nodes, links, origin: 0, dest, rows: layers + 2 };
+}
+
+/**
+ * Da segunda rodada em diante (e sempre na missao B) o mapa precisa ter a
+ * armadilha do salto barato. Se os sorteios nao derem um mapa assim, fica o
+ * ultimo sorteado: ele continua tendo caminho, so e mais facil.
  */
 export function generate(seed: string, difficulty: Difficulty): RouteInstance {
   const rng = createRng(`rota:${seed}:${difficulty}`);
-  const key = String(difficulty);
-  const nodes = Math.max(3, ROUTE.NODES[key] ?? ROUTE.NODES['1'] ?? 6);
-  const extra = ROUTE.EXTRA_LINKS[key] ?? 2;
-  const slack = ROUTE.SLACK[key] ?? 0;
+  const total = byDifficulty(ROUTE.ROUNDS, difficulty, 2);
+  const layers = byDifficulty(ROUTE.LAYERS, difficulty, 2);
+  const width = byDifficulty(ROUTE.WIDTH, difficulty, 2);
+  const alwaysTrap = difficulty === 2 || difficulty === 3;
 
-  const build = (): RouteInstance => {
-    const links: RouteLink[] = [];
-    const used = new Set<string>();
-    const add = (a: number, b: number): void => {
-      if (a === b || used.has(linkKey(a, b))) return;
-      used.add(linkKey(a, b));
-      links.push({ a, b, cost: randInt(rng, ROUTE.MIN_COST, ROUTE.MAX_COST) });
-    };
-
-    for (let node = 1; node < nodes; node += 1) add(randInt(rng, 0, node - 1), node);
-    for (let i = 0; i < extra; i += 1) add(randInt(rng, 0, nodes - 1), randInt(rng, 0, nodes - 1));
-
-    return { nodes, links, maxCost: 0 };
-  };
-
-  /*
-   * Uma rede so serve se a rota curta tiver pelo menos dois saltos: com a
-   * origem ligada direto no destino, nao ha roteamento nenhum para pensar.
-   */
-  let instance: RouteInstance | null = null;
-  for (let attempt = 0; attempt < ROUTE.GEN_ATTEMPTS && !instance; attempt += 1) {
-    const draft = build();
-    const path = shortestPath(draft);
-    if (path && path.length >= 3) instance = draft;
-  }
-
-  if (!instance) {
-    // Reserva deterministica: um anel, onde toda rota tem mais de um salto.
-    const links: RouteLink[] = [];
-    for (let node = 0; node + 1 < nodes; node += 1) {
-      links.push({ a: node, b: node + 1, cost: ROUTE.MIN_COST });
+  const rounds: RouteMap[] = [];
+  for (let index = 0; index < total; index += 1) {
+    const wantsTrap = alwaysTrap || index > 0;
+    let map = drawMap(rng, layers, width);
+    for (let attempt = 1; attempt < ROUTE.GEN_ATTEMPTS; attempt += 1) {
+      if (!wantsTrap || greedyCost(map) > bestCost(map)) break;
+      map = drawMap(rng, layers, width);
     }
-    links.push({ a: 0, b: nodes - 1, cost: ROUTE.MAX_COST * nodes });
-    instance = { nodes, links, maxCost: 0 };
+    rounds.push(map);
   }
+  return { rounds };
+}
 
-  return { ...instance, maxCost: referenceCost(instance) + slack };
+export function reference(instance: RouteInstance): RouteSolution {
+  return instance.rounds.map(shortestPath);
 }
 
 /**
- * Avalia a rota. `ok` exige chegar ao destino dentro do orcamento de atraso.
- * Eficiencia = atraso da rota curta / atraso da rota usada (1 = a mais curta).
+ * `ok` exige que o pacote chegue em todas as rodadas, por ligacoes que existem.
+ * Eficiencia = atraso do melhor caminho / atraso do caminho feito, somando as
+ * rodadas (1 = achou o melhor em todas).
  */
 export function evaluate(instance: RouteInstance, solution: RouteSolution): Evaluation {
-  const used = pathCost(instance, solution);
-  if (!Number.isFinite(used)) return { ok: false, efficiency: 0 };
-  if (used > instance.maxCost) return { ok: false, efficiency: 0 };
-
-  const efficiency = Math.min(referenceCost(instance) / used, SCORING.EFFICIENCY_MAX);
-  return { ok: true, efficiency };
+  if (!Array.isArray(solution) || solution.length !== instance.rounds.length) {
+    return { ok: false, efficiency: 0 };
+  }
+  let best = 0;
+  let used = 0;
+  for (let i = 0; i < instance.rounds.length; i += 1) {
+    const map = instance.rounds[i] as RouteMap;
+    const path = solution[i];
+    if (!Array.isArray(path) || path.length < 2) return { ok: false, efficiency: 0 };
+    if (path[0] !== map.origin || path.at(-1) !== map.dest) return { ok: false, efficiency: 0 };
+    const cost = pathCost(map, path);
+    if (cost === null) return { ok: false, efficiency: 0 };
+    best += bestCost(map);
+    used += cost;
+  }
+  return { ok: true, efficiency: used > 0 ? Math.min(1, best / used) : 0 };
 }
 
 export const era: EraId = 'redes';
