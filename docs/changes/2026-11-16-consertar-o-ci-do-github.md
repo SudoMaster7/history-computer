@@ -9,6 +9,10 @@
 - `.github/workflows/ci.yml` — saiu `working-directory: game`, e
   `cache-dependency-path` e o caminho do relatório do Playwright deixaram de
   começar com `game/`.
+- `.github/workflows/ci.yml` — o runner ficou fixo em `ubuntu-24.04`. Com o
+  caminho consertado, tudo passou até o build, e o CI quebrou ao instalar os
+  navegadores do Playwright (`--with-deps`) no `ubuntu-latest`, que aponta para
+  um Ubuntu mais novo que o Playwright 1.49 conhece.
 - `ASSETS.md`, `docs/MULTIPLAYER.md`, `src/ui/WorldScreen.tsx` — só formatação
   do Prettier, sem mudança de conteúdo nem de comportamento.
 

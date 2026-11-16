@@ -7,7 +7,9 @@ on:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # Fixo, nao `ubuntu-latest`: o Playwright 1.49 so sabe instalar as
+    # dependencias de sistema das versoes do Ubuntu que ele conhece.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
