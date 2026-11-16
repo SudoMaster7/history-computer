@@ -8,9 +8,6 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: game
     steps:
       - uses: actions/checkout@v4
 
@@ -18,7 +15,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: game/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - run: npm ci
 
@@ -53,5 +50,5 @@ jobs:
         if: failure()
         with:
           name: playwright-report
-          path: game/playwright-report
+          path: playwright-report
           retention-days: 7

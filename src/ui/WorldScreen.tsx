@@ -317,12 +317,10 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
 
       // Interpola a posicao entre a celula de origem e a de destino.
       const progress =
-        state.startedAt === 0
-          ? 1
-          : Math.min(1, (now - state.startedAt) / WORLD.WALK_MS_PER_TILE);
+        state.startedAt === 0 ? 1 : Math.min(1, (now - state.startedAt) / WORLD.WALK_MS_PER_TILE);
       const bitX = (state.from.col + (state.to.col - state.from.col) * progress) * size;
       const bitY = (state.from.row + (state.to.row - state.from.row) * progress) * size;
-      const moving = (progress < 1 || state.queue.length > 0);
+      const moving = progress < 1 || state.queue.length > 0;
 
       ctx.setTransform(RES, 0, 0, RES, 0, 0);
       ctx.imageSmoothingEnabled = false;
@@ -468,16 +466,13 @@ export default function WorldScreen({ world, onOpenStation, onOpenDoor, onMenu, 
     return () => cancelAnimationFrame(id);
   }, [art, draw, advance]);
 
-  const run = useCallback(
-    (path: Cell[]): void => {
-      const state = walk.current;
+  const run = useCallback((path: Cell[]): void => {
+    const state = walk.current;
 
-      // No meio de um passo, o passo termina antes de a rota nova comecar:
-      // trocar a fila na hora faria o Bit saltar de uma celula para outra.
-      state.queue = state.startedAt !== 0 ? [state.to, ...path] : path;
-    },
-    [],
-  );
+    // No meio de um passo, o passo termina antes de a rota nova comecar:
+    // trocar a fila na hora faria o Bit saltar de uma celula para outra.
+    state.queue = state.startedAt !== 0 ? [state.to, ...path] : path;
+  }, []);
 
   /* --------------------------------------------------------------- fala -- */
 

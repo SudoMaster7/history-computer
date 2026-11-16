@@ -3,21 +3,21 @@
 Registro de assets e licencas. Codigo MIT; conteudo educacional CC BY 4.0.
 Assets de terceiros apenas CC0 ou compativeis.
 
-| Asset                                           | Origem                               | Licenca   | Onde e usado              |
-| ----------------------------------------------- | ------------------------------------ | --------- | ------------------------- |
-| `public/favicon.svg`                            | feito neste projeto                  | CC BY 4.0 | aba do navegador          |
-| `public/icon-192.png`, `public/icon-512.png`    | gerados neste projeto (placeholder)  | CC BY 4.0 | PWA                       |
-| Textos das cartas (`src/data/cards.pt-BR.json`) | escritos neste projeto               | CC BY 4.0 | portao da Linha do Tempo  |
-| Textos de interface (`src/data/ui.pt-BR.json`)  | escritos neste projeto               | CC BY 4.0 | toda a UI                 |
-| `public/sprites/tiles-<era>.png`                | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | tiles das zonas           |
-| `public/sprites/bit.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o Bit (robo), 4 direcoes  |
-| `public/sprites/npc-<pessoa>.png`               | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | 18 personagens historicos |
-| `public/sprites/bug.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o BUG Day 0, 3 quadros    |
-| Fonte                                           | pilha do sistema (`system-ui`)       | n/a       | toda a UI                 |
-| Curiosidades (`src/data/fragments.pt-BR.json`)  | escritas neste projeto               | CC BY 4.0 | fragmentos de memoria     |
-| Efeitos sonoros                                 | sintetizados em `src/fx/sound.ts`    | MIT       | todo o jogo               |
+| Asset                                           | Origem                               | Licenca   | Onde e usado               |
+| ----------------------------------------------- | ------------------------------------ | --------- | -------------------------- |
+| `public/favicon.svg`                            | feito neste projeto                  | CC BY 4.0 | aba do navegador           |
+| `public/icon-192.png`, `public/icon-512.png`    | gerados neste projeto (placeholder)  | CC BY 4.0 | PWA                        |
+| Textos das cartas (`src/data/cards.pt-BR.json`) | escritos neste projeto               | CC BY 4.0 | portao da Linha do Tempo   |
+| Textos de interface (`src/data/ui.pt-BR.json`)  | escritos neste projeto               | CC BY 4.0 | toda a UI                  |
+| `public/sprites/tiles-<era>.png`                | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | tiles das zonas            |
+| `public/sprites/bit.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o Bit (robo), 4 direcoes   |
+| `public/sprites/npc-<pessoa>.png`               | gerados por `tools/make-sprites.mjs` | CC BY 4.0 | 18 personagens historicos  |
+| `public/sprites/bug.png`                        | gerado por `tools/make-sprites.mjs`  | CC BY 4.0 | o BUG Day 0, 3 quadros     |
+| Fonte                                           | pilha do sistema (`system-ui`)       | n/a       | toda a UI                  |
+| Curiosidades (`src/data/fragments.pt-BR.json`)  | escritas neste projeto               | CC BY 4.0 | fragmentos de memoria      |
+| Efeitos sonoros                                 | sintetizados em `src/fx/sound.ts`    | MIT       | todo o jogo                |
 | Musica de fundo (9 faixas)                      | partitura em `src/fx/music.ts`       | MIT       | menu, zonas, prova, chefao |
-| Marcadores e particulas do mapa                 | desenhados em `src/ui/worldArt.ts`   | MIT       | mapa e faixa do menu      |
+| Marcadores e particulas do mapa                 | desenhados em `src/ui/worldArt.ts`   | MIT       | mapa e faixa do menu       |
 
 ## Fonte
 

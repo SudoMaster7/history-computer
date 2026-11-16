@@ -26,15 +26,15 @@ por isso está separado, por último, com o custo escrito.
 O motivo de isto ser viável é uma decisão antiga: **toda regra de jogo é função
 pura e determinística** (`CLAUDE.md`, seção 3).
 
-| Já existe                                            | Para que serve aqui                                   |
-| ---------------------------------------------------- | ----------------------------------------------------- |
-| `generate(seed, dificuldade)` em todo minijogo       | A mesma seed dá o mesmo desafio para os dois jogadores |
-| `evaluate(instância, solução)` puro                  | O servidor reavalia a solução sem confiar no cliente  |
+| Já existe                                              | Para que serve aqui                                    |
+| ------------------------------------------------------ | ------------------------------------------------------ |
+| `generate(seed, dificuldade)` em todo minijogo         | A mesma seed dá o mesmo desafio para os dois jogadores |
+| `evaluate(instância, solução)` puro                    | O servidor reavalia a solução sem confiar no cliente   |
 | `core/boss.ts` puro (`strike`, `endTurn`, `patchStep`) | Um combate inteiro pode ser refeito a partir das ações |
-| `dailySeed()` no fuso `America/Sao_Paulo`            | Desafio do dia igual para todo mundo                  |
-| `services/api.ts` (interface) + `localApi.ts`        | Ponto único para trocar o ranking simulado pelo real  |
-| `RunSubmission` em `core/types.ts`                   | Formato de envio que **não** carrega pontuação        |
-| `missionScore` e `bossScore` em `core/scoring.ts`    | A pontuação é sempre recalculada, nunca recebida      |
+| `dailySeed()` no fuso `America/Sao_Paulo`              | Desafio do dia igual para todo mundo                   |
+| `services/api.ts` (interface) + `localApi.ts`          | Ponto único para trocar o ranking simulado pelo real   |
+| `RunSubmission` em `core/types.ts`                     | Formato de envio que **não** carrega pontuação         |
+| `missionScore` e `bossScore` em `core/scoring.ts`      | A pontuação é sempre recalculada, nunca recebida       |
 
 A regra que sustenta tudo: **o cliente nunca envia pontuação**. Envia a seed e a
 solução; quem calcula é o servidor, com o mesmo `core`.
@@ -158,14 +158,14 @@ mudam nada.
 
 ### 5.3 O que é novo, e é muito
 
-| Peça                     | Por que é cara                                                    |
-| ------------------------ | ----------------------------------------------------------------- |
-| Canal em tempo real      | Supabase Realtime (ou WebSocket próprio); conexão cai no celular  |
-| Servidor como árbitro    | O estado do combate mora no servidor; o cliente só manda ação     |
-| Relógio de turno         | Sem limite de tempo, um jogador segura o outro para sempre        |
-| Reconexão e abandono     | Decidir o que acontece quando alguém fecha a aba no meio          |
-| Pareamento               | Fila, ou só "sala com código" (muito mais simples — começar por aí) |
-| Equilíbrio               | Poder nível 3 contra nível 1 não é batalha; precisa de faixa      |
+| Peça                  | Por que é cara                                                      |
+| --------------------- | ------------------------------------------------------------------- |
+| Canal em tempo real   | Supabase Realtime (ou WebSocket próprio); conexão cai no celular    |
+| Servidor como árbitro | O estado do combate mora no servidor; o cliente só manda ação       |
+| Relógio de turno      | Sem limite de tempo, um jogador segura o outro para sempre          |
+| Reconexão e abandono  | Decidir o que acontece quando alguém fecha a aba no meio            |
+| Pareamento            | Fila, ou só "sala com código" (muito mais simples — começar por aí) |
+| Equilíbrio            | Poder nível 3 contra nível 1 não é batalha; precisa de faixa        |
 
 ### 5.4 Regras que evitam trapaça
 
@@ -186,12 +186,12 @@ ela mostrar que as pessoas querem jogar ao mesmo tempo.
 
 ## 6. Ordem sugerida e o que cada fase destrava
 
-| Fase | Entrega                         | Depende de | Tamanho  |
-| ---- | ------------------------------- | ---------- | -------- |
-| 1    | Ranking validado no servidor    | —          | médio    |
-| 2    | Duelo assíncrono por link       | 1          | pequeno  |
-| 2b   | Batalha por turnos assíncrona   | 2          | médio    |
-| 3    | Batalha em tempo real           | 2b         | grande   |
+| Fase | Entrega                       | Depende de | Tamanho |
+| ---- | ----------------------------- | ---------- | ------- |
+| 1    | Ranking validado no servidor  | —          | médio   |
+| 2    | Duelo assíncrono por link     | 1          | pequeno |
+| 2b   | Batalha por turnos assíncrona | 2          | médio   |
+| 3    | Batalha em tempo real         | 2b         | grande  |
 
 A fase 1 é a única obrigatória para o critério de aceite 8 do briefing
 ("ranking validado no servidor"). As outras são acréscimo.

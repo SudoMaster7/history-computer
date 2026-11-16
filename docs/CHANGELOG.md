@@ -2,6 +2,8 @@
 
 ## Notas
 
+- [consertar o CI do GitHub](changes/2026-11-16-consertar-o-ci-do-github.md) — 2026-11-16
+
 - [refazer os seis minijogos em rodadas curtas](changes/2026-11-16-refazer-os-seis-minijogos-em-rodadas-curtas.md) — 2026-11-16
 
 - [tirar o ajuste reduzir animacoes](changes/2026-11-16-tirar-o-ajuste-reduzir-animacoes.md) — 2026-11-16
