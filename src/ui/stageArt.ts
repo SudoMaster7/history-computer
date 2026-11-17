@@ -250,6 +250,24 @@ function drawBattery(ctx: Ctx, x: number, y: number): void {
   ctx.fillRect(x + 3, y + 6, 1, 3);
 }
 
+/**
+ * Cortina de energia acima da porta: linhas finas que sobem devagar. Fraca de
+ * proposito -- e aviso de "nao passa", nao uma segunda porta.
+ */
+function drawBarrier(ctx: Ctx, x: number, doorY: number, t: number): void {
+  const height = doorY;
+  if (height <= 0) return;
+  ctx.fillStyle = 'rgba(88, 224, 200, 0.10)';
+  ctx.fillRect(x + 3, 0, T - 6, height);
+  ctx.fillStyle = 'rgba(88, 224, 200, 0.35)';
+  ctx.fillRect(x + 3, 0, 1, height);
+  ctx.fillRect(x + T - 4, 0, 1, height);
+  // Faiscas subindo pela cortina.
+  const shift = Math.floor(t / 60) % 12;
+  ctx.fillStyle = 'rgba(154, 243, 226, 0.55)';
+  for (let k = height - shift; k > 0; k -= 12) ctx.fillRect(x + 6 + ((k / 12) % 2) * 3, k, 1, 3);
+}
+
 /** Programa da Era 6: cor, forma e antena sao as caracteristicas que o jogador compara. */
 export function drawProgram(ctx: Ctx, x: number, y: number, attrs: readonly number[]): void {
   const color = PROGRAM_COLORS[attrs[0] ?? 0] ?? PROGRAM_COLORS[0];
@@ -431,22 +449,38 @@ export function drawStage(ctx: Ctx, def: StageDef, s: RunState, art: StageArt, t
   def.signs.forEach((sign, i) => drawSign(ctx, sign.col * T, sign.row * T, i < s.signsRead));
   def.checkpoints.forEach((c, i) => drawFlag(ctx, c.col * T, c.row * T, i <= s.checkpoint));
 
-  // Portoes: porta empilhada enquanto fechado; aberto, so o batente.
+  // Portoes (D88): UMA porta na altura do Bit. Acima dela, uma cortina de energia
+  // fraca ate o topo diz que nao da para pular por cima -- a coluna inteira
+  // continua bloqueada na regra (core/stage). Aberto, so o batente.
   def.gates.forEach((g, i) => {
     const open = s.gates[i]?.solved;
-    for (let row = g.row; row < def.rows; row += 1) {
-      if (stageTileAt(def, g.col, row) === STAGE_TILE.GROUND) break;
-      if (!open) tile(ctx, art, TILESET.DOOR, g.col * T, row * T);
+    // A celula logo acima do chao, na coluna do portao.
+    let floorRow = g.row;
+    while (floorRow + 1 < def.rows && stageTileAt(def, g.col, floorRow + 1) !== STAGE_TILE.GROUND) {
+      floorRow += 1;
     }
-    if (!open) {
-      // Brilho de "pense aqui" no topo do portao.
-      const glow = 0.4 + 0.3 * Math.sin(t / 220);
-      ctx.fillStyle = `rgba(88, 224, 200, ${glow})`;
-      ctx.fillRect(g.col * T + 4, g.row * T - 5, 8, 3);
-    } else {
-      ctx.fillStyle = 'rgba(88, 224, 200, 0.35)';
-      ctx.fillRect(g.col * T + 7, g.row * T, 2, (def.rows - g.row - 2) * T);
+    const x = g.col * T;
+    const y = floorRow * T;
+    if (open) {
+      // Batente aberto: dois postes baixos e a passagem livre.
+      ctx.fillStyle = INK;
+      ctx.fillRect(x, y, 3, T);
+      ctx.fillRect(x + T - 3, y, 3, T);
+      ctx.fillStyle = 'rgba(88, 224, 200, 0.45)';
+      ctx.fillRect(x + 1, y + 1, 1, T - 2);
+      ctx.fillRect(x + T - 2, y + 1, 1, T - 2);
+      return;
     }
+    drawBarrier(ctx, x, y, t);
+    tile(ctx, art, TILESET.DOOR, x, y);
+    // Moldura escura e lampada de "pense aqui" piscando em cima da porta.
+    ctx.strokeStyle = INK;
+    ctx.strokeRect(x + 0.5, y + 0.5, T - 1, T - 1);
+    const glow = 0.45 + 0.35 * Math.sin(t / 220);
+    ctx.fillStyle = INK;
+    ctx.fillRect(x + 4, y - 5, 8, 4);
+    ctx.fillStyle = `rgba(88, 224, 200, ${glow})`;
+    ctx.fillRect(x + 5, y - 4, 6, 2);
   });
 
   // Terminal no fim.

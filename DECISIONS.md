@@ -999,3 +999,28 @@ o trecho da D83 em que esse balão ficava até o portão abrir.
 
 Os exemplos também deixaram de se repetir: aparecem só no balão da última placa antes de cada
 detector (a que diz a regra daquele grupo). As outras placas do caminho mostram só a frase.
+
+### D87. Detector justo, e toda placa com balão
+
+A Leticia ficou presa na fase dos vírus: com a Rajada, os tiros que passavam do vírus acertavam
+os programas seguros de trás e tiravam coração; e passar de um vírus fazia ele "escapar", o que
+tirava coração, voltava ao checkpoint e reiniciava o grupo inteiro.
+
+- **Programa seguro é imune.** O tiro bate nele e se desfaz, com o aviso "Esse era um programa
+  seguro!", mas sem coração perdido e sem derrubá-lo. Quem mirou certo não é punido pela rajada.
+- **Vírus não escapa.** Se o Bit passa dele, ele dá meia-volta e vem atrás; o portão só abre
+  quando todos caem, e nada reinicia. Saiu a constante `STAGE.ESCAPE_PX` e o evento `escape`.
+- **Toda placa mostra o balão** quando o Bit passa. Antes, as placas logo antes de um portão
+  ficavam mudas até o Bit encostar nele, e pareciam não funcionar. Encostando no portão, o balão
+  sai e o texto fica só no painel, para não repetir.
+
+**Revoga** a parte da D75 em que errar o alvo no detector custava coração e a D83 em que a placa
+de portão só aparecia no painel.
+
+### D88. Uma porta só, com cortina de energia
+
+A pedido da Leticia, o portão deixou de ser quatro portas empilhadas. Agora é uma porta na
+altura do Bit, com uma cortina de energia fraca acima dela até o topo da tela, que avisa que
+não dá para pular por cima. A regra não mudou: a coluna inteira continua bloqueada no
+`core/stage` enquanto o portão estiver fechado, e o contrato "não dá para pular o portão"
+continua valendo. O gerador marca só uma célula `D` por portão.

@@ -44,8 +44,6 @@ const TOAST_MS = 2600;
 const BUBBLE_MS = 5500;
 /** O balao com os exemplos carimbados da Era 6: mais tempo para comparar, e some. */
 const EXAMPLES_BUBBLE_MS = 8000;
-/** Uma placa a ate esta distancia (em colunas) de um portao e a placa dele. */
-const GATE_SIGN_COLS = 12;
 
 const SOUND_OF: Partial<Record<RunEvent['type'], SoundName>> = {
   jump: 'step',
@@ -75,17 +73,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error(`nao carregou ${src}`));
     image.src = src;
   });
-}
-
-/** O portao que a placa `index` explica, se ela estiver logo antes de um. */
-function gateOfSign(def: StageDef, index: number): number | null {
-  const sign = def.signs[index];
-  if (!sign) return null;
-  const next = def.signs[index + 1];
-  const gate = def.gates.findIndex((g) => g.col > sign.col);
-  const g = def.gates[gate];
-  if (!g || (next && next.col < g.col)) return null;
-  return g.col - sign.col <= GATE_SIGN_COLS ? gate : null;
 }
 
 /** Placa que explica o portao `gate` (a ultima antes dele). */
@@ -215,8 +202,8 @@ export default function StageScreen({ stageId, onClear, onExit }: Props) {
         if (sound) play(sound);
         switch (e.type) {
           case 'sign': {
-            // A placa colada no portao aparece no painel dele; as outras, no balao.
-            if (gateOfSign(def, e.index) !== null) break;
+            // Toda placa aparece no balao quando o Bit passa (D87); a que fica
+            // antes de um portao tambem se repete no painel dele.
             const next = def.gates.findIndex((g) => g.col > def.signs[e.index]!.col);
             // Exemplos so na ultima placa antes do detector -- a que traz a regra
             // daquele grupo --, e nao repetidos em toda placa do caminho (D86).
@@ -263,9 +250,13 @@ export default function StageScreen({ stageId, onClear, onExit }: Props) {
             setPhase('clear');
             changed = true;
             break;
+          case 'gate':
+            // O painel do portao abre com a placa dele: o balao sai, sem repetir.
+            setSign(null);
+            changed = true;
+            break;
           case 'hit':
           case 'fall':
-          case 'gate':
             changed = true;
             break;
           default:

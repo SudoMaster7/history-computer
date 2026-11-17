@@ -56,7 +56,7 @@ Testes e documentos:
   para o jogo de fases (ver abaixo). `architecture.test.ts`: a checagem de "há arquivos"
   aponta para `stage.ts` em vez de `world.ts`, que deixou de existir.
 - `tests/e2e/smoke.spec.ts`: reescrito.
-- `DECISIONS.md`: D73 a D86.
+- `DECISIONS.md`: D73 a D88.
 
 Ajustes pedidos depois de jogar (D80), na mesma iteração:
 
@@ -92,7 +92,10 @@ E por último (D82 e D83), também a pedido dela:
   `ui/icons.tsx`): botões de fliperama, janelas com moldura, HUD em placas, controles de gamepad
   com ícone (D85).
 - O balão com os exemplos da Era 6 deixou de ficar fixo e some sozinho, e os exemplos aparecem
-  só na placa logo antes de cada detector (D86). `README.md` e `CLAUDE.md` atualizados.
+  só na placa logo antes de cada detector (D86).
+- Detector justo (D87): programa seguro é imune ao tiro (só avisa), e vírus que fica para trás dá
+  meia-volta em vez de "escapar" e reiniciar o grupo. Toda placa mostra o balão ao passar.
+- Portão com uma porta só e cortina de energia acima (D88). `README.md` e `CLAUDE.md` atualizados.
 
 ## Por que
 

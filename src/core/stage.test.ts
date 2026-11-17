@@ -353,9 +353,11 @@ describe('fase: detector (Era 6)', () => {
       s = out.state;
       events.push(...out.events);
     }
-    expect(clearlyBehind(s)).toBeDefined();
+    const which = s.enemies.indexOf(clearlyBehind(s)!);
+    expect(which).toBeGreaterThanOrEqual(0);
     s = run(def, 2, () => ({ right: false }), s).state;
-    expect(clearlyBehind(s)!.vx).toBeGreaterThan(0);
+    // O virus que ficou para tras agora anda para a direita, atras do Bit.
+    expect(s.enemies[which]!.vx).toBeGreaterThan(0);
     expect(events.some((e) => e.type === 'restart' || e.type === 'fall')).toBe(false);
     expect(s.gates[0]!.solved).toBe(false);
   });

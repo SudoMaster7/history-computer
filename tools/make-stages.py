@@ -164,7 +164,9 @@ class Stage:
 
     def gate_col(self):
         """So a coluna do portao (quem chama ja pos checkpoint e placa)."""
-        return self.column({r: 'D' for r in range(self.floor - 3, self.floor + 1)})
+        # Uma porta so, na altura do Bit (D88). A coluna inteira bloqueia do mesmo
+        # jeito: quem decide e o core, nao o desenho.
+        return self.column({self.floor: 'D'})
 
     def gate(self, data, text):
         """Checkpoint, placa, e o portao: ocupa a coluna inteira, nao da para pular."""
