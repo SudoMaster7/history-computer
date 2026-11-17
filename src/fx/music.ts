@@ -19,7 +19,7 @@ export type TrackName =
   | 'redes'
   | 'seguranca'
   | 'ia'
-  | 'quiz'
+  | 'map'
   | 'boss';
 
 type Wave = 'square' | 'triangle' | 'sawtooth' | 'sine';
@@ -363,8 +363,8 @@ const TRACKS: Record<TrackName, Track> = {
     arp: UP_DOWN,
     lead: 'sine',
   },
-  // Prova da era: suspense leve, sem pressa.
-  quiz: {
+  // Mapa da jornada: suspense leve, sem pressa, entre uma fase e outra.
+  map: {
     bpm: 126,
     root: 60,
     scale: MIXOLYDIAN,

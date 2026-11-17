@@ -2,16 +2,12 @@ import { useEffect } from 'react';
 import type { Evaluation, PowerId } from '@/core/types';
 import { missionScore, starsFor } from '@/core/scoring';
 import { Burst, play, useCountUp } from '@/fx';
-import { IconKnowledge, IconLevel, IconPower, IconStar } from './icons';
+import { IconPower, IconStar } from './icons';
 import ui from '@/data/ui.pt-BR.json';
 
 /** O que a missao rendeu, medido comparando o jogador antes e depois. */
 export interface MissionOutcome {
   evaluation: Evaluation;
-  /** Conhecimento ganho nesta tentativa (repeticao so paga a melhoria). */
-  xp: number;
-  levelFrom: number;
-  levelTo: number;
   power: PowerId;
   powerFrom: number;
   powerTo: number;
@@ -34,7 +30,7 @@ const STAR_START_MS = 260;
 /**
  * Resultado da missao. Nao calcula nada: recebe a avaliacao e o que mudou no
  * jogador e apresenta -- estrelas uma a uma, pontuacao subindo, e cada ganho
- * (conhecimento, nivel, poder, recorde) na sua propria linha.
+ * (habilidade, recorde) na sua propria linha.
  *
  * Existe porque concluir um desafio tem de parecer conquista. Uma linha de
  * texto com "★☆☆" dizia a mesma coisa e nao dava vontade de voltar pela
@@ -46,7 +42,6 @@ export default function MissionResult({ outcome, onRetry, onExit }: Props) {
   const stars = starsFor(evaluation.efficiency, ok);
   const score = ok ? missionScore(evaluation.efficiency) : 0;
   const efficiency = Math.round(evaluation.efficiency * 100);
-  const leveled = outcome.levelTo > outcome.levelFrom;
   const powered = outcome.powerTo > outcome.powerFrom;
 
   const shownScore = useCountUp(score, 900, STAR_START_MS);
@@ -112,21 +107,10 @@ export default function MissionResult({ outcome, onRetry, onExit }: Props) {
               {ui.mission.newRecord}
             </li>
           ) : null}
-          {outcome.xp > 0 ? (
-            <li className="gain">
-              <IconKnowledge size={18} />+{outcome.xp} {ui.mission.xpGained}
-            </li>
-          ) : null}
-          {leveled ? (
-            <li className="gain gain--level">
-              <IconLevel size={18} />
-              {ui.mission.levelUp} {outcome.levelTo}
-            </li>
-          ) : null}
           {powered ? (
             <li className="gain gain--power">
               <IconPower size={18} />
-              {ui.mission.powerUp} {ui.powers[outcome.power]}: {ui.mission.powerLevel}{' '}
+              {ui.mission.powerUp} {ui.abilities[outcome.power].name}: {ui.mission.powerLevel}{' '}
               {outcome.powerTo}
             </li>
           ) : null}
@@ -140,7 +124,7 @@ export default function MissionResult({ outcome, onRetry, onExit }: Props) {
           {ui.mission.retry}
         </button>
         <button type="button" className={ok ? 'result__primary' : undefined} onClick={onExit}>
-          {ui.world.backToWorld}
+          {ui.stage.toMap}
         </button>
       </div>
     </section>

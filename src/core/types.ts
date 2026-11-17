@@ -8,6 +8,9 @@ export type PowerId = 'repetir' | 'decidir' | 'codificar' | 'conectar' | 'proteg
 export type Difficulty = 'micro' | 1 | 2 | 3;
 
 export type PowerLevel = 0 | 1 | 2 | 3;
+
+/** Dificuldade escolhida pelo jogador (D82): coracoes, municao e chao que cai. */
+export type GameDifficulty = 'facil' | 'normal' | 'dificil';
 export type Stars = 0 | 1 | 2 | 3;
 export type MissionLetter = 'A' | 'B';
 
@@ -48,20 +51,13 @@ export interface MissionProgress {
   bestScore: number;
 }
 
+/**
+ * O que o save guarda do jogador (D73): so as estrelas e a melhor pontuacao de
+ * cada fase. Habilidade, era fechada e fase aberta saem dai (`core/campaign`).
+ */
 export interface PlayerState {
-  level: number;
-  xp: number;
-  hp: number;
-  hpMax: number;
-  /** Acoes por turno no combate. */
-  clock: number;
-  powers: Record<PowerId, PowerLevel>;
-  /** Chave: "<era>-A" | "<era>-B". */
+  /** Chave: "<era>-A" | "<era>-B" (o id da fase e da missao). */
   missions: Record<string, MissionProgress>;
-  /** Ano do mundo (relogio do HUD). */
-  year: number;
-  /** Mochila: id do item -> quantidade. */
-  items: Record<string, number>;
 }
 
 export interface MissionDef {
@@ -85,7 +81,6 @@ export interface Attack {
   id: BossAttackId;
   /** Poder que neutraliza este ataque. */
   neutralizedBy: PowerId;
-  damage: number;
 }
 
 export type GameMode = 'mission' | 'boss' | 'daily';

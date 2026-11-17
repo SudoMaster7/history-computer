@@ -1,7 +1,7 @@
 {
   "name": "da-valvula-a-ia",
   "version": "0.1.0",
-  "description": "RPG educacional sobre a historia da computacao (MVP, mobile-first).",
+  "description": "Jogo educacional de fases sobre a historia da computacao (mobile-first).",
   "directories": {
     "test": "tests"
   },
@@ -20,9 +20,7 @@
     "typecheck": "tsc --noEmit",
     "ci": "npm run lint && npm run typecheck && npm run check:changes && npm run test:coverage && npm run build",
     "sprites": "node tools/make-sprites.mjs",
-    "worlds": "python tools/make-worlds.py",
-    "npcs": "python tools/make-npcs.py",
-    "quizzes": "python tools/make-quizzes.py",
+    "stages": "python tools/make-stages.py",
     "change": "node tools/new-change.mjs",
     "check:changes": "node tools/check-changes.mjs",
     "test:contract": "vitest run tests/contract"

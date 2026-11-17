@@ -32,13 +32,13 @@ export function missionScore(efficiency: number): number {
 }
 
 /**
- * 2000 + 10 x vida restante DO JOGADOR - 60 x turnos (min 200).
- * Ver DECISIONS.md: o briefing diz apenas "vida restante"; adotamos a do jogador.
+ * 2000 + 300 x coracoes que sobraram - 60 x rodadas (minimo 200): ganha mais
+ * quem vence o BUG Day 0 rapido e sem levar golpe.
  */
-export function bossScore(hpLeft: number, turns: number): number {
+export function bossScore(heartsLeft: number, rounds: number): number {
   const raw =
     SCORING.BOSS_BASE +
-    SCORING.BOSS_PER_HP * Math.max(0, hpLeft) -
-    SCORING.BOSS_PER_TURN * Math.max(0, turns);
+    SCORING.BOSS_PER_HEART * Math.max(0, heartsLeft) -
+    SCORING.BOSS_PER_TURN * Math.max(0, rounds);
   return Math.max(SCORING.BOSS_SCORE_MIN, Math.round(raw));
 }

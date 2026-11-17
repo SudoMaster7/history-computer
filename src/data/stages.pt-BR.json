@@ -1,0 +1,129 @@
+{
+  "mecanica-A": {
+    "title": "O tear que se repete",
+    "intro": "Era 1 · Mecânica. Em 1804, o tear de Jacquard repetia desenhos lendo cartões perfurados. Vamos ver como uma máquina repete.",
+    "signs": [
+      "Segure ▶ para andar. PULAR segurado vai mais alto.",
+      "Tiro gasta carga ⚡. Pegue baterias, ou pise nos inimigos.",
+      "Engrenagem! ATIRAR, ou pule em cima dela.",
+      "Portão-tear: vermelho, azul, vermelho, azul… O tecido repete um trecho. Toque na cor que vem depois.",
+      "Agora o trecho tem três fios. Ache onde as cores voltam a se repetir e continue o tecido.",
+      "Pule na mola para subir lá no alto.",
+      "Blindado: dois tiros, e não dá para pisar."
+    ],
+    "summary": "Você completou tecidos achando o trecho que se repete. No Tear de Engrenagens é igual: descubra o trecho e continue o tecido, fio por fio."
+  },
+  "mecanica-B": {
+    "title": "Cartões perfurados",
+    "intro": "Era 1 · Mecânica. Ada Lovelace viu no tear uma máquina que segue um programa guardado fora dela.",
+    "signs": [
+      "Engrenagens voadoras: atire de longe.",
+      "Cuidado: uma cor pode aparecer duas vezes seguidas no trecho. Conte com calma antes de tocar.",
+      "O último tecido tem um trecho de quatro fios. Quem acha o trecho não precisa decorar o resto.",
+      "Chão rachado cai: não pare em cima!",
+      "Saltador: atire quando ele descer."
+    ],
+    "summary": "Um programa curto faz um tecido comprido porque repete um trecho. É esse o poder REPETIR, o avô do laço de repetição."
+  },
+  "logica-A": {
+    "title": "Portas que decidem",
+    "intro": "Era 2 · Válvulas e Lógica. Em 1937, Claude Shannon mostrou que circuitos de liga-desliga fazem contas de verdadeiro e falso.",
+    "signs": [
+      "Válvulas só ligam e desligam. Juntas, decidem.",
+      "Porta E: a luz só acende com as DUAS chaves ligadas. Ligue as chaves e toque em Testar.",
+      "Porta OU: basta UMA chave chegar ligada. A chave com NÃO funciona ao contrário: desligada, ela manda sinal."
+    ],
+    "summary": "Você abriu portões pensando nas portas E, OU e NÃO. Nos Circuitos Lógicos é assim: olhe a lâmpada e volte pelo fio antes de testar."
+  },
+  "logica-B": {
+    "title": "O ENIAC decide",
+    "intro": "Era 2 · Válvulas e Lógica. O ENIAC tinha cerca de 18 mil válvulas, todas ligando e desligando para decidir.",
+    "signs": [
+      "Seu tiro apaga a faísca da torre.",
+      "Três chaves: a primeira porta é E, a segunda é OU. Comece pela lâmpada: de que ela precisa?",
+      "Duas chaves com NÃO. Pense antes de testar: cada teste errado conta.",
+      "Pingo: cai quando você chega perto."
+    ],
+    "summary": "A resposta veio da combinação das chaves, não de uma ordem gravada. É o poder DECIDIR, a origem do “se… então”."
+  },
+  "codigo-A": {
+    "title": "Ligado e desligado",
+    "intro": "Era 3 · Transistor e Linguagens. Em 1948, Shannon chamou de bit a menor peça de informação: 0 ou 1.",
+    "signs": [
+      "Com o transistor, tudo vira bits: 0 ou 1.",
+      "Mesa de 3 bits: eles valem 4, 2 e 1. Ligue os bits que somam o número pedido e toque em Gravar.",
+      "Agora 4 bits: 8, 4, 2, 1. Comece pelo maior bit que cabe no número."
+    ],
+    "summary": "Cada bit vale o dobro do vizinho, e o número é a soma dos bits ligados. Na Mesa de Bits você grava números assim."
+  },
+  "codigo-B": {
+    "title": "O compilador",
+    "intro": "Era 3 · Transistor e Linguagens. Programar direto em bits era lento e cheio de erro. Por isso nasceu o compilador.",
+    "signs": [
+      "Grace Hopper traduzia ordens para a máquina.",
+      "Grave 11. Dica: 8 cabe, sobram 3; o 4 não cabe; o 2 cabe, sobra 1.",
+      "Cinco bits: 16, 8, 4, 2, 1. Com cinco bits dá para contar de 0 a 31."
+    ],
+    "summary": "Foto, música e mensagem viram fileiras de bits. É o poder CODIFICAR: escrever na língua da máquina."
+  },
+  "redes-A": {
+    "title": "Pacotes em viagem",
+    "intro": "Era 4 · Redes. Em 29 de outubro de 1969, o primeiro pacote saiu da UCLA para Stanford.",
+    "signs": [
+      "Na ARPANET, a mensagem viaja em pacotes.",
+      "Roteador: escolha por qual máquina o pacote salta. Some os atrasos: o caminho mais barato no total é o melhor.",
+      "Cuidado com a saída barata: veja para onde ela leva antes de escolher."
+    ],
+    "summary": "Qualquer caminho chega; o difícil é chegar rápido. Na Rota dos Pacotes, some o atraso do caminho inteiro antes do primeiro salto."
+  },
+  "redes-B": {
+    "title": "Comutação de pacotes",
+    "intro": "Era 4 · Redes. A rede não precisa de um fio só para cada conversa: o pacote usa as ligações que existem.",
+    "signs": [
+      "Caminho caiu? O pacote desvia.",
+      "Três fileiras de máquinas. Tente de trás para a frente: qual ligação barata chega ao destino?",
+      "Último roteador. Some antes de saltar: o salto mais barato agora nem sempre dá o caminho mais barato."
+    ],
+    "summary": "É o poder CONECTAR: um salto de cada vez, pelo caminho de menor atraso. A internet funciona assim até hoje."
+  },
+  "seguranca-A": {
+    "title": "A cifra de César",
+    "intro": "Era 5 · Web, Nuvem e Segurança. Embaralhar mensagens é coisa antiga, e ainda protege senhas e compras.",
+    "signs": [
+      "César trocava cada letra por outra mais adiante.",
+      "Portão-cifra com chave 1: cada letra andou uma casa para a frente. Volte uma casa para decifrar.",
+      "Chave 2: volte duas casas em cada letra. Se passar do A, continue pelo Z."
+    ],
+    "summary": "Quem tem a chave lê; quem não tem vê letras soltas. No Cofre Criptográfico você desfaz a cifra letra por letra."
+  },
+  "seguranca-B": {
+    "title": "Chave pública",
+    "intro": "Era 5 · Web, Nuvem e Segurança. Em 1976 e 1977, a chave pública tornou possível combinar segredos à vista de todos.",
+    "signs": [
+      "Espiões na rede: atire antes que encostem.",
+      "Chave 3: D vira A, E vira B. Conte três casas para trás em cada letra.",
+      "Última cifra. A palavra é de verdade e tem a ver com segurança: se não fizer sentido, reconte."
+    ],
+    "summary": "Proteger não é esconder: é deixar a mensagem à vista sem que ninguém leia. É o poder PROTEGER."
+  },
+  "ia-A": {
+    "title": "Aprender com exemplos",
+    "intro": "Era 6 · Inteligência Artificial. Em 2012, a AlexNet aprendeu a reconhecer imagens com exemplos, não com regras escritas.",
+    "signs": [
+      "Ninguém conta a regra: descubra pelos exemplos.",
+      "Vírus aqui são VERMELHOS. Derrube só eles.",
+      "Nova regra: compare a FORMA."
+    ],
+    "summary": "Você achou a regra olhando exemplos carimbados. No Treinar o Detector é isso: o detector é você, e programas novos provam se aprendeu."
+  },
+  "ia-B": {
+    "title": "O detector",
+    "intro": "Era 6 · Inteligência Artificial. Aprender de verdade só se prova com casos que não estavam nos exemplos.",
+    "signs": [
+      "Só é regra se nenhum seguro tiver igual.",
+      "Todo vírus aqui tem ANTENA.",
+      "Verde parece regra, mas não é. Olhe a forma."
+    ],
+    "summary": "O detector não recebe a regra: ele a descobre nos exemplos. É o poder APRENDER, o último antes do BUG Day 0."
+  }
+}

@@ -49,7 +49,7 @@ describe('contrato: o nucleo e puro', () => {
 
   it('ha arquivos para checar (o padrao de busca nao pode ter quebrado)', () => {
     expect(files.length).toBeGreaterThan(5);
-    expect(files).toContain('src/core/world.ts');
+    expect(files).toContain('src/core/stage.ts');
     expect(files).toContain('src/minigames/mecanica/logic.ts');
     expect(files).toContain('src/minigames/logica/logic.ts');
   });

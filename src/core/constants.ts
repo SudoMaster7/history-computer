@@ -3,30 +3,6 @@
  * Nenhum numero de regra de jogo deve aparecer fora daqui.
  */
 
-export const RPG = {
-  /** Vida maxima = HP_BASE + HP_PER_LEVEL * nivel. */
-  HP_BASE: 100,
-  HP_PER_LEVEL: 10,
-  MAX_LEVEL: 10,
-  /** XP necessario para sair do nivel N = XP_PER_LEVEL * N. */
-  XP_PER_LEVEL: 100,
-  /** XP da missao = MISSION_XP_BASE + MISSION_XP_PER_STAR * estrelas. */
-  MISSION_XP_BASE: 50,
-  MISSION_XP_PER_STAR: 30,
-  /** Ao chegar a 0 de vida a maquina reinicia com esta fracao da vida maxima. */
-  REBOOT_HP_RATIO: 0.5,
-  /** Cura ao concluir uma missao, em fracao da vida maxima. */
-  MISSION_HEAL_RATIO: 0.25,
-  /** Acoes por turno no combate. */
-  CLOCK_BASE: 2,
-  /** Niveis em que o clock aumenta em 1. */
-  CLOCK_LEVEL_UPS: [4, 8] as readonly number[],
-  /** Ano inicial do mundo (relogio do HUD). */
-  START_YEAR: 1642,
-  /** XP por fragmento de memoria recolhido no mapa. */
-  FRAGMENT_XP: 15,
-} as const;
-
 export const SCORING = {
   /** Limiares de eficiencia para 2 e 3 estrelas. */
   STARS_2_EFFICIENCY: 0.85,
@@ -36,9 +12,9 @@ export const SCORING = {
   MISSION_SCORE_MAX: 1500,
   /** Eficiencia maxima aceita por evaluate(). */
   EFFICIENCY_MAX: 1.5,
-  /** Pontuacao do chefao = BOSS_BASE + BOSS_PER_HP * vidaRestante - BOSS_PER_TURN * turnos. */
+  /** Pontuacao do chefao = BOSS_BASE + BOSS_PER_HEART * coracoes - BOSS_PER_TURN * rodadas. */
   BOSS_BASE: 2000,
-  BOSS_PER_HP: 10,
+  BOSS_PER_HEART: 300,
   BOSS_PER_TURN: 60,
   BOSS_SCORE_MIN: 200,
   /** Nos minijogos, cada erro tira esta fracao da eficiencia... */
@@ -57,47 +33,12 @@ export const POWERS = {
 } as const;
 
 export const BOSS = {
-  HP: 600,
+  /** Integridade do BUG Day 0. */
+  HP: 300,
   /** Dano ao chefao = BASE_DAMAGE * multiplicador do poder * eficiencia. */
   BASE_DAMAGE: 40,
-  /** Dano do ataque do chefao quando nao e neutralizado. */
-  ATTACK_DAMAGE: 20,
-  /** Eficiencia minima para neutralizar o ataque anunciado. */
+  /** Eficiencia minima do micro-desafio para neutralizar o ataque anunciado. */
   BLOCK_MIN_EFFICIENCY: 0.5,
-  /** Cargas de Patch necessarias para lancar o Patch Day 0. */
-  PATCH_REQUIRED: 3,
-  /** Dano do Patch Day 0 quando os 3 micro-desafios sao concluidos. */
-  PATCH_DAMAGE: 200,
-  /** Quantidade de micro-desafios do Patch Day 0. */
-  PATCH_CHALLENGES: 3,
-} as const;
-
-/** Ano de abertura de cada era, usado como relogio do mundo no HUD. */
-export const ERA_YEARS = {
-  mecanica: 1642,
-  logica: 1936,
-  codigo: 1950,
-  redes: 1969,
-  seguranca: 1991,
-  ia: 2012,
-} as const;
-
-export const QUIZ = {
-  /** Perguntas sorteadas por prova. */
-  QUESTIONS: 4,
-  /** Fracao de acertos para passar (arredondada para cima). */
-  PASS_RATIO: 0.75,
-  /** XP por acerto na prova da era. */
-  XP_PER_CORRECT: 25,
-} as const;
-
-export const ITEMS = {
-  /** Quantos exemplares do mesmo item cabem na mochila. */
-  MAX_PER_ITEM: 3,
-  /** Vida restaurada pela valvula reserva. */
-  HEAL_VALUE: 40,
-  /** Dano extra do modelo treinado, em fracao. */
-  POWER_VALUE: 0.5,
 } as const;
 
 export const TIME = {
@@ -107,26 +48,8 @@ export const TIME = {
 
 export const STORAGE = {
   KEY: 'davalvulaaia:save:v1',
-  VERSION: 1,
-} as const;
-
-export const WORLD = {
-  /** Lado do tile em pixels do mapa (pixel art 16x16). */
-  TILE: 16,
-  /** Zoom base ao desenhar: cada tile ocupa TILE * SCALE pixels na tela. */
-  SCALE: 3,
-  /** Tempo para andar uma celula, em milissegundos. */
-  WALK_MS_PER_TILE: 160,
-  /** Quadros do ciclo de caminhada por direcao no spritesheet. */
-  WALK_FRAMES: 3,
-  /** Troca de quadro da caminhada, em milissegundos. */
-  FRAME_MS: 130,
-  /** Fragmentos de memoria espalhados em cada zona. */
-  FRAGMENTS_PER_ZONE: 3,
-  /** Distancia minima (em celulas) entre dois fragmentos e do ponto de entrada. */
-  FRAGMENT_MIN_GAP: 4,
-  /** Linhas do topo sem fragmento: os botoes de canto flutuam sobre elas. */
-  FRAGMENT_TOP_MARGIN: 2,
+  /** 2: o jogo virou mapa de fases (D78); a migracao guarda as estrelas. */
+  VERSION: 2,
 } as const;
 
 /*
@@ -212,4 +135,105 @@ export const MODEL = {
   PASS_RATIO: 0.6,
   /** Sorteios de exemplos antes de cair no conjunto de reserva. */
   GEN_ATTEMPTS: 80,
+} as const;
+
+/*
+ * Fase de plataforma (D73-D76). Unidade: pixel da fase (o tile tem 16 px) e
+ * passo fixo de simulacao (60 passos por segundo). A tela so desenha; quem
+ * anda, pula, bate e abre portao e `core/stage.ts`.
+ */
+export const STAGE = {
+  /** Lado do tile, em pixels da fase. */
+  TILE: 16,
+  /** Passos de simulacao por segundo. */
+  STEPS_PER_SECOND: 60,
+  /** Velocidade do Bit andando (botao de direcao segurado), em px por passo. */
+  RUN_SPEED: 1.5,
+  /** Gravidade, em px por passo ao quadrado. */
+  GRAVITY: 0.25,
+  /** Velocidade inicial do pulo (para cima), em px por passo. */
+  JUMP_SPEED: 5,
+  /** Soltou Pular cedo: a subida e cortada para esta velocidade (pulo baixo, como no Mario). */
+  JUMP_CUT_SPEED: 2,
+  /** Velocidade maxima de queda. */
+  MAX_FALL: 6,
+  /** Corpo do Bit, em px. */
+  BODY_W: 10,
+  BODY_H: 14,
+  /** Passos depois de sair da beirada em que o pulo ainda vale. */
+  COYOTE_STEPS: 5,
+  /** Municao: teto, e o minimo devolvido no checkpoint (para nunca travar sem tiro). */
+  AMMO_MAX: 30,
+  AMMO_RESPAWN_MIN: 4,
+  /** Chao que cai: passos ate cair depois de pisado, e passos ate voltar. */
+  CRUMBLE_STEPS: 36,
+  CRUMBLE_FALLEN_STEPS: 180,
+  /** Mola: velocidade do lancamento para cima. */
+  SPRING_SPEED: 6.5,
+  /** Pisao (como no Mario): quique depois de cair em cima de um inimigo. */
+  STOMP_BOUNCE: 3.5,
+  /** Passos de invulnerabilidade depois de levar dano. */
+  INVULN_STEPS: 60,
+  /** Tiro do Bit: velocidade, alcance e intervalo minimo entre tiros. */
+  SHOT_SPEED: 4,
+  SHOT_RANGE: 176,
+  SHOT_COOLDOWN: 12,
+  /** Inimigo que anda: velocidade. */
+  WALKER_SPEED: 0.5,
+  /** Inimigo que voa: amplitude e periodo do vaivem vertical. */
+  FLYER_AMP: 10,
+  FLYER_PERIOD: 120,
+  /** Torre: intervalo entre disparos, velocidade do disparo e resistencia. */
+  TURRET_PERIOD: 100,
+  TURRET_SHOT_SPEED: 2,
+  TURRET_HP: 2,
+  /** Saltador: anda devagar dando pulinhos; periodo e altura do pulo. */
+  HOPPER_SPEED: 0.3,
+  HOPPER_PERIOD: 90,
+  HOPPER_HEIGHT: 14,
+  /** Blindado: anda devagar e aguenta mais tiros. */
+  ARMOR_SPEED: 0.3,
+  ARMOR_HP: 2,
+  /** Pingo: pendurado no alto, cai quando o Bit chega a esta distancia. */
+  DROP_TRIGGER_PX: 72,
+  /** Programa (Era 6): velocidade com que vem na direcao do Bit. */
+  PROGRAM_SPEED: 0.6,
+  /** Lado da caixa de inimigos e programas, em px. */
+  ENEMY_SIZE: 12,
+  /** So se mexem os inimigos a esta distancia do Bit, em px. */
+  ACTIVE_PX: 240,
+  /** Distancia em que o Bit encosta no portao e para. */
+  GATE_REACH_PX: 4,
+  /** Distancia a frente em que a placa e lida. */
+  SIGN_REACH_PX: 24,
+  /** Limite de passos de uma corrida de referencia (protecao contra laco). */
+  MAX_STEPS: 30000,
+  /** Robo de referencia: quanto a frente ele olha para pular. */
+  BOT_LOOK_PX: 6,
+  /** Robo de referencia: a que distancia ele atira num inimigo. */
+  BOT_SHOOT_PX: 120,
+  /** Robo de referencia: passos entre duas escolhas num dispositivo. */
+  BOT_PANEL_STEPS: 8,
+} as const;
+
+/** Habilidades ganhas ao fechar cada era (D76). */
+export const ABILITY = {
+  /** Rajada (Repetir): tiros por toque e distancia entre eles. */
+  BURST: 3,
+  BURST_GAP_PX: 8,
+  /** Salto de no (Conectar): multiplicador da velocidade no ar. */
+  LONG_JUMP_FACTOR: 1.5,
+  /** Mira (Aprender): quanto o tiro corrige a altura por passo. */
+  HOMING_PX: 0.6,
+} as const;
+
+/**
+ * Niveis de dificuldade (D82). Mudam o que pesa na fase -- coracoes, municao do
+ * comeco e de cada recarga, tempo do chao que cai -- e os coracoes no chefao.
+ * O caminho das fases e os minijogos sao os mesmos nos tres.
+ */
+export const DIFFICULTY = {
+  facil: { HEARTS: 5, AMMO: 24, AMMO_PICKUP: 8, CRUMBLE_FACTOR: 1.5, BOSS_HEARTS: 5 },
+  normal: { HEARTS: 3, AMMO: 14, AMMO_PICKUP: 6, CRUMBLE_FACTOR: 1, BOSS_HEARTS: 3 },
+  dificil: { HEARTS: 2, AMMO: 8, AMMO_PICKUP: 4, CRUMBLE_FACTOR: 0.75, BOSS_HEARTS: 2 },
 } as const;

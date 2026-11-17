@@ -1,37 +1,38 @@
 # Da Válvula à IA
 
-**RPG educacional em pixel art sobre a história da computação**, jogado no navegador.
+**Jogo educacional de fases, em pixel art, sobre a história da computação**, jogado no navegador.
 
-Você controla o **Bit**, um robô pequeno, e atravessa seis eras — uma zona por era. Em cada uma, conversa com
-quem fez aquela história, resolve os minijogos dos terminais e passa na prova da era para
-ganhar o poder e o item dela, até enfrentar o **BUG Day 0**.
+Você controla o **Bit**, um robô pequeno, e corre por seis eras num mapa de fases. Cada fase
+ensina a ideia da sua era jogando — o padrão que se repete do tear, as portas lógicas, os bits,
+as rotas da rede, a cifra, o aprendizado por exemplos — e termina num terminal com o
+**minijogo** daquela ideia. No fim do mapa espera o **BUG Day 0**.
 
 [![CI](https://github.com/SudoMaster7/history-computer/actions/workflows/ci.yml/badge.svg)](https://github.com/SudoMaster7/history-computer/actions/workflows/ci.yml)
 ![Código MIT](https://img.shields.io/badge/c%C3%B3digo-MIT-58e0c8)
 ![Conteúdo CC BY 4.0](https://img.shields.io/badge/conte%C3%BAdo-CC%20BY%204.0-58e0c8)
 
 Feito como TCC. Mobile-first: celulares de entrada em modo retrato, **100% jogável por toque
-simples, sem arrastar**.
+simples e botões de segurar, sem arrastar**.
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/img/03-mapa.png" alt="Mapa da primeira zona, visto de cima, com o Bit num caminho de terra entre árvores"></td>
-    <td width="33%"><img src="docs/img/04-fala.png" alt="Caixa de fala de Joseph-Marie Jacquard explicando o tear de cartões perfurados"></td>
-    <td width="33%"><img src="docs/img/05-estado.png" alt="Painel de estado da máquina com barras de integridade e conhecimento, nível, clock, ano, poderes e mochila"></td>
+    <td width="33%"><img src="docs/img/02-mapa.png" alt="Mapa da jornada: ilhas das eras com as fases 1-A e 1-B, estrelas, fragmentos e as seis habilidades do Bit"></td>
+    <td width="33%"><img src="docs/img/04-fase.png" alt="Fase de plataforma vista de lado, com o Bit correndo e os botões Pular e Atirar"></td>
+    <td width="33%"><img src="docs/img/05-portao.png" alt="Portão de conceito da Era 2: placa explicando a porta E, as chaves e o botão Testar"></td>
   </tr>
   <tr>
-    <td align="center"><sub>O mapa da zona</sub></td>
-    <td align="center"><sub>Conversa com uma figura histórica</sub></td>
-    <td align="center"><sub>Estado da máquina</sub></td>
+    <td align="center"><sub>O mapa da jornada</sub></td>
+    <td align="center"><sub>A fase: Pular e Atirar</sub></td>
+    <td align="center"><sub>Portão de conceito (Era 2)</sub></td>
   </tr>
   <tr>
-    <td width="33%"><img src="docs/img/07-rota.png" alt="Minijogo Rota dos Pacotes: mapa da rede com o caminho do pacote e os vizinhos disponíveis"></td>
-    <td width="33%"><img src="docs/img/08-resultado.png" alt="Resultado de uma missão com três estrelas, eficiência, pontuação e o conhecimento ganho"></td>
-    <td width="33%"><img src="docs/img/09-chefao.png" alt="Arena do BUG Day 0, com o Bit de um lado, o BUG do outro e o ataque anunciado"></td>
+    <td width="33%"><img src="docs/img/01-menu.png" alt="Menu do jogo com a faixa animada do Bit correndo e a jornada das seis eras"></td>
+    <td width="33%"><img src="docs/img/03-abertura.png" alt="Cartão de abertura de uma fase, com a era, o título e o que ela vai ensinar"></td>
+    <td width="33%"><img src="docs/img/06-chefao.png" alt="Arena do BUG Day 0, com o Bit e os corações de um lado, o BUG do outro e o ataque anunciado"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Rota dos Pacotes (Era 4)</sub></td>
-    <td align="center"><sub>Resultado da missão</sub></td>
+    <td align="center"><sub>Menu</sub></td>
+    <td align="center"><sub>Abertura da fase</sub></td>
     <td align="center"><sub>O BUG Day 0</sub></td>
   </tr>
 </table>
@@ -40,38 +41,42 @@ simples, sem arrastar**.
 
 ## Como se joga
 
-1. **Ande pelo mapa.** Toque numa célula e o Bit caminha até lá sozinho, desviando de árvore e
-   água. Não há botão de direção nem arrastar. Pelo caminho há **fragmentos de memória**
-   (os losangos que brilham): cada um rende conhecimento e conta uma curiosidade da era. O
-   painel de objetivos, abaixo do mapa, mostra o que falta fazer na zona.
-2. **Converse com os três personagens da zona.** Cada um conta o que a máquina daquela era é,
-   o que ela já consegue fazer e o que ainda não consegue — é esse "ainda não" que prepara a
-   era seguinte.
-3. **Use os dois terminais.** Cada um abre um minijogo que ensina o poder da era na prática.
-   Dentro dele, "O que é isto?" conta qual máquina de verdade aquilo imita e qual
-   funcionalidade da era está em jogo, e "Dica" libera ajudas uma a uma — da mais geral à mais
-   concreta — sem custo nenhum na pontuação.
-4. **Atravesse a porta.** Ela só destranca com as duas missões concluídas, e leva à **prova da
-   era**: quatro perguntas, três acertos para passar. Errar não tira vida, e cada resposta vem
-   com a explicação — errar também ensina.
-5. **Passou?** Ganha o poder da era, o item dela, e a próxima zona abre.
-6. **No fim das seis eras, enfrente o BUG Day 0.** Ele anuncia o ataque antes de dar, e cada
-   ataque só é neutralizado por um dos seis poderes — responder é jogar a versão curta do
-   minijogo daquela era. A arena mostra o Bit de um lado e o BUG do outro: ele racha quando
-   leva o golpe, avança quando o ataque passa e se desfaz no fim. Os itens guardados na
-   mochila entram aqui, e são quatro efeitos: resposta pronta (Cartão Perfurado,
-   Fita Magnética), escudo contra o ataque anunciado (Pacote Roteado, Chave
-   Pública), cura na hora (Válvula Reserva) e dano extra no próximo golpe
-   (Modelo Treinado).
+1. **Escolha a fase no mapa.** São seis ilhas, uma por era, com duas fases cada (A e B). Tocar
+   numa fase aberta faz o Bit saltar até ela. A fase seguinte abre quando a anterior termina.
+2. **Jogue como Mega Man ou Mario.** Segure **◀** ou **▶** para andar e solte para parar.
+   **Pular** vence buraco, parede e espinho (segurando, vai mais alto); **Atirar** derruba
+   engrenagens, faíscas, torres, saltadores, blindados (dois tiros), pingos que caem do alto e
+   vírus. Dá para segurar a direção com um dedo e pular com outro. Cada tiro gasta uma carga
+   ⚡: pegue as baterias pelo caminho, ou pise nos inimigos pulando em cima deles. Cair ou levar golpe tira
+   um coração e volta ao último checkpoint; sem coração, a fase recomeça — nada salvo se perde.
+   O terreno muda: degraus, pedras sobre buracos largos, chão rachado que cai, molas que levam a
+   plataformas no alto. As placas aparecem num balão, sem parar o jogo.
+   Escolha a **dificuldade** no mapa: Fácil (5 corações), Normal (3) ou Difícil (2 e pouca
+   munição).
+3. **Pense no portão.** Cada fase tem portões de conceito, e o Bit para sozinho diante deles. O
+   portão só abre usando a ideia da era: continuar o padrão do tecido, armar as chaves da porta
+   E/OU/NÃO, ligar os bits que somam o número, escolher a rota de menor atraso, decifrar a letra
+   pela chave, derrubar só os vírus comparando exemplos. É o ensaio do minijogo.
+4. **Recolha os fragmentos de memória** (os losangos que brilham): as curiosidades deles aparecem
+   no fim da fase. Alguns estão no alto e pedem o pulo na hora certa.
+5. **No terminal do fim, jogue o minijogo.** Você já sabe do que ele trata e como se joga. "O que
+   é isto?" conta qual máquina de verdade ele imita, e "Dica" libera ajudas uma a uma. As
+   estrelas do minijogo são as estrelas da fase.
+6. **Feche a era e ganhe a habilidade dela**, como em Mega Man X — sem botão novo: Rajada, Pulo
+   duplo, Tiro perfurante, Salto de nó, Escudo e Mira.
+7. **No fim do mapa, enfrente o BUG Day 0.** Ele anuncia o ataque, e cada ataque só se desfaz
+   com a ideia de uma era: responder é jogar a versão curta daquele minijogo. Respondeu bem, o
+   BUG leva o golpe (mais forte quanto mais estrelas na era); respondeu mal, o Bit perde um
+   coração.
 
-| Era                     | Período   | Poder     | Minijogo            | Item             |
-| ----------------------- | --------- | --------- | ------------------- | ---------------- |
-| Mecânica                | 1642–1843 | Repetir   | Tear de Engrenagens | Cartão Perfurado |
-| Válvulas e Lógica       | 1936–1950 | Decidir   | Circuitos Lógicos   | Válvula Reserva  |
-| Transistor e Linguagens | 1950–1970 | Codificar | Mesa de Bits        | Fita Magnética   |
-| Redes                   | 1969–1991 | Conectar  | Rota dos Pacotes    | Pacote Roteado   |
-| Web, Nuvem e Segurança  | 1991–2010 | Proteger  | Cofre Criptográfico | Chave Pública    |
-| Inteligência Artificial | 2012–hoje | Aprender  | Treinar o Detector  | Modelo Treinado  |
+| Era                     | Período   | Ideia     | Portão da fase                  | Minijogo            | Habilidade      |
+| ----------------------- | --------- | --------- | ------------------------------- | ------------------- | --------------- |
+| Mecânica                | 1642–1843 | Repetir   | continuar o padrão do tecido    | Tear de Engrenagens | Rajada          |
+| Válvulas e Lógica       | 1936–1950 | Decidir   | chaves e portas E/OU/NÃO        | Circuitos Lógicos   | Pulo duplo      |
+| Transistor e Linguagens | 1950–1970 | Codificar | bits 8/4/2/1 que somam o número | Mesa de Bits        | Tiro perfurante |
+| Redes                   | 1969–1991 | Conectar  | a rota de menor atraso          | Rota dos Pacotes    | Salto de nó     |
+| Web, Nuvem e Segurança  | 1991–2010 | Proteger  | decifrar a letra pela chave     | Cofre Criptográfico | Escudo          |
+| Inteligência Artificial | 2012–hoje | Aprender  | só os vírus, pelos exemplos     | Treinar o Detector  | Mira            |
 
 ---
 
@@ -79,42 +84,28 @@ simples, sem arrastar**.
 
 Nada aqui é promessa: só está marcado como pronto o que já roda.
 
-|                             | Zona, personagens e prova |  Minijogo  |
-| --------------------------- | :-----------------------: | :--------: |
-| **Mecânica**                |          pronto           | **pronto** |
-| **Válvulas e Lógica**       |          pronto           | **pronto** |
-| **Transistor e Linguagens** |          pronto           | **pronto** |
-| **Redes**                   |          pronto           | **pronto** |
-| **Web, Nuvem e Segurança**  |          pronto           | **pronto** |
-| **Inteligência Artificial** |          pronto           | **pronto** |
-| **Chefão BUG Day 0**        |             —             | **pronto** |
-
-Ou seja: **as seis eras fecham o ciclo completo e a campanha termina no chefão**. Cada
-terminal abre o minijogo da sua era, cada era entrega poder e item, e os seis itens têm
-efeito no BUG Day 0.
+As **12 fases** e o **BUG Day 0** fecham a campanha inteira. Cada fase tem os portões da sua era,
+três fragmentos e termina no minijogo dela; fechar a era dá a habilidade.
 
 O que o contrato garante, e não é promessa: `tests/contract/progression.test.ts` zera a
-campanha inteira resolvendo os seis minijogos pelas funções puras e vence o chefão. Se
-alguma era deixar de fechar, ele falha dizendo qual.
+campanha inteira pelas funções puras — um robô de referência **corre cada fase** até o terminal
+(sem habilidade nenhuma, com as que o jogador teria e com as seis), abre cada portão sem erro,
+resolve o minijogo e vence o chefão. Se alguma fase deixar de fechar, ele diz qual.
 
-Hoje a suíte está em **325 testes de unidade e de contrato** (21 arquivos) e **147 testes
-de ponta a ponta** em Pixel 5, iPhone 12 e desktop — estes últimos cobrem os seis
-minijogos, a arena do chefão, o uso de item em combate, os fragmentos, o som e a música, o modo
-desenvolvedor e o alvo de toque mínimo de 44 px em cada tela.
+Os testes de ponta a ponta rodam em Pixel 5, iPhone 12 e desktop, e um deles **joga a fase 1-A
+inteira pelo navegador**: o piloto automático do modo desenvolvedor pula e atira, e o teste
+resolve o portão-tear tocando no painel, como um jogador.
 
-O acabamento já passou pelo jogo inteiro: pixel art refeita com uma paleta por era, mapa
-animado, arte própria em cada minijogo e resultado de missão com recompensa.
-
-**Som e música** são sintetizados na hora, sem nenhum arquivo de áudio: 16 efeitos e nove
-faixas (menu, uma por era, prova e chefão). Começam desligados — liga no botão do canto do
-menu; em Ajustes dá para ficar só com os efeitos.
+**Som e música** são sintetizados na hora, sem nenhum arquivo de áudio. Começam desligados —
+liga no botão do canto do menu; em Ajustes dá para ficar só com os efeitos.
 
 Ainda falta: o **ranking no Supabase** e tudo o que depende dele. O desenho do ranking, do
 duelo assíncrono e da batalha entre jogadores está em
 [`docs/MULTIPLAYER.md`](docs/MULTIPLAYER.md) — é proposta, nada ali está implementado.
-Também falta conferir em fonte primária as falas, as perguntas e as curiosidades dos
-fragmentos (ver `ASSETS.md`), e alguém do grupo ouvir e afinar as faixas de música, que
-foram escritas em código.
+Também falta conferir em fonte primária as placas das fases e as curiosidades dos fragmentos
+(ver `ASSETS.md`), e alguém do grupo ouvir e afinar as faixas de música, que foram escritas em
+código. O chefão é uma luta de rodadas com os micro-minijogos; virar uma arena de plataforma é
+um próximo passo possível (D77).
 
 ---
 
@@ -133,24 +124,25 @@ Abre em `http://localhost:5173`. Para ver o jogo como ele foi pensado, use o mod
 navegador, em retrato.
 
 > **Para testar uma fase sem jogar as anteriores:** Menu > **Ajustes** > **Modo
-> desenvolvedor**. Ele destranca as seis zonas, as portas das provas e o BUG Day 0, e no
-> combate os seis poderes valem no nível máximo. Não concede progresso: o save continua
-> exatamente como estava (ver [D53](DECISIONS.md)).
+> desenvolvedor**. Ele abre todas as fases e o BUG Day 0, e dentro da fase mostra **Piloto
+> automático** (o robô pula e atira por você) e **Ir ao terminal** (pula a ação). No chefão as
+> habilidades valem no nível máximo. Não concede progresso: o save continua exatamente como
+> estava (ver [D53](DECISIONS.md) e [D79](DECISIONS.md)).
 
 <details>
 <summary>Todos os comandos</summary>
 
-| Comando                               | O que faz                                                   |
-| ------------------------------------- | ----------------------------------------------------------- |
-| `npm run dev`                         | servidor de desenvolvimento                                 |
-| `npm run build`                       | checagem de tipos + build de produção                       |
-| `npm run test`                        | testes de unidade e de contrato (Vitest)                    |
-| `npm run test:contract`               | só os testes de contrato (rápido, serve durante o trabalho) |
-| `npm run test:e2e`                    | Playwright em Pixel 5, iPhone 12 e desktop                  |
-| `npm run ci`                          | tudo que a CI roda                                          |
-| `npm run change -- "o que fez"`       | cria a nota da sua iteração                                 |
-| `npm run sprites`                     | regenera a pixel art                                        |
-| `npm run worlds` / `npcs` / `quizzes` | regenera os dados do jogo                                   |
+| Comando                         | O que faz                                                   |
+| ------------------------------- | ----------------------------------------------------------- |
+| `npm run dev`                   | servidor de desenvolvimento                                 |
+| `npm run build`                 | checagem de tipos + build de produção                       |
+| `npm run test`                  | testes de unidade e de contrato (Vitest)                    |
+| `npm run test:contract`         | só os testes de contrato (rápido, serve durante o trabalho) |
+| `npm run test:e2e`              | Playwright em Pixel 5, iPhone 12 e desktop                  |
+| `npm run ci`                    | tudo que a CI roda                                          |
+| `npm run change -- "o que fez"` | cria a nota da sua iteração                                 |
+| `npm run sprites`               | regenera a pixel art                                        |
+| `npm run stages`                | regenera as 12 fases (planta e textos)                      |
 
 Para o Playwright, rode antes `npx playwright install chromium webkit`.
 
@@ -192,7 +184,7 @@ Também traz o redirecionamento de rota única (qualquer URL cai no
 
 ## Como funciona por dentro
 
-**React + TypeScript + Vite**, PWA instalável. O mapa é **canvas 2D com pixel art 16×16** —
+**React + TypeScript + Vite**, PWA instalável. A fase é **canvas 2D com pixel art 16×16** —
 sem WebGL, sem motor de física, sem biblioteca de jogo.
 
 ### A regra que sustenta tudo
@@ -208,11 +200,13 @@ afrouxar o lint não faz o problema sumir.
 
 ```
 src/
-  core/         regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
+  core/         regra pura: stage (fase), gadgets (portões), campaign (mapa), progress,
+                boss, powers, scoring, rng, registry
   minigames/    <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
-  ui/           MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
+  ui/           MainMenu, OverworldScreen (mapa), StageScreen + stageArt + GatePanel (fase),
+                MissionRunner, BossScreen
   fx/           som e música sintetizados (Web Audio) e efeitos de tela
-  store/        Zustand com persistência em localStorage
+  store/        Zustand com persistência em localStorage (save versão 2)
   data/         JSON do conteúdo + módulos que o tipam
 tools/          geradores de conteúdo e de arte, e os scripts das notas
 tests/contract/ o que não pode quebrar
@@ -227,25 +221,29 @@ Duas regras de organização que valem sempre:
 - **Todo texto visível ao jogador mora em `src/data/*.pt-BR.json`.** Identificador de código em
   inglês, texto de jogador em português.
 
-### Como uma zona é desenhada
+### Como uma fase é desenhada
 
-Em `src/data/worlds.json` o mapa é escrito com caracteres, uma string por linha:
+As fases são montadas por trechos em [`tools/make-stages.py`](tools/make-stages.py)
+(`npm run stages`), que escreve `src/data/stages.json` (a planta) e `src/data/stages.pt-BR.json`
+(título, abertura, placas e resumo). A planta é vista de lado, uma string por linha:
 
 ```
-.  grama      ,  caminho     T  árvore
-~  água       #  parede      _  piso
+.  ar         #  chão        =  bloco       ^  espinho
+S  partida    G  terminal    C  checkpoint  F  fragmento
+i  placa      D  portão      w f t  inimigos             p  programa (Era 6)
 ```
 
-`parseWorld` traduz para a grade de tiles e `findPath` acha o menor caminho em quatro direções
-por busca em largura. `validateWorld` recusa zona com terminal fora do mapa ou com qualquer
-ponto inalcançável a partir da entrada — e um teste roda isso nas seis zonas exigindo lista
-vazia. **Zona quebrada não entra no jogo.**
+`parseStage` traduz para a fase e `stepRun` avança um passo de 1/60 s — a mesma sequência de
+toques dá sempre o mesmo resultado. `validateStage` recusa fase sem chão na partida, portão sem
+dispositivo ou sem checkpoint antes, e o robô de referência (`referenceRun`) prova que ela
+fecha. **Fase quebrada não entra no jogo.**
 
 ### A pixel art é gerada por código
 
 Não há asset baixado: [`tools/make-sprites.mjs`](tools/make-sprites.mjs) desenha os tilesets
-das seis eras, o Bit (4 direções × 3 quadros) e os 18 personagens, e escreve os PNG usando só
-o `zlib` do Node. Rodar de novo produz exatamente os mesmos arquivos.
+das seis eras, o Bit e o BUG, e escreve os PNG usando só o `zlib` do Node. A fase reaproveita o
+Bit de perfil e o chão, a porta e o terminal do tileset da era; inimigos, espinhos e programas
+são pintados em código, em `src/ui/stageArt.ts`.
 
 ---
 
@@ -295,14 +293,14 @@ automaticamente.
 
 ## Licenças
 
-| O quê                                        | Licença                                      |
-| -------------------------------------------- | -------------------------------------------- |
-| Código                                       | [MIT](LICENSE)                               |
-| Conteúdo educacional (falas, provas, textos) | CC BY 4.0                                    |
-| Pixel art                                    | autoral, gerada por `tools/make-sprites.mjs` |
-| Fonte Chakra Petch                           | SIL Open Font License 1.1                    |
+| O quê                                       | Licença                                      |
+| ------------------------------------------- | -------------------------------------------- |
+| Código                                      | [MIT](LICENSE)                               |
+| Conteúdo educacional (placas, curiosidades) | CC BY 4.0                                    |
+| Pixel art                                   | autoral, gerada por `tools/make-sprites.mjs` |
+| Fonte Chakra Petch                          | SIL Open Font License 1.1                    |
 
-O conteúdo histórico das falas e das provas foi escrito para este projeto a partir de
+O conteúdo histórico das placas, dos minijogos e dos fragmentos foi escrito para este projeto a partir de
 conhecimento consolidado, mas **ainda não passou por conferência em fonte primária**. Datas e
 números (como as 18 mil válvulas do ENIAC) precisam ser checados antes de congelar o escopo —
 está registrado em [ASSETS.md](ASSETS.md).

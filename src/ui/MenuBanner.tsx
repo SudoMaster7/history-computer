@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { EraId } from '@/core/types';
-import { TILE } from '@/core/world';
-import { WORLD } from '@/core/constants';
+import { STAGE } from '@/core/constants';
 import { drawBang, drawFragment } from './worldArt';
 
 interface Props {
@@ -11,18 +10,25 @@ interface Props {
 /** Tamanho da cena, em tiles. */
 const COLS = 15;
 const ROWS = 5;
-/** Linha do caminho, onde o Bit anda. */
+/** Linha em que o Bit corre; o chao fica logo abaixo. */
 const PATH_ROW = 3;
 /** Coluna da tela onde o Bit fica: a cena passa por ele. */
 const BIT_COL = 4;
 /** Velocidade da paisagem, em pixels do mapa por segundo. */
 const SPEED = 22;
-const RES = WORLD.SCALE;
+const RES = 3;
+const TILE_PX = STAGE.TILE;
+/** Quadros e ritmo da corrida do Bit. */
+const RUN_FRAMES = 3;
+const RUN_FRAME_MS = 110;
 /** Intervalo minimo entre dois desenhos da faixa. */
 const FRAME_MS = 33;
 
 /** Indices no tileset (ver tools/make-sprites.mjs) e no spritesheet do Bit. */
+const SPRITE_SURFACE = 1;
+const SPRITE_DEEP = 4;
 const SPRITE_STATION = 6;
+const SPRITE_DOOR = 7;
 const BIT_ROW_RIGHT = 2;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -42,8 +48,8 @@ function chance(column: number, salt: number): number {
 }
 
 /**
- * Faixa de abertura do menu: a zona da era atual passando, com o Bit andando,
- * terminais com "!" e fragmentos pelo caminho. E a propria arte do jogo, viva,
+ * Faixa de abertura do menu: a fase da era atual passando de lado, com o Bit
+ * correndo, portoes, terminais com "!" e fragmentos pelo caminho. E a propria arte do jogo, viva,
  * em vez de uma fileira parada de tiles -- quem abre o jogo ja ve o que vai
  * fazer la dentro.
  *
@@ -62,7 +68,7 @@ export default function MenuBanner({ era }: Props) {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!alive || !canvas || !ctx) return;
-        const size = WORLD.TILE;
+        const size = TILE_PX;
 
         let last = 0;
         const draw = (now: number): void => {
@@ -88,30 +94,26 @@ export default function MenuBanner({ era }: Props) {
           for (let i = 0; i <= COLS; i += 1) {
             const column = first + i;
             const x = i * size - shift;
-            for (let row = 0; row < ROWS; row += 1) {
-              let tile: number = TILE.GRASS;
-              if (row === PATH_ROW) tile = TILE.PATH;
-              else if (row === 0) tile = chance(column, 1) < 78 ? TILE.TREE : TILE.GRASS;
-              else if (row === 1) tile = chance(column, 2) < 22 ? TILE.TREE : TILE.GRASS;
-              else if (row === ROWS - 1) tile = chance(column, 3) < 14 ? TILE.WATER : TILE.GRASS;
-              sprite(tiles, tile, 0, x, row * size);
+            sprite(tiles, SPRITE_SURFACE, 0, x, (PATH_ROW + 1) * size);
+            // De vez em quando, um portao de conceito ou um terminal no caminho.
+            const roll = chance(column, 4);
+            if (roll < 6) {
+              sprite(tiles, SPRITE_DOOR, 0, x, PATH_ROW * size);
+              sprite(tiles, SPRITE_DOOR, 0, x, (PATH_ROW - 1) * size);
+            } else if (roll < 11) {
+              sprite(tiles, SPRITE_STATION, 0, x, PATH_ROW * size);
+              drawBang(ctx, x + 4.5, (PATH_ROW - 1) * size + 4 - Math.abs(Math.sin(t * 4)) * 2);
             }
-            // De vez em quando, um terminal a beira do caminho.
-            if (chance(column, 4) < 9) {
-              const y = (PATH_ROW - 1) * size;
-              sprite(tiles, TILE.GRASS, 0, x, y);
-              sprite(tiles, SPRITE_STATION, 0, x, y);
-              drawBang(ctx, x + 4.5, y - 9 + Math.abs(Math.sin(t * 4)) * -2);
-            }
-            // E fragmentos no caminho, que somem quando o Bit passa por eles.
+            if (chance(column, 7) < 20) sprite(tiles, SPRITE_DEEP, 0, x, (PATH_ROW + 1) * size);
+            // E fragmentos no ar, que somem quando o Bit passa por eles.
             if (chance(column, 5) < 16 && x > BIT_COL * size + 6) {
               const bob = Math.sin(t * 3 + column);
-              drawFragment(ctx, x + 4.5, PATH_ROW * size + 3 + bob * 1.2, (bob + 1) / 2);
+              drawFragment(ctx, x + 4.5, (PATH_ROW - 1) * size + 3 + bob * 1.2, (bob + 1) / 2);
             }
           }
 
-          const step = Math.floor(now / WORLD.FRAME_MS) % WORLD.WALK_FRAMES;
-          const hop = -Math.abs(Math.sin((now / WORLD.WALK_MS_PER_TILE) * Math.PI)) * 1.2;
+          const step = Math.floor(now / RUN_FRAME_MS) % RUN_FRAMES;
+          const hop = -Math.abs(Math.sin((now / (RUN_FRAME_MS * 2)) * Math.PI)) * 1.2;
           sprite(bit, step, BIT_ROW_RIGHT, BIT_COL * size, PATH_ROW * size + hop);
 
           frame = requestAnimationFrame(draw);
@@ -133,8 +135,8 @@ export default function MenuBanner({ era }: Props) {
     <canvas
       ref={canvasRef}
       className="menu__banner"
-      width={COLS * WORLD.TILE * RES}
-      height={ROWS * WORLD.TILE * RES}
+      width={COLS * TILE_PX * RES}
+      height={ROWS * TILE_PX * RES}
       aria-hidden="true"
     />
   );

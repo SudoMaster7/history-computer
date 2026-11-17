@@ -1,0 +1,416 @@
+/* ============================================================================
+ * Kit visual em pixel art (D85).
+ *
+ * Carregado por ultimo: da ao jogo inteiro a mesma "cara" de videogame sem
+ * reescrever cada tela. Tres ideias:
+ *
+ *  1. Botao de fliperama: borda escura, luz em cima e volume embaixo
+ *     (`--depth`). Ao toque ele afunda -- e um movimento de uma vez so, nao um
+ *     laco, entao a regra de fx.css (nada de laco mexendo em botao) continua.
+ *  2. Janela com moldura: cartoes e paineis ganham borda de pixel e sombra dura,
+ *     sem desfoque, como uma caixa de dialogo de jogo.
+ *  3. Cantos mais retos e uma textura pontilhada no fundo.
+ *
+ * Nada aqui muda tamanho de alvo de toque: o volume e sombra, fora da caixa.
+ * ========================================================================== */
+
+:root {
+  /* Cantos mais retos: pixel art nao tem curva macia. */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  /* Tinta: o contorno escuro de tudo, como o traço dos sprites. */
+  --ink: #05070f;
+  --ink-soft: #0b1020;
+
+  /* Volume do botao e do painel. */
+  --press: 4px;
+  --depth: 0 var(--press) 0 0 var(--ink);
+  --frame: 0 0 0 2px var(--ink), 0 6px 0 2px var(--ink);
+}
+
+/* Fundo pontilhado bem discreto: a textura de tela de jogo antigo. */
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(rgb(142 170 220 / 7%) 1px, transparent 1.2px),
+    radial-gradient(rgb(142 170 220 / 4%) 1px, transparent 1.2px);
+  background-size:
+    16px 16px,
+    16px 16px;
+  background-position:
+    0 0,
+    8px 8px;
+}
+
+/* ---------------------------------------------------------- 1. botoes ---- */
+
+button,
+.touchable {
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #24305a 0%, var(--surface-high) 55%, #18203d 100%);
+  box-shadow:
+    var(--depth),
+    inset 0 2px 0 rgb(255 255 255 / 10%),
+    inset 0 -2px 0 rgb(0 0 0 / 25%);
+  /* O texto fica nitido sobre o degrade. */
+  text-shadow: 0 1px 0 rgb(0 0 0 / 45%);
+  transition:
+    transform 80ms var(--ease),
+    box-shadow 80ms var(--ease),
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+@media (hover: hover) {
+  button:not([disabled]):hover,
+  .touchable:hover {
+    border-color: var(--ink);
+    background: linear-gradient(180deg, #2c3a6b 0%, #222c52 55%, #1b2446 100%);
+  }
+}
+
+/* Afunda ao toque: some o volume e o botao desce o mesmo tanto. */
+button:not([disabled]):active,
+.touchable:active {
+  transform: translateY(var(--press));
+  box-shadow:
+    0 0 0 0 var(--ink),
+    inset 0 2px 0 rgb(0 0 0 / 30%);
+  border-color: var(--ink);
+}
+
+button[disabled] {
+  box-shadow: none;
+  background: var(--surface);
+}
+
+button:focus-visible,
+.touchable:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Ligado (aria-pressed): tampa acesa na cor de destaque. */
+button[aria-pressed='true'] {
+  background: linear-gradient(180deg, #2a6b66 0%, #1f544f 60%, #18433f 100%);
+  border-color: var(--ink);
+}
+
+/* Acao principal: preenchida, texto escuro, volume na cor da propria tampa. */
+.menu__primary,
+.stageCard__primary,
+.boss__primary,
+.result__primary,
+.mg__next {
+  background: linear-gradient(180deg, #8ff0dc 0%, var(--accent) 45%, #3cc3ab 100%);
+  color: #06201b;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
+  font-weight: 700;
+  --depth: 0 var(--press) 0 0 #0e5a4e;
+}
+
+@media (hover: hover) {
+  .menu__primary:not([disabled]):hover,
+  .stageCard__primary:not([disabled]):hover,
+  .boss__primary:not([disabled]):hover,
+  .result__primary:not([disabled]):hover,
+  .mg__next:not([disabled]):hover {
+    background: linear-gradient(180deg, #a6f5e5 0%, #6ee8d1 45%, #45cdb4 100%);
+  }
+}
+
+/* Botao de perigo (chefao no menu, desistir). */
+.menu__boss {
+  background: linear-gradient(180deg, #ff8a93 0%, var(--danger) 50%, #d94451 100%);
+  color: #2a0509;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 30%);
+  --depth: 0 var(--press) 0 0 #6b1520;
+}
+
+/* ------------------------------------------------- 2. janelas e paineis -- */
+
+/* A tela do jogo: moldura de pixel em volta do palco inteiro. */
+.stage {
+  border: 3px solid var(--ink);
+  box-shadow:
+    0 0 0 2px #1c2647,
+    0 10px 30px rgb(0 0 0 / 45%);
+}
+
+/* Cartoes de fase (abertura e pausa): janela centrada, com moldura. */
+.stageCard--intro,
+.stageCard--pause {
+  inset: 12px;
+  height: fit-content;
+  max-height: calc(100% - 24px);
+  margin: auto;
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--era, var(--accent)) 16%, transparent),
+      transparent 40%
+    ),
+    var(--bg-soft);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--era, var(--accent)) 55%, black),
+    0 8px 0 2px var(--ink),
+    /* Escurece a fase atras da janela (o palco corta o excesso). */ 0 0 0 9999px rgb(5 7 15 / 72%);
+}
+
+.stageCard--intro h2,
+.stageCard--pause h2 {
+  font-size: var(--text-2xl);
+  text-shadow: 2px 2px 0 var(--ink);
+}
+
+.stageCard--pause {
+  align-items: stretch;
+  text-align: center;
+}
+
+.stageCard--intro .controls,
+.stageCard--pause .controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+/* A abertura organiza o texto em blocos: era, titulo, conceito, como jogar. */
+.stageCard--intro > p:not(.label):not(.stageCard__small) {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border-left: 4px solid var(--era, var(--accent));
+  font-weight: 600;
+}
+
+.stageCard--intro .stageCard__small {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--line-strong);
+}
+
+.stageCard--intro .label {
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--era, var(--accent));
+  color: var(--bg);
+  letter-spacing: var(--tracking-label);
+}
+
+/* Paineis: moldura de pixel em vez de borda fina. */
+.clearCard__block,
+.gatePanel,
+.boss__block,
+.bossStage,
+.help__panel,
+.result__numbers > div {
+  border: 2px solid var(--ink);
+  box-shadow: 0 4px 0 0 var(--ink);
+}
+
+.clearCard__block {
+  border-left: 5px solid var(--era);
+}
+
+/* ------------------------------------------------------------- 3. fase ---- */
+
+.stageScreen__hud {
+  background: linear-gradient(180deg, #121a33, #0b1124);
+  border-bottom: 3px solid var(--ink);
+  box-shadow: 0 2px 0 0 #1c2647;
+}
+
+.stageScreen__heart,
+.stageScreen__frags,
+.stageScreen__ammo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stageScreen__hearts,
+.stageScreen__frags,
+.stageScreen__ammo {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-soft);
+  border: 2px solid var(--ink);
+}
+
+.stageScreen__hearts {
+  gap: 1px;
+}
+
+.stageScreen__heart[data-full='false'] {
+  color: #2b3556;
+}
+
+.stageScreen__view {
+  border-block: 3px solid var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--era) 50%, black);
+}
+
+/* Controles: um gamepad. Direcao escura; acoes com tampa colorida. */
+.stageScreen__controls {
+  /* Botoes mais altos: ocupam a sobra embaixo da fase, onde o polegar alcanca. */
+  grid-template-rows: minmax(96px, 220px);
+  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 25%)),
+    repeating-linear-gradient(90deg, transparent 0 7px, rgb(255 255 255 / 2%) 7px 8px);
+}
+
+.holdButton__face {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stageScreen__dir,
+.stageScreen__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 14px;
+  border: 3px solid var(--ink);
+  --press: 6px;
+  font-size: var(--text-lg);
+  letter-spacing: 0.04em;
+}
+
+.stageScreen__dir {
+  background: linear-gradient(180deg, #2f3a62 0%, #222b4c 60%, #1a2140 100%);
+  color: #dfe6ff;
+}
+
+.stageScreen__btn--shoot {
+  background: linear-gradient(180deg, #ffd27a 0%, var(--warning) 50%, #d99a2b 100%);
+  color: #2a1a02;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
+  --depth: 0 var(--press) 0 0 #6b4510;
+}
+
+.stageScreen__btn--jump {
+  background: linear-gradient(180deg, #8ff0dc 0%, var(--accent) 50%, #3cc3ab 100%);
+  color: #06201b;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
+  --depth: 0 var(--press) 0 0 #0e5a4e;
+}
+
+/* Segurado: a tampa fica afundada enquanto o dedo estiver em cima. */
+.stageScreen__dir[aria-pressed='true'],
+.stageScreen__btn[aria-pressed='true'] {
+  transform: translateY(var(--press));
+  box-shadow: inset 0 3px 0 rgb(0 0 0 / 30%);
+}
+
+.stageScreen__dir[aria-pressed='true'] {
+  background: linear-gradient(180deg, #3b4a80 0%, #2c386a 100%);
+  color: #fff;
+}
+
+.stageScreen__toast,
+.stageScreen__bubble {
+  border: 2px solid var(--ink);
+  box-shadow: 0 3px 0 0 var(--ink);
+}
+
+/* ------------------------------------------------------------- 4. mapa ---- */
+
+.overworld__title,
+.menu__title {
+  text-shadow:
+    2px 2px 0 var(--ink),
+    4px 4px 0 color-mix(in srgb, var(--accent) 35%, black);
+}
+
+.island {
+  border: 3px solid var(--ink);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--era, #3a4466) 70%, black),
+    0 6px 0 0 var(--ink);
+}
+
+.node__button {
+  border-radius: var(--radius-lg);
+  border: 3px solid var(--ink);
+}
+
+.node__button[data-state='open'] {
+  border-color: var(--ink);
+  background: linear-gradient(180deg, #2b4f6e 0%, #1f3a55 60%, #182e45 100%);
+  box-shadow:
+    var(--depth),
+    0 0 0 3px var(--accent-glow),
+    inset 0 2px 0 rgb(255 255 255 / 12%);
+}
+
+.node__button[data-state='done'] {
+  border-color: var(--ink);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--era) 45%, #1b2443) 0%,
+    color-mix(in srgb, var(--era) 25%, #1b2443) 100%
+  );
+}
+
+.overworld__totals li,
+.overworld__abilities li {
+  border: 2px solid var(--ink);
+  box-shadow: 0 3px 0 0 var(--ink);
+}
+
+.overworld__abilities li[data-got='true'] {
+  border-color: var(--ink);
+}
+
+/* ------------------------------------------------------------- 5. menu ---- */
+
+.menu__title {
+  font-size: 2.2rem;
+  background: linear-gradient(180deg, #ffffff 0%, #c9fff4 55%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Com o texto transparente, o contorno vem do filtro, nao do text-shadow. */
+  text-shadow: none;
+  filter: drop-shadow(2px 2px 0 var(--ink)) drop-shadow(2px 2px 0 #0e5a4e);
+}
+
+.menu__art {
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 0 0 var(--ink);
+  overflow: hidden;
+}
+
+.menu__stat {
+  border: 2px solid var(--ink);
+  box-shadow: 0 4px 0 0 var(--ink);
+}
+
+/* Dificuldade: tres tampas lado a lado; a escolhida acende na cor dela. */
+.difficulty__option[data-level='facil'][aria-pressed='true'] {
+  background: linear-gradient(180deg, #7ef0a4 0%, var(--ok) 50%, #3fc372 100%);
+  color: #04230f;
+  text-shadow: none;
+  --depth: 0 var(--press) 0 0 #1a6b3a;
+}
+
+.difficulty__option[data-level='normal'][aria-pressed='true'] {
+  background: linear-gradient(180deg, #8ff0dc 0%, var(--accent) 50%, #3cc3ab 100%);
+  color: #06201b;
+  text-shadow: none;
+  --depth: 0 var(--press) 0 0 #0e5a4e;
+}
+
+.difficulty__option[data-level='dificil'][aria-pressed='true'] {
+  background: linear-gradient(180deg, #ff8a93 0%, var(--danger) 50%, #d94451 100%);
+  color: #2a0509;
+  text-shadow: none;
+  --depth: 0 var(--press) 0 0 #6b1520;
+}

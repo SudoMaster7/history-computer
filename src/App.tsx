@@ -1,51 +1,44 @@
-import { useCallback, useEffect, useState } from 'react';
-import Hud from './ui/Hud';
-import Quiz from './ui/Quiz';
+import { useEffect, useState } from 'react';
 import MainMenu from './ui/MainMenu';
-import WorldScreen from './ui/WorldScreen';
+import OverworldScreen from './ui/OverworldScreen';
+import StageScreen from './ui/StageScreen';
 import MissionRunner from './ui/MissionRunner';
 import BossScreen from './ui/BossScreen';
-import Tutorial from './ui/Tutorial';
-import { TUTORIAL_STEPS } from './ui/tutorialSteps';
 import ErrorBoundary from './ui/ErrorBoundary';
-import { ERAS } from '@/core/powers';
-import { worldOfEra } from '@/data/worlds';
+import { eraOfStage } from '@/core/campaign';
+import { getStage } from '@/data/stages';
+import { stageFragmentId } from '@/core/stage';
 import { registerMinigames } from '@/minigames';
 import { useGameStore } from '@/store';
 import { play, playMusic, setMuted } from '@/fx';
 import type { SoundName, TrackName } from '@/fx';
-import type { EraId } from '@/core/types';
 import ui from '@/data/ui.pt-BR.json';
 import './styles/app.css';
 import './styles/fx.css';
 import './styles/minigames.css';
+import './styles/stage.css';
+import './styles/pixel.css';
 
 registerMinigames();
 
-/** A era seguinte na linha do tempo, ou null se esta foi a ultima. */
-function nextEra(era: EraId): EraId | null {
-  const index = ERAS.indexOf(era);
-  return index >= 0 && index + 1 < ERAS.length ? (ERAS[index + 1] ?? null) : null;
-}
-
+/**
+ * O jogo e um mapa de fases (D73): menu -> mapa -> fase de plataforma -> o
+ * minijogo da era no terminal do fim -> de volta ao mapa, com a fase seguinte
+ * aberta. O chefao fecha a campanha.
+ */
 type View =
   | { screen: 'menu' }
-  | { screen: 'world'; era: EraId }
-  | { screen: 'mission'; era: EraId; missionId: string }
-  | { screen: 'quiz'; era: EraId }
+  | { screen: 'map'; justCleared?: string | null }
+  | { screen: 'stage'; id: string }
+  | { screen: 'mission'; id: string }
   | { screen: 'boss' };
 
 export default function App() {
   const settings = useGameStore((s) => s.settings);
-  const openQuiz = useGameStore((s) => s.openQuiz);
-  const closeQuiz = useGameStore((s) => s.closeQuiz);
-  const tutorialDone = useGameStore((s) => s.tutorialDone);
-  const finishTutorial = useGameStore((s) => s.finishTutorial);
-  const canFaceBoss = useGameStore((s) => s.canFaceBoss);
+  const collectFragment = useGameStore((s) => s.collectFragment);
 
   const [view, setView] = useState<View>({ screen: 'menu' });
   const [offline, setOffline] = useState(false);
-  const [step, setStep] = useState(0);
 
   useEffect(() => {
     const update = (): void => setOffline(!navigator.onLine);
@@ -64,11 +57,10 @@ export default function App() {
   }, [settings.muted]);
 
   /*
-   * A musica acompanha a tela: uma faixa no menu, uma por era (que segue
-   * tocando dentro da missao), uma na prova e uma no chefao. So toca com o som
-   * ligado e o ajuste "Musica" ligado; `!== false` porque save antigo nao tem
-   * a chave, e o padrao dela e ligada.
+   * A musica acompanha a tela: uma faixa no menu, uma no mapa, a da era na fase
+   * e no minijogo dela, e uma no chefao.
    */
+  const era = view.screen === 'stage' || view.screen === 'mission' ? eraOfStage(view.id) : null;
   const track: TrackName | null =
     settings.muted !== false || settings.music === false
       ? null
@@ -76,9 +68,9 @@ export default function App() {
         ? 'menu'
         : view.screen === 'boss'
           ? 'boss'
-          : view.screen === 'quiz'
-            ? 'quiz'
-            : view.era;
+          : view.screen === 'map'
+            ? 'map'
+            : era;
 
   useEffect(() => {
     playMusic(track);
@@ -103,55 +95,15 @@ export default function App() {
     return () => document.removeEventListener('pointerdown', onDown);
   }, []);
 
-  const advance = useCallback(
-    (to: number): void => {
-      setStep((current) => {
-        if (to <= current) return current;
-        if (to >= TUTORIAL_STEPS.length) {
-          finishTutorial();
-          return current;
-        }
-        return to;
-      });
-    },
-    [finishTutorial],
-  );
-
-  /** O tutorial anda conforme o jogador faz a acao pedida na zona. */
-  const onWorldEvent = useCallback(
-    (event: 'moved' | 'station' | 'npc' | 'door'): void => {
-      if (tutorialDone) return;
-      if (event === 'moved') advance(1);
-      if (event === 'station') advance(2);
-    },
-    [advance, tutorialDone],
-  );
-
-  function goMenu(): void {
-    closeQuiz();
-    setView({ screen: 'menu' });
+  /** A fase acabou no terminal: guarda os fragmentos e abre o minijogo. */
+  function clearStage(id: string, collected: number[]): void {
+    const def = getStage(id);
+    if (def) for (const index of collected) collectFragment(stageFragmentId(def, index));
+    setView({ screen: 'mission', id });
   }
 
-  function enterQuiz(era: EraId): void {
-    openQuiz(era);
-    setView({ screen: 'quiz', era });
-  }
-
-  /**
-   * Prova passada: segue para a zona da era seguinte. Depois da ultima era, o
-   * que resta e o chefao -- e ele so abre com as seis eras concluidas.
-   */
-  function afterQuiz(era: EraId): void {
-    closeQuiz();
-    const next = nextEra(era);
-    if (next) {
-      setView({ screen: 'world', era: next });
-      return;
-    }
-    setView(canFaceBoss() ? { screen: 'boss' } : { screen: 'menu' });
-  }
-
-  const showTutorial = !tutorialDone && view.screen === 'world' && view.era === 'mecanica';
+  const toMap = (justCleared: string | null = null): void =>
+    setView({ screen: 'map', justCleared });
 
   return (
     <div
@@ -165,64 +117,33 @@ export default function App() {
             {view.screen === 'menu' ? (
               <>
                 {offline ? <p className="app__offline">{ui.app.offline}</p> : null}
-                <MainMenu
-                  onPlay={(era) => setView({ screen: 'world', era })}
-                  onBoss={() => setView({ screen: 'boss' })}
-                />
+                <MainMenu onPlay={() => toMap()} onBoss={() => setView({ screen: 'boss' })} />
               </>
             ) : null}
 
-            {view.screen === 'world'
-              ? (() => {
-                  const world = worldOfEra(view.era);
-                  if (!world) return <p className="pad">{ui.app.renderFail}</p>;
-                  return (
-                    <>
-                      <WorldScreen
-                        world={world}
-                        onOpenStation={(missionId) =>
-                          setView({ screen: 'mission', era: view.era, missionId })
-                        }
-                        onOpenDoor={() => enterQuiz(view.era)}
-                        onMenu={goMenu}
-                        onEvent={onWorldEvent}
-                      />
-                      {showTutorial ? (
-                        <Tutorial
-                          step={step}
-                          onNext={() => advance(step + 1)}
-                          onSkip={finishTutorial}
-                        />
-                      ) : null}
-                    </>
-                  );
-                })()
-              : null}
+            {view.screen === 'map' ? (
+              <OverworldScreen
+                justCleared={view.justCleared ?? null}
+                onPlay={(id) => setView({ screen: 'stage', id })}
+                onBoss={() => setView({ screen: 'boss' })}
+                onMenu={() => setView({ screen: 'menu' })}
+              />
+            ) : null}
+
+            {view.screen === 'stage' ? (
+              <StageScreen
+                key={view.id}
+                stageId={view.id}
+                onClear={(collected) => clearStage(view.id, collected)}
+                onExit={() => toMap()}
+              />
+            ) : null}
 
             {view.screen === 'mission' ? (
-              <MissionRunner
-                missionId={view.missionId}
-                onExit={() => {
-                  if (!tutorialDone) advance(3);
-                  setView({ screen: 'world', era: view.era });
-                }}
-              />
+              <MissionRunner missionId={view.id} onExit={() => toMap(view.id)} />
             ) : null}
 
-            {view.screen === 'boss' ? <BossScreen seed="bug-day-0" onExit={goMenu} /> : null}
-
-            {view.screen === 'menu' ? null : <Hud />}
-
-            {view.screen === 'quiz' ? (
-              <Quiz
-                era={view.era}
-                onFinish={() => afterQuiz(view.era)}
-                onExit={() => {
-                  closeQuiz();
-                  setView({ screen: 'world', era: view.era });
-                }}
-              />
-            ) : null}
+            {view.screen === 'boss' ? <BossScreen seed="bug-day-0" onExit={() => toMap()} /> : null}
           </ErrorBoundary>
         </div>
       </div>

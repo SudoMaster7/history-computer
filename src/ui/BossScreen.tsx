@@ -1,33 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { EraId, Evaluation, PlayerState, PowerId } from '@/core/types';
+import type { EraId, Evaluation } from '@/core/types';
 import type { BossState } from '@/core/boss';
-import {
-  answerTo,
-  armAuto,
-  armBonus,
-  armShield,
-  autoEvaluation,
-  canLaunchPatch,
-  endTurn,
-  eraToPlay,
-  initialBoss,
-  patchEra,
-  patchStep,
-  spendAuto,
-  startPatch,
-  strike,
-  turnDone,
-  turnsTaken,
-} from '@/core/boss';
-import { BOSS, POWERS } from '@/core/constants';
-import { ERA_OF_POWER, POWER_IDS, unlockedPowers } from '@/core/powers';
-import { carriedItems, countOf, itemById } from '@/core/items';
-import { getMinigame, hasMinigame } from '@/core/registry';
+import { answer, answerTo, eraToPlay, initialBoss, roundsTaken } from '@/core/boss';
+import { POWERS } from '@/core/constants';
+import { powersOf } from '@/core/progress';
+import { getMinigame } from '@/core/registry';
 import { bossScore } from '@/core/scoring';
-import { useGameStore } from '@/store';
+import { difficultyOf, useGameStore } from '@/store';
 import { Burst, play } from '@/fx';
 import type { SoundName } from '@/fx';
-import { itemText } from './itemText';
+import { IconHeart } from './icons';
 import ui from '@/data/ui.pt-BR.json';
 
 interface Props {
@@ -37,258 +19,114 @@ interface Props {
 }
 
 /** O que a tela esta mostrando agora. */
-type Stage =
-  | { kind: 'turn' }
-  | { kind: 'micro'; power: PowerId }
-  | { kind: 'patch'; step: number }
-  | { kind: 'strike'; damage: number; blocked: boolean }
-  | { kind: 'turnEnd'; damage: number }
-  | { kind: 'patchEnd'; damage: number; failed: boolean };
+type Step =
+  | { kind: 'announce' }
+  | { kind: 'micro' }
+  | { kind: 'result'; damage: number; blocked: boolean };
 
 const ATTACK_TEXT = ui.boss.attacks as unknown as Record<string, { name: string; text: string }>;
 
-/** Nivel maximo de poder, lido da tabela de multiplicadores. */
+/** Nivel maximo da habilidade, lido da tabela de multiplicadores. */
 const MAX_POWER_LEVEL = POWERS.DAMAGE_MULTIPLIER.length - 1;
 
 /** O que a arena esta mostrando. E so visual: nao entra em nenhuma regra. */
-type StageFx = 'idle' | 'hit' | 'miss' | 'blocked' | 'attack' | 'patch' | 'win' | 'lose';
+type StageFx = 'idle' | 'hit' | 'attack' | 'win' | 'lose';
 
-/** Quanto tempo o efeito fica na tela antes de a arena voltar a encarar. */
-const FX_MS = 900;
-
-/** O som de cada momento da arena. `idle` nao toca nada. */
 const FX_SOUND: Partial<Record<StageFx, SoundName>> = {
   hit: 'hit',
-  miss: 'erase',
-  blocked: 'block',
   attack: 'hurt',
-  patch: 'hit',
   win: 'win',
   lose: 'lose',
 };
 
-/** Numero que sobe de quem levou o golpe. E so visual, como o resto da arena. */
-interface DamagePop {
-  id: number;
-  side: 'bug' | 'bit';
-  amount: number;
-}
-
 /**
- * BUG Day 0.
+ * BUG Day 0, a ultima parada do mapa (D77).
  *
- * A tela nao decide nada do combate: cada toque chama uma funcao pura de
- * `core/boss` e desenha o estado que ela devolve. O micro-desafio e o minijogo
- * da era do poder escolhido, na dificuldade 'micro' -- ou seja, o chefao nao
- * traz mecanica nova nenhuma, e a prova final das seis que o jogador aprendeu.
+ * A tela nao decide nada: cada resposta chama `answer` (core/boss) e desenha o
+ * estado que volta. O micro-desafio e o minijogo da era do ataque anunciado,
+ * na dificuldade 'micro' -- o chefao e a prova final dos seis minijogos.
  */
 export default function BossScreen({ seed, onExit }: Props) {
   const player = useGameStore((s) => s.player);
-  const syncPlayer = useGameStore((s) => s.syncPlayer);
-  const spendItem = useGameStore((s) => s.spendItem);
   const finishBoss = useGameStore((s) => s.finishBoss);
-  const devMode = useGameStore((s) => s.settings.devMode);
-
-  const [boss, setBoss] = useState<BossState>(() => initialBoss(seed, player));
-  const [stage, setStage] = useState<Stage>({ kind: 'turn' });
-  /** O que a arena esta mostrando: e so visual, nunca muda a regra. */
-  const [fx, setFx] = useState<StageFx>('idle');
-  const [pop, setPop] = useState<DamagePop | null>(null);
+  const devMode = useGameStore((s) => s.settings.devMode === true);
   const vibration = useGameStore((s) => s.settings.vibration);
+
+  const [difficulty] = useState(() => difficultyOf(useGameStore.getState().settings));
+  const [boss, setBoss] = useState<BossState>(() => initialBoss(seed, difficulty));
+  const [step, setStep] = useState<Step>({ kind: 'announce' });
+  const [fx, setFx] = useState<StageFx>('idle');
   const t = ui.boss;
 
-  /** Mostra o dano subindo de quem levou o golpe. */
-  function showDamage(side: DamagePop['side'], amount: number): void {
-    if (amount <= 0) return;
-    setPop((current) => ({ id: (current?.id ?? 0) + 1, side, amount }));
-  }
-
-  // Cada momento da arena tem o seu som; o golpe que passa tambem vibra.
   useEffect(() => {
     const sound = FX_SOUND[fx];
     if (sound) play(sound);
     if (fx === 'attack' && vibration) navigator.vibrate?.([30, 40, 30]);
   }, [fx, vibration]);
 
-  /*
-   * No modo desenvolvedor os seis poderes entram na luta, no nivel maximo: sem
-   * isso nao daria para testar o chefao num save que ainda nao tem poder nenhum.
-   */
-  const powers = (devMode ? [...POWER_IDS] : unlockedPowers(player)).filter((power) =>
-    hasMinigame(ERA_OF_POWER[power]),
-  );
-  const levelOf = (power: PowerId): number => (devMode ? MAX_POWER_LEVEL : player.powers[power]);
-  const items = carriedItems(player.items);
-  const score = bossScore(player.hp, turnsTaken(boss));
-
-  // O fim da luta entra no save uma vez por luta.
+  // A luta acabou: registra uma vez.
   useEffect(() => {
     if (!boss.over) return;
-    setFx(boss.over === 'win' ? 'win' : 'lose');
-    finishBoss(boss.over === 'win', boss.over === 'win' ? score : 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boss.over]);
+    finishBoss(boss.over === 'win', bossScore(boss.hearts, roundsTaken(boss)));
+    setFx(boss.over);
+  }, [boss, finishBoss]);
 
-  /*
-   * O golpe, o bloqueio e o ataque duram um instante e a arena volta a encarar.
-   * O fim da luta nao volta: ali o quadro fica como terminou.
-   */
-  useEffect(() => {
-    if (fx === 'idle' || fx === 'win' || fx === 'lose') return;
-    const id = setTimeout(() => setFx('idle'), FX_MS);
-    return () => clearTimeout(id);
-  }, [fx]);
+  const power = answerTo(boss);
+  // No modo desenvolvedor a luta vale com as habilidades no nivel maximo.
+  const level = devMode ? MAX_POWER_LEVEL : powersOf(player)[power];
+  const attack = ATTACK_TEXT[boss.announced.id] ?? { name: boss.announced.id, text: '' };
 
-  /** Aplica uma resposta ao ataque: dano no chefao e, se couber, bloqueio. */
-  function resolveStrike(from: BossState, power: PowerId, evaluation: Evaluation): void {
-    const result = strike(from, power, levelOf(power), evaluation);
+  function resolve(evaluation: Evaluation): void {
+    const result = answer(boss, level, evaluation);
     setBoss(result.state);
-    setFx(result.blocked ? 'blocked' : result.damage > 0 ? 'hit' : 'miss');
-    showDamage('bug', result.damage);
-    setStage({ kind: 'strike', damage: result.damage, blocked: result.blocked });
+    setStep({ kind: 'result', damage: result.damage, blocked: result.blocked });
+    setFx(result.blocked ? 'hit' : 'attack');
   }
 
-  /** Fecha o turno: a maquina leva o dano do ataque que nao foi neutralizado. */
-  function closeTurn(): void {
-    const result = endTurn(boss, player);
-    setBoss(result.state);
-    syncPlayer(result.player);
-    setFx(result.damage > 0 ? 'attack' : 'blocked');
-    showDamage('bit', result.damage);
-    setStage({ kind: 'turnEnd', damage: result.damage });
-  }
-
-  function resolvePatch(evaluation: Evaluation): void {
-    const result = patchStep(boss, evaluation);
-    setBoss(result.state);
-    if (!result.done) {
-      setStage({ kind: 'patch', step: result.state.patchRun ?? 0 });
-      return;
-    }
-    setFx(result.damage > 0 ? 'patch' : 'miss');
-    showDamage('bug', result.damage);
-    setStage({ kind: 'patchEnd', damage: result.damage, failed: result.damage === 0 });
-  }
-
-  /** Usa um item da mochila: cada tipo arma um efeito diferente no combate. */
-  function applyItem(id: string): void {
-    const def = itemById(id);
-    if (!def || !spendItem(id)) return;
-    if (def.kind === 'shield') setBoss((current) => armShield(current));
-    if (def.kind === 'power') setBoss((current) => armBonus(current, def.value));
-    if (def.kind === 'hint') setBoss((current) => armAuto(current));
-  }
-
-  // --- fim da luta ---
   if (boss.over) {
     const won = boss.over === 'win';
     return (
-      <section
-        className={won ? 'boss boss--won game-surface pad' : 'boss boss--lost game-surface pad'}
-        aria-label={t.title}
-      >
-        <BossStage boss={boss} player={player} fx={fx} pop={pop} />
+      <section className="boss game-surface pad" aria-label={t.title}>
+        <BossStage boss={boss} fx={fx} />
         <h2 className="boss__verdict">{won ? t.win : t.lose}</h2>
         <p>{won ? t.winText : t.loseText}</p>
         <p className="boss__score">
-          {t.score}: {won ? score : 0}
+          {t.score}: {bossScore(boss.hearts, roundsTaken(boss))}
         </p>
         <p className="boss__turns">
-          {t.turnsTaken}: {turnsTaken(boss)}
+          {t.turnsTaken}: {roundsTaken(boss)}
         </p>
         <div className="controls">
           <button
             type="button"
             className="boss__primary"
             onClick={() => {
-              setBoss(initialBoss(seed, player));
+              setBoss(initialBoss(seed, difficulty));
+              setStep({ kind: 'announce' });
               setFx('idle');
-              setPop(null);
-              setStage({ kind: 'turn' });
             }}
           >
             {t.retry}
           </button>
           <button type="button" onClick={onExit}>
-            {ui.app.backToMenu}
+            {t.leave}
           </button>
         </div>
       </section>
     );
   }
 
-  // --- micro-desafio: resposta ao ataque, ou um passo do Patch Day 0 ---
-  if (stage.kind === 'micro' || stage.kind === 'patch') {
-    const patching = stage.kind === 'patch';
-    const era: EraId = patching ? patchEra(boss, stage.step) : ERA_OF_POWER[stage.power];
-    const label = patching
-      ? `${t.patchTitle}: ${t.patchStep} ${stage.step + 1}/${BOSS.PATCH_CHALLENGES}`
-      : `${ATTACK_TEXT[boss.announced.id]?.name ?? boss.announced.id} — ${ui.powers[stage.power]}`;
-
+  if (step.kind === 'micro') {
     return (
       <MicroRunner
-        era={era}
-        seed={`${seed}:${boss.turn}:${patching ? `p${stage.step}` : `a${boss.actionsLeft}`}`}
-        label={label}
-        onDone={(evaluation) =>
-          patching ? resolvePatch(evaluation) : resolveStrike(boss, stage.power, evaluation)
-        }
-        onGiveUp={() => setStage({ kind: 'turn' })}
+        era={eraToPlay(boss)}
+        seed={`${seed}:${boss.round}`}
+        label={`${attack.name} · ${ui.abilities[power].name}`}
+        onDone={resolve}
+        onGiveUp={() => resolve({ ok: false, efficiency: 0 })}
       />
     );
   }
-
-  // --- resultado de uma acao, do fim do turno ou do patch ---
-  if (stage.kind === 'strike' || stage.kind === 'turnEnd' || stage.kind === 'patchEnd') {
-    const closing = stage.kind === 'strike' && turnDone(boss);
-    return (
-      <section className="boss game-surface pad" aria-label={t.title}>
-        <BossStage boss={boss} player={player} fx={fx} pop={pop} />
-        <BossMeter boss={boss} />
-
-        {stage.kind === 'strike' ? (
-          <>
-            <p>{stage.blocked ? t.blocked : t.wrongPower}</p>
-            <p className="boss__damage">
-              {t.damageDealt}: {stage.damage > 0 ? stage.damage : t.noDamage}
-            </p>
-          </>
-        ) : null}
-
-        {stage.kind === 'turnEnd' ? (
-          <>
-            <p>{stage.damage > 0 ? t.notBlocked : t.blocked}</p>
-            <p className="boss__damage">
-              {t.damageTaken}: {stage.damage > 0 ? stage.damage : t.noDamage}
-            </p>
-          </>
-        ) : null}
-
-        {stage.kind === 'patchEnd' ? (
-          <>
-            <p>{stage.failed ? t.patchFailed : t.patchDone}</p>
-            <p className="boss__damage">
-              {t.damageDealt}: {stage.damage > 0 ? stage.damage : t.noDamage}
-            </p>
-          </>
-        ) : null}
-
-        <div className="controls">
-          <button
-            type="button"
-            className="boss__primary"
-            onClick={() => (closing ? closeTurn() : setStage({ kind: 'turn' }))}
-          >
-            {closing ? t.nextTurn : t.continueTurn}
-          </button>
-        </div>
-      </section>
-    );
-  }
-
-  // --- o turno: escolher poder, usar item, lancar o patch ---
-  const attack = ATTACK_TEXT[boss.announced.id] ?? { name: boss.announced.id, text: '' };
-  const right = answerTo(boss);
 
   return (
     <section className="boss game-surface" aria-label={t.title}>
@@ -297,99 +135,44 @@ export default function BossScreen({ seed, onExit }: Props) {
         <p className="boss__sub">{t.subtitle}</p>
       </header>
 
-      <BossStage boss={boss} player={player} fx={fx} pop={pop} />
-      <BossMeter boss={boss} />
+      <BossStage boss={boss} fx={fx} />
 
-      <div className="boss__block boss__block--attack">
-        <h3>{t.announced}</h3>
-        <p className="boss__attack">{attack.name}</p>
-        <p className="boss__attackText">{attack.text}</p>
-        <p className="boss__answer">
-          {t.neutralizedBy}: <strong>{ui.powers[right]}</strong> ({ui.eras[eraToPlay(boss)]})
-        </p>
-      </div>
-
-      <div className="boss__block">
-        <h3>{t.pick}</h3>
-        <div className="controls boss__powers">
-          {powers.map((power) => (
-            <button
-              key={power}
-              type="button"
-              className={power === right ? 'boss__power boss__power--right' : 'boss__power'}
-              data-era={ERA_OF_POWER[power]}
-              onClick={() => setStage({ kind: 'micro', power })}
-              aria-label={`${t.answerWith} ${ui.powers[power]}`}
-            >
-              <span>{ui.powers[power]}</span>
-              <small className="boss__powerLevel" aria-hidden="true">
-                {t.levelShort} {levelOf(power)}
-              </small>
-            </button>
-          ))}
+      {step.kind === 'result' ? (
+        <div className="boss__block">
+          <p className="boss__damage">{step.blocked ? t.blocked : t.notBlocked}</p>
+          <p className="boss__damage">
+            {step.blocked ? `${t.damageDealt}: ${step.damage}` : t.heartLost}
+          </p>
+          <button
+            type="button"
+            className="boss__primary"
+            onClick={() => {
+              setStep({ kind: 'announce' });
+              setFx('idle');
+            }}
+          >
+            {t.nextTurn}
+          </button>
         </div>
-        <p className="boss__hint">{t.wrongPower}</p>
-
-        {boss.auto ? (
-          <div className="controls">
-            <button
-              type="button"
-              onClick={() => {
-                const gasto = spendAuto(boss);
-                setBoss(gasto);
-                resolveStrike(gasto, right, autoEvaluation());
-              }}
-            >
-              {t.useAuto}
-            </button>
-          </div>
-        ) : null}
-
-        {canLaunchPatch(boss) ? (
-          <div className="controls">
-            <button
-              type="button"
-              className="boss__patch"
-              data-ready="true"
-              onClick={() => {
-                setBoss(startPatch(boss));
-                setStage({ kind: 'patch', step: 0 });
-              }}
-            >
-              {t.launchPatch}
-            </button>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="boss__block">
-        <h3>{t.items}</h3>
-        {items.length === 0 ? (
-          <p className="boss__empty">{t.noItems}</p>
-        ) : (
-          <ul className="boss__items">
-            {items.map((item) => {
-              const text = itemText(item.id);
-              const count = countOf(player.items, item.id);
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => applyItem(item.id)}
-                    aria-label={`${ui.items.use} ${text.name}`}
-                  >
-                    {text.name}
-                    {count > 1 ? ` x${count}` : ''}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {boss.shield ? <p className="boss__armed">{t.shieldArmed}</p> : null}
-        {boss.bonus > 0 ? <p className="boss__armed">{t.bonusArmed}</p> : null}
-        {boss.auto ? <p className="boss__armed">{t.autoArmed}</p> : null}
-      </div>
+      ) : (
+        <div className="boss__block boss__block--attack">
+          <p className="label">
+            {t.turn} {boss.round} · {t.announced}
+          </p>
+          <p className="boss__attack">{attack.name}</p>
+          <p className="boss__attackText">{attack.text}</p>
+          <p className="boss__answer">
+            {t.neutralizedBy}: <strong>{ui.powers[power]}</strong> ({ui.minigames[eraToPlay(boss)]})
+          </p>
+          <button
+            type="button"
+            className="boss__primary"
+            onClick={() => setStep({ kind: 'micro' })}
+          >
+            {t.answerWith} {ui.abilities[power].name}
+          </button>
+        </div>
+      )}
 
       <div className="controls">
         <button type="button" onClick={onExit}>
@@ -401,45 +184,18 @@ export default function BossScreen({ seed, onExit }: Props) {
 }
 
 /**
- * A arena: o Bit de um lado, o BUG do outro, e as duas barras de integridade.
- *
- * E so leitura do estado -- a arena nao decide nada e nao guarda regra. Ela
- * existe porque um combate sem imagem vira formulario: o jogador precisa VER o
- * golpe acertar, o ataque bater no escudo e o BUG se desfazer no fim.
- *
- * Os dois sprites sao os mesmos arquivos de pixel art do resto do jogo
- * (`/sprites/bit.png` e `/sprites/bug.png`, gerados por `tools/make-sprites.mjs`),
- * desenhados por `background-position` em vez de canvas: o combate nao precisa
- * de laco de animacao, so de quadro certo e um efeito curto de CSS.
+ * A arena: o Bit de um lado, o BUG do outro. So leitura do estado (D55): o
+ * jogador precisa VER o golpe acertar e o BUG se desfazer no fim.
  */
-function BossStage({
-  boss,
-  player,
-  fx,
-  pop,
-}: {
-  boss: BossState;
-  player: PlayerState;
-  fx: StageFx;
-  pop: DamagePop | null;
-}) {
+function BossStage({ boss, fx }: { boss: BossState; fx: StageFx }) {
   const t = ui.boss;
-
-  /** Quadro do BUG: 0 parado, 1 atingido, 2 desfeito. */
-  const bugFrame = fx === 'win' ? 2 : fx === 'hit' || fx === 'patch' ? 1 : 0;
-  /** Quadro do Bit: o do meio e a pose parada; os outros dois sao passo. */
-  const bitFrame = fx === 'attack' || fx === 'lose' ? 0 : fx === 'blocked' ? 2 : 1;
-
+  const bugFrame = fx === 'win' ? 2 : fx === 'hit' ? 1 : 0;
+  const bitFrame = fx === 'attack' || fx === 'lose' ? 0 : 1;
   const bossRatio = boss.hpMax > 0 ? Math.max(0, boss.hp) / boss.hpMax : 0;
-  const playerRatio = player.hpMax > 0 ? Math.max(0, player.hp) / player.hpMax : 0;
-
   const LINES: Record<StageFx, string> = {
     idle: t.stageIdle,
-    miss: t.stageIdle,
     hit: t.stageHit,
-    blocked: t.stageBlocked,
     attack: t.stageAttack,
-    patch: t.stagePatch,
     win: t.stageWin,
     lose: t.stageLose,
   };
@@ -448,43 +204,22 @@ function BossStage({
     <div className={`bossStage bossStage--${fx}`} aria-label={t.stage}>
       <div className="bossStage__row">
         <div className="bossStage__side">
-          {pop?.side === 'bit' ? (
-            <span key={pop.id} className="bossStage__pop bossStage__pop--bit" aria-hidden="true">
-              -{pop.amount}
-            </span>
-          ) : null}
           <span
             className="bossStage__bit"
             style={{ '--frame': bitFrame } as React.CSSProperties}
             aria-hidden="true"
           />
           <span className="bossStage__name">{t.bitName}</span>
-          <span
-            className="bossStage__bar"
-            role="meter"
-            aria-valuenow={Math.max(0, player.hp)}
-            aria-valuemin={0}
-            aria-valuemax={player.hpMax}
-            aria-label={`${t.yourHp} ${Math.max(0, player.hp)} ${ui.hud.of} ${player.hpMax}`}
-          >
-            {/* A sombra da barra desce atrasada: da para ver o tamanho do golpe. */}
-            <span
-              className="bossStage__ghost"
-              style={{ width: `${Math.round(playerRatio * 100)}%` }}
-            />
-            <span
-              className="bossStage__fill bossStage__fill--bit"
-              style={{ width: `${Math.round(playerRatio * 100)}%` }}
-            />
+          <span className="bossStage__hearts" aria-label={`${ui.stage.hearts}: ${boss.hearts}`}>
+            {Array.from({ length: boss.heartsMax }, (_, i) => (
+              <span key={i} data-full={i < boss.hearts} aria-hidden="true">
+                <IconHeart size={18} />
+              </span>
+            ))}
           </span>
         </div>
 
         <div className="bossStage__side bossStage__side--bug">
-          {pop?.side === 'bug' ? (
-            <span key={pop.id} className="bossStage__pop bossStage__pop--bug" aria-hidden="true">
-              -{pop.amount}
-            </span>
-          ) : null}
           {fx === 'win' ? <Burst count={28} spread={110} /> : null}
           <span
             className="bossStage__bug"
@@ -498,7 +233,7 @@ function BossStage({
             aria-valuenow={Math.max(0, boss.hp)}
             aria-valuemin={0}
             aria-valuemax={boss.hpMax}
-            aria-label={`${t.hp} ${Math.max(0, boss.hp)} ${ui.hud.of} ${boss.hpMax}`}
+            aria-label={`${t.hp} ${Math.max(0, boss.hp)} ${t.of} ${boss.hpMax}`}
           >
             <span
               className="bossStage__ghost"
@@ -519,46 +254,7 @@ function BossStage({
   );
 }
 
-/**
- * Os numeros do combate. A barra de integridade mora na arena, logo acima --
- * aqui ficam so os contadores, para o mesmo valor nao virar dois medidores
- * iguais para quem usa leitor de tela.
- */
-function BossMeter({ boss }: { boss: BossState }) {
-  const t = ui.boss;
-  return (
-    <ul className="boss__stats">
-      <li>
-        {t.hp}: {Math.max(0, boss.hp)}/{boss.hpMax}
-      </li>
-      <li>
-        {t.turn}: {boss.turn}
-      </li>
-      <li>
-        {t.actions}: {Math.max(0, boss.actionsLeft)}/{boss.clock}
-      </li>
-      <li
-        className={
-          boss.patch >= BOSS.PATCH_REQUIRED ? 'boss__charge boss__charge--full' : 'boss__charge'
-        }
-      >
-        {t.patchCharges}: {boss.patch}/{BOSS.PATCH_REQUIRED}
-        <span className="boss__cells" aria-hidden="true">
-          {Array.from({ length: BOSS.PATCH_REQUIRED }, (_, i) => (
-            <i key={i} className="boss__cell" data-on={i < boss.patch} />
-          ))}
-        </span>
-      </li>
-    </ul>
-  );
-}
-
-/**
- * Roda a versao curta do minijogo de uma era e devolve a avaliacao.
- *
- * E o mesmo `evaluate` da missao: o chefao nao tem regra propria dentro do
- * minijogo, so usa o resultado dele.
- */
+/** Roda a versao curta do minijogo de uma era e devolve a avaliacao. */
 function MicroRunner({
   era,
   seed,

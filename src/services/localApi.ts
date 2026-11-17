@@ -4,7 +4,7 @@ import { dailySeed } from '@/core/rng';
 import { bossScore, missionScore } from '@/core/scoring';
 import { getMinigame, hasMinigame } from '@/core/registry';
 import { getMission } from '@/data/missions';
-import { eraOfMissionId } from '@/core/rpg';
+import { eraOfMissionId } from '@/core/progress';
 
 const KEY = 'davalvulaaia:runs:v1';
 const SESSION_KEY = 'davalvulaaia:session:v1';
@@ -141,9 +141,9 @@ export function scoreRun(run: RunSubmission): number {
     return evaluation.ok ? missionScore(evaluation.efficiency) : 0;
   }
   // Chefao: a solucao traz o log de turnos; o replay completo entra na S3 (boss.ts).
-  const log = run.solution as { hpLeft?: number; turns?: number } | null;
-  if (!log || typeof log.hpLeft !== 'number' || typeof log.turns !== 'number') return 0;
-  return bossScore(log.hpLeft, log.turns);
+  const log = run.solution as { heartsLeft?: number; rounds?: number } | null;
+  if (!log || typeof log.heartsLeft !== 'number' || typeof log.rounds !== 'number') return 0;
+  return bossScore(log.heartsLeft, log.rounds);
 }
 
 export const localApi: Api = new LocalApi();

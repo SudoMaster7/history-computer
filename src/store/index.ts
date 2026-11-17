@@ -1,2 +1,2 @@
-export { useGameStore } from './gameStore';
+export { difficultyOf, useGameStore } from './gameStore';
 export type { Settings } from './gameStore';

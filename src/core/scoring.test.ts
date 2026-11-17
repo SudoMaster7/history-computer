@@ -31,8 +31,8 @@ describe('scoring', () => {
     expect(missionScore(0)).toBe(0);
   });
 
-  it('bossScore = 2000 + 10 x vida - 60 x turnos, minimo 200', () => {
-    expect(bossScore(100, 5)).toBe(2000 + 1000 - 300);
+  it('bossScore = 2000 + 300 x coracoes - 60 x rodadas, minimo 200', () => {
+    expect(bossScore(3, 5)).toBe(2000 + 900 - 300);
     expect(bossScore(0, 0)).toBe(2000);
     expect(bossScore(0, 100)).toBe(SCORING.BOSS_SCORE_MIN);
     expect(bossScore(-50, -5)).toBe(2000);

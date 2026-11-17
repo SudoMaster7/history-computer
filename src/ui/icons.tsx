@@ -203,3 +203,151 @@ export function IconMenu(props: IconProps) {
     </Svg>
   );
 }
+
+/*
+ * Icones em pixel art (D85): desenhados quadrado a quadrado numa grade 8x8,
+ * sem suavizacao, para conversar com o resto do jogo. Usados nos lugares em que
+ * antes havia caractere de texto (♥ ⚡ ◀ ▶), que muda de desenho conforme o
+ * sistema.
+ */
+function PixelSvg({
+  size = 20,
+  className,
+  rows,
+}: IconProps & {
+  /** Linhas da grade: '#' pinta, qualquer outra coisa e vazio. */
+  rows: readonly string[];
+}) {
+  const cells: { x: number; y: number }[] = [];
+  rows.forEach((line, y) => {
+    [...line].forEach((ch, x) => {
+      if (ch === '#') cells.push({ x, y });
+    });
+  });
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox={`0 0 ${rows[0]?.length ?? 8} ${rows.length}`}
+      fill="currentColor"
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {cells.map(({ x, y }) => (
+        <rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} />
+      ))}
+    </svg>
+  );
+}
+
+export function IconHeart(props: IconProps) {
+  return (
+    <PixelSvg
+      {...props}
+      rows={[
+        '........',
+        '.##..##.',
+        '########',
+        '########',
+        '.######.',
+        '..####..',
+        '...##...',
+        '........',
+      ]}
+    />
+  );
+}
+
+export function IconBolt(props: IconProps) {
+  return (
+    <PixelSvg
+      {...props}
+      rows={[
+        '....##..',
+        '...##...',
+        '..##....',
+        '.######.',
+        '....##..',
+        '...##...',
+        '..##....',
+        '.#......',
+      ]}
+    />
+  );
+}
+
+export function IconLeft(props: IconProps) {
+  return (
+    <PixelSvg
+      {...props}
+      rows={[
+        '....#....',
+        '...##....',
+        '..#######',
+        '.########',
+        '#########',
+        '.########',
+        '..#######',
+        '...##....',
+        '....#....',
+      ]}
+    />
+  );
+}
+
+export function IconRight(props: IconProps) {
+  return (
+    <PixelSvg
+      {...props}
+      rows={[
+        '....#....',
+        '....##...',
+        '#######..',
+        '########.',
+        '#########',
+        '########.',
+        '#######..',
+        '....##...',
+        '....#....',
+      ]}
+    />
+  );
+}
+
+export function IconJump(props: IconProps) {
+  return (
+    <PixelSvg
+      {...props}
+      rows={[
+        '...##...',
+        '..####..',
+        '.######.',
+        '########',
+        '...##...',
+        '...##...',
+        '...##...',
+        '...##...',
+      ]}
+    />
+  );
+}
+
+export function IconPause(props: IconProps) {
+  return (
+    <PixelSvg
+      {...props}
+      rows={[
+        '........',
+        '.##..##.',
+        '.##..##.',
+        '.##..##.',
+        '.##..##.',
+        '.##..##.',
+        '.##..##.',
+        '........',
+      ]}
+    />
+  );
+}

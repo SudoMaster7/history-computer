@@ -769,3 +769,233 @@ tentando as opções em rodízio, sem repetir no teste a lógica do `core`. Isso
 cobre a promessa da D69 (sempre fecha) pela interface. Onde a tela escreve o que
 é preciso para jogar certo (o número pedido, a chave da cifra), o teste joga
 certo e cobra as 3 estrelas.
+
+### D73. O jogo deixa de ser RPG e vira jogo de fases com mapa
+
+A pedido do grupo, em 17/11/2026: tirar a cara de RPG e fazer um jogo educacional de fases,
+no espírito de Super Mario World (mapa de progressão), Mega Man X (ação de lado e uma
+habilidade por chefe vencido) e Snipperclips (quebra-cabeça que se resolve pensando). Os seis
+minijogos ficam como estavam; o que muda é o caminho até eles.
+
+O caminho agora é: **menu → mapa da jornada → fase de plataforma → o minijogo da era no
+terminal do fim da fase → de volta ao mapa**, com a fase seguinte aberta. São duas fases por
+era (A e B, com o mesmo id das missões, que viram o minijogo do fim de cada uma) e o BUG Day 0
+como última parada do mapa. Concluir a fase é concluir o minijogo dela (1 estrela ou mais).
+
+Saem: XP, nível, vida que cresce, clock, ano do mundo, mochila e itens, a prova de múltipla
+escolha, a zona vista de cima com porta e personagens, o tutorial e o HUD de estado. Fica no
+save só o que o mapa precisa: estrelas e melhor pontuação de cada fase, e os fragmentos.
+
+**Revoga:** D11 (o platformer antigo mantinha o RPG; este não), D17 e D18 (mapa de cima e
+toque no destino), D19, D20, D29 e D33 (plantas das zonas), D22 (tutorial: o cartão de
+abertura e as placas da fase fazem esse papel), D23 e D28 (personagens no mapa), D25 e D26
+(missões + prova + porta), D27, D50 e D51 (itens), D31, D32 e D61 (HUD e avisos de ganho), D58
+e D59 (o Bit no mapa de cima e os fragmentos da zona), e as partes de XP e vida de D1, D2 e D5.
+Continuam valendo: D41 a D44 (explicação e dicas), D48 (o chefão é a versão `micro` dos seis
+minijogos), D53 (modo desenvolvedor), D63 a D65 (música e pixel art por código) e D69 a D72.
+
+### D74. A fase é de auto-corrida, com dois toques: Pular e Atirar
+
+Uma fase de plataforma costuma pedir direcional segurado, e o CLAUDE.md (§5) proíbe segurar e
+arrastar. A escolha foi a auto-corrida: o Bit corre sozinho para a direita, e o jogador só tem
+dois botões grandes de toque simples, **Pular** e **Atirar**. No teclado, Espaço pula e X atira,
+mas nada exige teclado.
+
+A física é passo fixo de 1/60 s em `core/stage.ts`: a mesma fase com a mesma sequência de toques
+dá sempre o mesmo resultado, e por isso a fase inteira é testável sem navegador. Os números
+(gravidade, pulo, velocidade, alcance do tiro) moram em `STAGE` (`constants.ts`), e o contrato
+de constantes trava o que não pode quebrar: o pulo tem de vencer um buraco de 3 tiles e uma
+parede de 2.
+
+Cair no buraco ou no espinho tira um coração e volta ao checkpoint; inimigo tira um coração e
+dá um tempo de invulnerabilidade. Sem coração, a fase recomeça do início. Não há "game over" e
+nada salvo se perde.
+
+### D75. A mecânica da fase é o conceito da era, e o Bit para diante do portão
+
+Cada fase ensina a ideia do seu minijogo com um **portão de conceito** (`core/gadgets.ts`):
+completar o padrão (Tear), armar chaves E/OU/NÃO (Circuitos), ligar os bits que somam o número
+(Mesa de Bits), escolher a rota de menor atraso (Rota), decifrar a letra pela chave (Cofre) e
+derrubar só os vírus vendo exemplos carimbados (Detector). O painel do portão mostra a ideia do
+mesmo jeito que o minijogo vai mostrar depois: a fase é o ensaio do minijogo.
+
+O Bit **para sozinho** encostado no portão fechado, e o portão ocupa a coluna inteira (não dá
+para pular). Pensa-se parado, sem pressa, como em Snipperclips. Na fase A o portão vem com uma
+placa que explica em uma frase; na B, mais inimigos e variações mais difíceis. No fim, antes do
+terminal, a placa-resumo amarra a fase ao minijogo (`summary` em `stages.pt-BR.json` e o texto
+`power` do minijogo).
+
+As placas que não ficam logo antes de um portão **pausam** a fase até o "Entendi": ninguém lê
+correndo. As que ficam antes de um portão aparecem no painel dele.
+
+As 12 fases são montadas por trechos em `tools/make-stages.py` (como os mapas eram em D30), e o
+contrato de progressão prova que cada uma fecha: um robô de referência (`referenceRun`) corre a
+fase, pula buraco, parede e espinho, atira só no que é inimigo e abre cada portão sem erro.
+
+### D76. Uma habilidade por era, como em Mega Man X
+
+Fechar uma era (as duas fases) dá ao Bit a habilidade dela, sem botão novo: Rajada (Repetir, três
+tiros por toque), Pulo duplo (Decidir), Tiro perfurante (Codificar), Salto de nó (Conectar,
+vai mais longe no ar), Escudo (Proteger, segura o primeiro golpe depois de cada checkpoint) e
+Mira (Aprender, o tiro corrige a altura). O nível da habilidade sai das estrelas das duas
+fases (`powerLevelFor`, como antes) e multiplica o golpe no chefão.
+
+Habilidade é bônus, não chave: o contrato exige que toda fase feche **sem** habilidade nenhuma
+e também **com** as seis (quem volta a uma fase antiga já tem todas). Foi esse segundo teste que
+achou o caso do Salto de nó chegando ao espinho antes de subir; o espinho passou a ferir só na
+metade de baixo do tile, que é a parte desenhada.
+
+### D77. O BUG Day 0 virou luta por corações
+
+Sem RPG não há vida, clock, mochila nem Patch Day 0. A luta ficou com a regra de sempre (D48): o
+BUG anuncia o ataque e cada ataque se desfaz com a ideia de uma era. Responder é jogar o
+micro-minijogo daquela era. Respondeu bem: o BUG leva o golpe (mais forte com habilidade em nível
+alto). Respondeu mal ou desistiu: o Bit perde um coração. O anúncio nunca repete o ataque da
+rodada anterior. A arena (D55) foi mantida, com corações no lugar da barra de integridade do Bit.
+
+Fica de fora, de propósito, o que o plano chegou a prever: a arena como fase de plataforma, com
+tiros entre os ataques. É um próximo passo possível; a luta atual já fecha a campanha e é
+coberta pelo contrato.
+
+### D78. O save sobe para a versão 2 e guarda as estrelas
+
+O formato mudou (sem XP, vida, itens, eras pela prova), então `STORAGE.VERSION` foi para 2. A
+migração (`migrateSave`, em `store/gameStore.ts`) **preserva as estrelas das missões**, porque
+cada missão virou o minijogo do fim da fase de mesmo id, e preserva os ajustes. Quem já jogou
+abre o mapa com as fases que concluiu marcadas e a seguinte aberta. Fragmentos antigos (da zona
+de cima) não têm correspondência nas fases e zeram; o chefão também volta a ficar por vencer.
+
+### D79. O mapa da jornada é HTML, e o modo desenvolvedor ganhou o piloto automático
+
+O mapa é uma lista de ilhas com botões de verdade, não canvas: cada fase é um botão com alvo de
+44 px, nome lido pelo leitor de tela e rótulo para o teste de ponta a ponta. O Bit sobre a fase
+atual é o mesmo `bit.png`, animado por CSS. A fase em si continua em canvas 2D com pixel art,
+sem WebGL (§5).
+
+No modo desenvolvedor a fase mostra "Ir ao terminal" (pula a ação) e "Piloto automático" (o robô
+de referência pula e atira, e o painel do portão continua com quem joga). O piloto existe para
+testar e demonstrar; é com ele que o e2e joga a fase 1-A inteira pelo navegador.
+
+### D80. Direção por toque simples, fragmento que pausa e mais inimigos
+
+Pedido da Leticia depois de jogar: botões para ir para a frente e para trás, porque o texto do
+fragmento de memória não dava para ler com o jogo andando; e mais variedade de inimigos.
+
+- **Direção sem segurar.** Três botões, ◀ ■ ▶: um toque troca o modo e ele fica valendo (andar
+  para trás, parar, voltar a correr). Isso mantém a regra do CLAUDE.md (§5) — nada de segurar — e
+  completa a D74 em vez de revogá-la: a fase continua começando em auto-corrida, e o robô de
+  referência nunca mexe na direção. O Bit olha e atira para o lado em que andou por último. No
+  teclado, as setas fazem o mesmo.
+- **O fragmento pausa a fase** até o "Entendi", como as placas (D75). Antes ele aparecia por
+  seis segundos sobre a fase em movimento.
+- **Três inimigos novos:** o saltador (anda aos pulinhos), o blindado (aguenta dois tiros) e o
+  pingo (pendurado no alto, cai quando o Bit chega perto e vira obstáculo no chão). Cada um
+  aparece primeiro com uma placa que explica como vencê-lo, e o contrato continua provando que
+  o robô fecha as 12 fases com eles.
+
+### D81. Controle de Mega Man e Mario: direção segurada, sem auto-corrida
+
+A Leticia jogou a versão da D80 e esclareceu o pedido: os botões de frente e trás eram para o
+jogo **controlar como Mega Man ou Mario**. Então o Bit deixou de correr sozinho. Ele fica parado
+até o jogador **segurar** ◀ ou ▶, e para ao soltar. Pular também é de segurar: segurar dá o pulo
+alto, e soltar cedo corta a subida (`STAGE.JUMP_CUT_SPEED`), como em Mario. Atirar continua sendo
+um toque. O botão ■ de parar saiu, porque soltar já para.
+
+**Muda a regra do CLAUDE.md (§5)**, que dizia "100% jogável por toque simples, sem segurar". A
+pedido da dona do projeto, segurar a **direção** e o **pulo** passa a ser permitido; continuam
+proibidos arrastar e gesto de dois dedos no mesmo botão, e continuam valendo o alvo de 44 px e o
+"nada exige teclado". Cada botão captura o próprio ponteiro, então dá para segurar ▶ com um dedo
+e tocar em Pular com outro, e o "soltou" chega mesmo se o dedo escorregar para fora. Quando o
+jogo para (pausa, placa, fragmento), todo botão segurado é solto, para o Bit não sair andando.
+
+**Revoga:** D74 (auto-corrida) e a parte de direção da D80 (modo por toque). Continuam valendo
+da D80 o fragmento que pausa e os três inimigos novos.
+
+O robô de referência passou a "segurar ▶ e o pulo inteiro", e por isso o contrato continua o
+mesmo: as 12 fases fecham sem habilidade, com as do ponto da campanha e com as seis.
+
+### D82. Munição limitada, terrenos novos e três dificuldades
+
+Pedido da Leticia: tiro limitado por fase com munição para recolher, áreas mais altas que pedem
+pulo, chão que cai, outros terrenos e níveis de dificuldade para o jogador escolher.
+
+- **Munição.** Cada toque em Atirar gasta uma carga (⚡ no topo da fase); sem carga, não sai
+  tiro. Baterias (`m` na planta) recarregam pelo caminho, inclusive antes de cada grupo de
+  programas da Era 6. Para a munição não virar armadilha, voltar ao checkpoint devolve um
+  mínimo (`STAGE.AMMO_RESPAWN_MIN`): um detector da Era 6 só abre derrubando vírus, e sem tiro o
+  jogador ficaria preso. **Pisão**, como no Mario: cair em cima de engrenagem, voador,
+  saltador, pingo ou vírus derruba sem gastar carga; blindado e torre machucam quem pisa.
+- **Terreno.** O chão sobe e desce em degraus (o gerador guarda a altura do chão); pedras sobre
+  buracos largos demais para um pulo só; ponte de **chão que cai** (`x`), que racha ao ser
+  pisado, cai e volta depois; **mola** (`j`), que lança o Bit até uma plataforma no alto com
+  uma bateria em cima. Cada fase tem um estilo de superfície (o tile do tileset da era) e
+  enfeites no chão por era.
+- **Dificuldade** (`DIFFICULTY` em `constants.ts`): Fácil (5 corações, muita munição, chão que
+  demora a cair), Normal (3) e Difícil (2 corações, pouca munição, chão rápido). Também muda os
+  corações no chefão. Escolhe-se no mapa e em Ajustes, e vale ao entrar na fase. Save antigo
+  sem a chave vale "Normal". As fases e os minijogos são os mesmos nas três.
+- O contrato de progressão passou a exigir que **as 12 fases fechem nas três dificuldades**.
+  Foi ele que mostrou que a `ia-B` ficava sem munição antes das recargas, e que o Salto de nó
+  passava por cima da pedra de dois tiles (agora são três).
+
+### D83. Mensagens dentro do jogo, sem pausa
+
+Depois de jogar, a Leticia achou o jogo parado demais com tantas mensagens. Agora:
+
+- **A placa não pausa.** O texto aparece num balão sobre a fase enquanto o Bit passa, e some
+  sozinho. Quem quer ler com calma solta o ▶, como nas placas do Mario. A placa do detector da
+  Era 6 fica até o portão abrir, porque traz os exemplos carimbados que o jogador compara
+  enquanto os programas vêm.
+- **O fragmento não pausa.** Pegar um mostra só "Fragmento de memória 1/3"; as curiosidades
+  dos fragmentos recolhidos aparecem no cartão de fim de fase, onde se lê sem pressa.
+- **Menos placas, e mais curtas.** Saíram as de degrau e de pedras (o terreno se explica), e
+  as outras ficaram com uma frase.
+
+**Revoga:** a parte da D75 em que as placas fora de portão pausavam a fase, e a parte da D80 em
+que o fragmento pausava. Continuam parados, de propósito, só os momentos em que o Bit já está
+parado: o cartão de abertura, o painel do portão e o cartão de fim.
+
+### D84. O cartão de fim de fase em três blocos
+
+A pedido da Leticia, os textos antes do terminal deixaram de ser parágrafos soltos. O cartão de
+fim de fase tem um cabeçalho com fragmentos, corações e munição em chips, e três blocos na cor
+da era: **fragmentos de memória** (um cartão numerado por curiosidade; o que faltou aparece
+tracejado, convidando a voltar), **o que você aprendeu** (a ideia da era em etiqueta, o resumo
+da fase em destaque e a explicação do minijogo em texto secundário) e **no terminal** (o nome do
+minijogo, a máquina real que ele imita e o botão). É só apresentação: nenhum texto novo além do
+aviso de fragmento não encontrado.
+
+### D85. Um kit visual em pixel art para o jogo inteiro
+
+A pedido da Leticia, uma passada de design no jogo todo, com as skills `ui-ux-pro-max` e
+`design`. Da sugestão da ferramenta ficou o estilo "Pixel Art" (blocos, borda de pixel, sombra
+dura, ícone desenhado em vez de caractere, retorno visual ao toque). Foram recusadas, como na
+D35, a fonte Press Start 2P (viria do Google Fonts, contra a D34, e é difícil de ler em
+parágrafo) e a paleta vermelho/azul neon (as cores por era já são a identidade do jogo).
+
+O kit mora em `src/styles/pixel.css`, carregado por último, para dar a mesma cara a todas as
+telas sem reescrever cada uma:
+
+- **Botão de fliperama:** borda escura, luz em cima e volume embaixo (`--depth`); ao toque ele
+  afunda. É um movimento de uma vez só, não um laço — a regra de `fx.css` continua valendo, e o
+  brilho de `glow-pulse` passou a incluir o `--depth` para não apagar o volume. Ações principais
+  ganham tampa preenchida (verde-água; vermelho no chefão e no Difícil; âmbar em Atirar).
+- **Janela com moldura:** abertura e pausa da fase viraram janela centrada sobre a fase
+  escurecida; painéis, ilhas do mapa, HUD e balões têm borda e sombra de pixel.
+- **Ícones em pixel art** (`IconHeart`, `IconBolt`, `IconLeft`, `IconRight`, `IconJump`,
+  `IconPause` em `ui/icons.tsx`), desenhados numa grade e sem suavização, no lugar de ♥ ⚡ ◀ ▶,
+  que mudavam de desenho conforme o sistema.
+- **Cantos mais retos** (raios 4/6/10 px), título do menu com degradê e sombra em degraus, e
+  fundo com textura pontilhada discreta.
+
+Nada muda de tamanho de alvo: o volume é sombra, fora da caixa, e o teste de 44 px continua.
+
+### D86. O balão do detector também some sozinho
+
+A Leticia notou que, na fase dos vírus, o balão amarelo com os exemplos ficava na tela até o
+portão abrir e tapava o jogo. Agora ele some como os outros, só que depois de 8 s em vez de
+5,5 s. Os exemplos continuam no painel do portão do detector, quando o Bit encosta nele. Revoga
+o trecho da D83 em que esse balão ficava até o portão abrir.
+
+Os exemplos também deixaram de se repetir: aparecem só no balão da última placa antes de cada
+detector (a que diz a regra daquele grupo). As outras placas do caminho mostram só a frase.

@@ -5,7 +5,7 @@ import { POWER_OF_ERA } from '@/core/powers';
 import { useGameStore } from '@/store';
 import MissionResult from './MissionResult';
 import type { MissionOutcome } from './MissionResult';
-import { totalXp } from './xp';
+import { powersOf } from '@/core/progress';
 import ui from '@/data/ui.pt-BR.json';
 
 interface Props {
@@ -49,8 +49,8 @@ export default function MissionRunner({ missionId, onExit }: Props) {
 
     /*
      * O que a missao rendeu sai da comparacao do jogador antes e depois: a
-     * regra (XP, nivel, poder) continua toda em `core/rpg`, e esta tela so
-     * mostra a diferenca -- nao refaz a conta.
+     * regra continua toda em `core/progress`, e esta tela so mostra a
+     * diferenca -- nao refaz a conta.
      */
     const before = useGameStore.getState().player;
     if (evaluation.ok) completeMission(missionId, evaluation);
@@ -60,12 +60,9 @@ export default function MissionRunner({ missionId, onExit }: Props) {
 
     setOutcome({
       evaluation,
-      xp: totalXp(after) - totalXp(before),
-      levelFrom: before.level,
-      levelTo: after.level,
       power,
-      powerFrom: before.powers[power],
-      powerTo: after.powers[power],
+      powerFrom: powersOf(before)[power],
+      powerTo: powersOf(after)[power],
       record: previousBest > 0 && best > previousBest,
       best,
     });

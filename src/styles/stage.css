@@ -1,0 +1,1102 @@
+/* ============================================================================
+ * Mapa da jornada e fase de plataforma (D73-D79).
+ *
+ * Mesma regra de fx.css: nenhuma animacao em laco mexe em `transform` ou
+ * tamanho de BOTAO. O Bit no mapa e um <span>, nao botao, e pode saltar.
+ * ========================================================================== */
+
+[data-era='mecanica'],
+.stageScreen--mecanica {
+  --era: var(--era-mecanica);
+}
+[data-era='logica'],
+.stageScreen--logica {
+  --era: var(--era-logica);
+}
+[data-era='codigo'],
+.stageScreen--codigo {
+  --era: var(--era-codigo);
+}
+[data-era='redes'],
+.stageScreen--redes {
+  --era: var(--era-redes);
+}
+[data-era='seguranca'],
+.stageScreen--seguranca {
+  --era: var(--era-seguranca);
+}
+[data-era='ia'],
+.stageScreen--ia {
+  --era: var(--era-ia);
+}
+
+/* ------------------------------------------------------------- mapa ------- */
+
+.overworld {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: radial-gradient(circle at 20% 10%, rgb(88 224 200 / 8%), transparent 40%),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgb(142 170 220 / 5%) 23px 24px),
+    var(--bg-soft);
+}
+
+.overworld__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.overworld__title {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.overworld__tagline {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+}
+
+.overworld__totals {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+
+.overworld__totals li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.overworld__abilities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+}
+
+.overworld__abilities li {
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--line-strong);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.overworld__abilities li[data-got='true'] {
+  border-style: solid;
+  border-color: var(--era);
+  color: var(--text);
+  background: color-mix(in srgb, var(--era) 22%, transparent);
+}
+
+.overworld__trail {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.island {
+  position: relative;
+  padding: var(--space-3);
+  border-radius: 22px 22px 28px 28px;
+  background: radial-gradient(ellipse at 50% 120%, rgb(0 0 0 / 30%), transparent 60%),
+    color-mix(in srgb, var(--era, #3a4466) 30%, var(--surface));
+  border: 2px solid color-mix(in srgb, var(--era, #3a4466) 70%, black);
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--era, #3a4466) 40%, black);
+}
+
+/* A trilha pontilhada que liga uma ilha a seguinte. */
+.island + .island::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--space-4) - 2px);
+  left: 50%;
+  height: var(--space-4);
+  border-left: 3px dotted var(--line-strong);
+}
+
+.island__name {
+  margin: 0 0 var(--space-2);
+  font-weight: 700;
+}
+
+.island__name small {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.island__number {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--era);
+  color: var(--bg);
+  font-size: var(--text-sm);
+}
+
+.island__nodes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.node {
+  position: relative;
+  padding-top: 36px;
+}
+
+.node__button {
+  width: 100%;
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  border-radius: 14px;
+  border-width: 2px;
+}
+
+.node__button[data-state='open'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.node__button[data-state='done'] {
+  border-color: var(--era, var(--ok));
+}
+
+.node__button[data-fresh='true'] {
+  animation: node-glow 1.2s var(--ease) 3;
+}
+
+@keyframes node-glow {
+  50% {
+    box-shadow: 0 0 0 6px rgb(255 211 77 / 45%);
+  }
+}
+
+.node__code {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--text-dim);
+}
+
+.node__title {
+  font-size: var(--text-sm);
+  line-height: 1.2;
+}
+
+.node__score {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.node__stars {
+  display: inline-flex;
+  color: #ffd34d;
+}
+
+.node__lock {
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.island--boss {
+  --era: #ff5f6d;
+}
+
+/* O Bit sobre a fase atual: sprite do gerador, de frente, piscando os passos. */
+.overworld__bit {
+  position: absolute;
+  top: -8px;
+  right: 6px;
+  width: 48px;
+  height: 48px;
+  background-image: url('/sprites/bit.png');
+  background-size: 144px 192px;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  z-index: 1;
+  pointer-events: none;
+  animation: bit-idle 0.9s steps(1) infinite;
+}
+
+.overworld__bit[data-hop='true'] {
+  animation:
+    bit-hop 0.52s var(--ease),
+    bit-idle 0.3s steps(1) infinite;
+}
+
+@keyframes bit-idle {
+  0% {
+    background-position: 0 0;
+  }
+  33% {
+    background-position: -48px 0;
+  }
+  66% {
+    background-position: -96px 0;
+  }
+}
+
+@keyframes bit-hop {
+  40% {
+    transform: translateY(-16px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.overworld__toast {
+  position: sticky;
+  bottom: 0;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: #ffd34d;
+  color: var(--bg);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- fase ------- */
+
+.stageScreen {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stageScreen__hud {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.stageScreen__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stageScreen__hearts {
+  margin: 0;
+  display: flex;
+  gap: 2px;
+  font-size: var(--text-lg);
+}
+
+.stageScreen__heart {
+  color: var(--text-faint);
+}
+
+.stageScreen__heart[data-full='true'] {
+  color: var(--danger);
+}
+
+.stageScreen__frags {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.stageScreen__view {
+  position: relative;
+  flex: none;
+  border-block: 2px solid color-mix(in srgb, var(--era) 60%, black);
+}
+
+.stageScreen__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 192 / 128;
+  /* Em tela baixa o canvas nao empurra os botoes para fora. */
+  max-height: 52dvh;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: #000;
+}
+
+.stageScreen__toast {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgb(8 12 24 / 85%);
+  border: 1px solid var(--line-strong);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: 94%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stageScreen__fact {
+  position: absolute;
+  inset: 8px 8px auto 8px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: rgb(8 12 24 / 90%);
+  border: 1px solid var(--accent-deep);
+  font-size: var(--text-sm);
+}
+
+.stageScreen__fact strong {
+  color: var(--accent);
+}
+
+.stageScreen__fact p {
+  margin: 4px 0 0;
+}
+
+.stageScreen__controls {
+  flex: 1;
+  display: grid;
+  /* Como um controle: direcao na esquerda, acao na direita. */
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(96px, 168px);
+  grid-auto-rows: auto;
+  /* Encostado embaixo, onde os polegares alcancam. */
+  align-content: end;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  min-height: 0;
+}
+
+.stageScreen__dpad,
+.stageScreen__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.stageScreen__btn {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  border-radius: 20px;
+  border-width: 2px;
+  touch-action: none;
+}
+
+.stageScreen__btn--jump {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-high));
+}
+
+.stageScreen__btn--shoot {
+  border-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 16%, var(--surface-high));
+}
+
+.stageScreen__skip {
+  grid-column: 1 / -1;
+  min-height: var(--touch);
+  border-style: dashed;
+}
+
+/* --------------------------------------------------------- portao ------- */
+
+.gatePanel {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: color-mix(in srgb, var(--era) 10%, var(--bg-soft));
+}
+
+.gatePanel p {
+  margin: 0;
+}
+
+.gatePanel__sign {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: #e8c27a;
+  color: #2a1d0a;
+  font-weight: 600;
+}
+
+.gatePanel__help {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.gatePanel__status[data-state='warn'] {
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.gatePanel__keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.gatePanel__keys > button {
+  flex: 1 1 auto;
+  min-height: 52px;
+}
+
+.gatePanel__action {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-high));
+}
+
+.gatePanel__note {
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+}
+
+.gatePanel__target {
+  font-size: var(--text-lg);
+}
+
+.gatePanel__cloth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gatePanel__thread {
+  width: 28px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 2px solid var(--line-strong);
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+[data-color='a'].gatePanel__thread,
+[data-color='a'].gatePanel__color {
+  background: #d94a3a;
+}
+
+[data-color='b'].gatePanel__thread,
+[data-color='b'].gatePanel__color {
+  background: #3a7bd5;
+}
+
+[data-color='c'].gatePanel__thread,
+[data-color='c'].gatePanel__color {
+  background: #e8b830;
+  color: #2a1d0a;
+}
+
+.gatePanel__thread[data-color='none'] {
+  border-style: dashed;
+  background: transparent;
+}
+
+.gatePanel__switch[aria-pressed='true'],
+.gatePanel__bit[aria-pressed='true'] {
+  border-color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 22%, var(--surface-high));
+}
+
+.gatePanel__formula {
+  font-size: var(--text-sm);
+}
+
+.gatePanel__op {
+  color: var(--warning);
+}
+
+.gatePanel__lamp[data-lit='true'] {
+  color: #ffd34d;
+  font-weight: 800;
+}
+
+.gatePanel__keys--bits > button {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gatePanel__bit small {
+  color: var(--text-dim);
+}
+
+.gatePanel__bit strong {
+  font-size: var(--text-xl);
+}
+
+.gatePanel__route {
+  width: 100%;
+  max-height: 140px;
+}
+
+.gatePanel__route line {
+  stroke: var(--line-strong);
+  stroke-width: 2;
+}
+
+.gatePanel__route g[data-on='true'] line {
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+.gatePanel__route text {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.gatePanel__route circle {
+  fill: var(--surface-high);
+  stroke: var(--era);
+  stroke-width: 2;
+}
+
+.gatePanel__route circle[data-on='true'],
+.gatePanel__route circle[data-kind='end'] {
+  fill: var(--era);
+}
+
+.gatePanel__route text[data-kind='label'] {
+  font-size: 10px;
+}
+
+.gatePanel__letter {
+  display: inline-block;
+  min-width: 1.4em;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.gatePanel__letter[data-now='true'] {
+  color: var(--bg);
+  background: var(--warning);
+  border-radius: 4px;
+}
+
+.gatePanel__letterKey {
+  font-size: var(--text-xl);
+  font-weight: 800;
+}
+
+.gatePanel__examples ul {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.gatePanel__examples li {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.gatePanel__examples li[data-virus='true'] strong {
+  color: var(--danger);
+}
+
+.gatePanel__examples li[data-virus='false'] strong {
+  color: var(--ok);
+}
+
+.gatePanel__program {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--bg);
+  background: #e8504a;
+}
+
+.gatePanel__program[data-color='1'] {
+  background: #4cc66a;
+}
+
+.gatePanel__program[data-color='2'] {
+  background: #4a8be8;
+}
+
+.gatePanel__program[data-shape='0'] {
+  border-radius: 50%;
+}
+
+.gatePanel__program[data-shape='2'] {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.gatePanel__program[data-antenna='true'] {
+  box-shadow: 0 -5px 0 -3px #ffd34d;
+}
+
+/* --------------------------------------------------------- cartoes ------- */
+
+.stageCard {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  background: rgb(8 12 24 / 92%);
+  animation: screen-in var(--dur-panel) var(--ease);
+}
+
+.stageCard h2,
+.stageCard h3,
+.stageCard p {
+  margin: 0;
+}
+
+.stageCard h2 {
+  font-size: var(--text-2xl);
+  color: var(--era, var(--accent));
+}
+
+.stageCard h3 {
+  font-size: var(--text-base);
+  color: var(--text-dim);
+}
+
+.stageCard--sign {
+  inset: auto 0 0 0;
+  min-height: 48%;
+  max-height: 75%;
+  background: var(--bg);
+  justify-content: flex-start;
+  border-top: 3px solid #e8c27a;
+}
+
+.stageCard--sign > p {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.stageCard__primary {
+  min-height: 56px;
+  font-size: var(--text-lg);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-high));
+}
+
+.stageCard__small {
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+}
+
+.stageCard__abilities {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: var(--text-sm);
+}
+
+.stageCard__stack {
+  flex-direction: column;
+}
+
+.stageCard__frags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------- chefao ------- */
+
+.bossStage__hearts {
+  display: flex;
+  gap: 2px;
+  font-size: var(--text-lg);
+  color: var(--text-faint);
+}
+
+.bossStage__hearts [data-full='true'] {
+  color: var(--danger);
+}
+
+.stageScreen__dev {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.stageScreen__skip[aria-pressed='true'] {
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+/* Botoes de segurar: nada de menu de toque longo nem selecao no celular. */
+.stageScreen__dir,
+.stageScreen__btn {
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+.stageScreen__dir {
+  font-size: var(--text-2xl);
+  border-radius: 20px;
+  border-width: 2px;
+}
+
+.stageScreen__dir[aria-pressed='true'],
+.stageScreen__btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface-high));
+}
+
+.stageCard--fact {
+  border-top-color: var(--accent);
+}
+
+.stageCard--fact h3 {
+  color: var(--accent);
+}
+
+/* --------------------------------------------------- municao e dificuldade */
+
+.stageScreen__ammo {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: #58e089;
+}
+
+.stageScreen__ammo[data-empty='true'] {
+  color: var(--danger);
+}
+
+.difficulty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.difficulty .label,
+.difficulty__text {
+  margin: 0;
+}
+
+.difficulty__options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.difficulty__option[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-high));
+}
+
+.difficulty__option[data-level='dificil'][aria-pressed='true'] {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 22%, var(--surface-high));
+}
+
+.difficulty__text {
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* ---------------------------------------------------- balao da placa (D83) */
+
+/* Sobre a fase, sem pausar e sem cobrir os botoes: quem quer ler solta o ▶. */
+.stageScreen__bubble {
+  position: absolute;
+  inset: 6px 6px auto 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: rgb(232 194 122 / 94%);
+  color: #2a1d0a;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  line-height: 1.3;
+  pointer-events: none;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 30%);
+  animation: screen-in var(--dur-panel) var(--ease);
+}
+
+.stageScreen__bubble p {
+  margin: 0;
+}
+
+.stageScreen__bubble .gatePanel__examples {
+  margin-top: 4px;
+}
+
+.stageScreen__bubble .gatePanel__examples li {
+  font-size: var(--text-xs);
+  grid-template-columns: 16px 1fr auto;
+}
+
+.stageScreen__bubble .gatePanel__note {
+  display: none;
+}
+
+.stageCard__facts {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+/* ------------------------------------------- cartao de fim de fase (D84) */
+
+.clearCard {
+  justify-content: flex-start;
+  gap: var(--space-3);
+  background: radial-gradient(
+      circle at 50% -10%,
+      color-mix(in srgb, var(--era) 35%, transparent),
+      transparent 55%
+    ),
+    var(--bg);
+}
+
+.clearCard--mecanica {
+  --era: var(--era-mecanica);
+}
+.clearCard--logica {
+  --era: var(--era-logica);
+}
+.clearCard--codigo {
+  --era: var(--era-codigo);
+}
+.clearCard--redes {
+  --era: var(--era-redes);
+}
+.clearCard--seguranca {
+  --era: var(--era-seguranca);
+}
+.clearCard--ia {
+  --era: var(--era-ia);
+}
+
+.clearCard__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.clearCard__head h2 {
+  font-size: var(--text-2xl);
+  color: var(--era);
+  text-shadow: 0 2px 0 rgb(0 0 0 / 40%);
+}
+
+.clearCard__chips {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clearCard__chips li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.clearCard__chips li:nth-child(2) span {
+  color: var(--danger);
+}
+
+.clearCard__chips li:nth-child(3) span {
+  color: #58e089;
+}
+
+.clearCard__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--era);
+}
+
+.clearCard .clearCard__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.clearCard__facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clearCard__fact {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: rgb(88 224 200 / 8%);
+  border: 1px solid rgb(88 224 200 / 25%);
+}
+
+.clearCard__fact p {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.clearCard__fact[data-found='false'] {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--line-strong);
+  color: var(--text-faint);
+}
+
+.clearCard__num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 800;
+  font-size: var(--text-sm);
+}
+
+.clearCard__fact[data-found='false'] .clearCard__num {
+  background: var(--surface-high);
+  color: var(--text-faint);
+}
+
+.clearCard__badge {
+  align-self: flex-start;
+  margin: 0;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--era);
+  color: var(--bg);
+  font-weight: 800;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+}
+
+.clearCard .clearCard__lead {
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.clearCard .clearCard__note {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+  line-height: 1.45;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+
+.clearCard__block--terminal {
+  align-items: stretch;
+  text-align: center;
+  border-left-width: 1px;
+  border-color: var(--era);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--era) 18%, transparent), transparent),
+    var(--surface);
+}
+
+.clearCard__block--terminal .clearCard__title {
+  justify-content: center;
+}
+
+.clearCard .clearCard__game {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.clearCard .clearCard__machine {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.clearCard__go {
+  margin-top: var(--space-1);
+}

@@ -81,7 +81,7 @@ continuam sem acento. Os testes de ponta a ponta casam por rótulo: mexeu num
 texto, atualize `tests/e2e/smoke.spec.ts` na mesma mudança.
 
 **`core/` não lê arquivo de dados.** Quem precisa de dado recebe por parâmetro
-(é por isso que `buildQuiz` recebe o banco de perguntas).
+(é por isso que `stepRun` recebe a planta da fase já lida).
 
 ---
 
@@ -90,33 +90,42 @@ texto, atualize `tests/e2e/smoke.spec.ts` na mesma mudança.
 Os JSON de `src/data/` são gerados:
 
 ```bash
-npm run worlds    # mapas das zonas
-npm run npcs      # falas dos personagens
-npm run quizzes   # banco de perguntas
-npm run sprites   # pixel art (tilesets, Bit, 18 personagens)
+npm run stages    # as 12 fases: planta, portões, placas, abertura e resumo
+npm run sprites   # pixel art (tilesets, Bit, BUG)
 ```
 
-Edite o script, rode, e deixe o JSON gerado ser o resultado. Os scripts conferem
-largura de linha do mapa, tile caminhável sob cada personagem e id repetido na
-hora de gerar — erro de digitação não chega no jogo.
+Edite o script, rode, e deixe o JSON gerado ser o resultado. O gerador de fases
+confere largura de linha, um fragmento por trecho certo, portão com dispositivo e
+nada de perigo colado no portão na hora de gerar — erro de digitação não chega no
+jogo. Que a fase **fecha** quem prova é o contrato de progressão, correndo o robô
+de referência (`referenceRun`).
 
-**Acrescentou personagem? Gere o sprite dele.** `content.test.ts` reprova
-personagem sem sprite, porque sem isso ele some do mapa em silêncio.
+**Mexeu numa fase? Rode a suíte.** `content.test.ts` reprova fase com placa sem
+texto, portão da era errada ou terreno igual ao de outra fase; `progression.test.ts`
+reprova fase que o robô não termina — sem habilidade, com as do ponto da campanha
+e com as seis.
 
 ---
 
 ## 5. O jogo é de celular, e isso restringe
 
-- **100% jogável por toque simples, sem arrastar.** Nada de arrastar, segurar
-  ou gesto de dois dedos.
+- **100% jogável por toque, sem arrastar.** Nada de arrastar nem gesto de dois
+  dedos. **Segurar é permitido só para andar e pular na fase** (D81, pedido da
+  dona do projeto, para o controle ser como Mega Man e Mario); todo o resto é
+  toque simples.
 - **Alvo de toque mínimo de 44 px.** Há teste de ponta a ponta medindo todos os
   botões.
 - Nada pode exigir teclado.
 - Sem rolagem horizontal, em nenhuma tela.
-- O mapa é canvas 2D com pixel art. **Sem WebGL.**
-- O Bit não sobe em terminal, personagem nem porta: para na célula ao lado
-  (`approachPath`). Teste de ponta a ponta espera o botão ou a fala, não a
-  célula tocada.
+- A fase é canvas 2D com pixel art. **Sem WebGL.**
+- Na fase o Bit fica parado até o jogador **segurar ◀ ou ▶**, e para ao soltar;
+  **Pular** segurado vai mais alto, **Atirar** é toque. Cada botão captura o
+  próprio ponteiro: segurar ▶ e tocar em Pular ao mesmo tempo tem de funcionar
+  (D81). No e2e, segurar é `dispatchEvent('pointerdown')` e soltar é
+  `dispatchEvent('pointerup')`.
+- Mensagem na fase não pausa o jogo (D83): placa é balão sobre a fase, fragmento é
+  aviso curto. Só param o jogo o cartão de abertura, o painel do portão, a pausa e
+  o cartão de fim -- momentos em que o Bit já está parado.
 
 ---
 
@@ -140,22 +149,26 @@ personagem sem sprite, porque sem isso ele some do mapa em silêncio.
 Não diga que algo funciona sem ter rodado. Se um teste falha, mostre a saída.
 Se uma parte ficou de fora, diga qual e por quê.
 
-Hoje, especificamente: **as seis eras fecham o ciclo completo e a campanha
-termina no chefão**. Os seis minijogos estão registrados (Tear de Engrenagens,
-Circuitos Lógicos, Mesa de Bits, Rota dos Pacotes, Cofre Criptográfico, Treinar o
-Detector), o BUG Day 0 existe em `src/core/boss.ts` + `src/ui/BossScreen.tsx`, e
-os seis itens têm efeito no combate.
+Hoje, especificamente: **o jogo é um mapa de fases** (D73, desde 17/11/2026, quando
+deixou de ser RPG). São 12 fases de plataforma, duas por era, cada uma com portões
+de conceito e terminando no minijogo da era; fechar a era dá uma habilidade ao
+Bit; o BUG Day 0 fecha o mapa, numa luta por corações com os micro-minijogos
+(`src/core/boss.ts` + `src/ui/BossScreen.tsx`). Os seis minijogos estão
+registrados (Tear de Engrenagens, Circuitos Lógicos, Mesa de Bits, Rota dos
+Pacotes, Cofre Criptográfico, Treinar o Detector). Não há mais XP, nível, vida que
+cresce, itens, prova nem zona vista de cima.
 
-O acabamento também já passou pelo jogo inteiro: mapa com laço de animação,
-fragmentos de memória para recolher, arte por era nos minijogos, resultado de
-missão com recompensa, pixel art refeita no gerador (o Bit é um robô), e som e
-música sintetizados (`src/fx/`, desligados por padrão).
+O acabamento: fragmentos de memória nas fases, arte por era nas fases e nos
+minijogos, resultado de missão com recompensa, pixel art gerada por código (o Bit
+é um robô), e som e música sintetizados (`src/fx/`, desligados por padrão).
 
 O que **continua faltando**, e deve continuar escrito assim no `README.md` até
 deixar de ser verdade: o ranking no Supabase (e o multiplayer, que só existe
 como proposta em `docs/MULTIPLAYER.md`), e a conferência em fonte primária das
-falas, das provas e das curiosidades dos fragmentos. As faixas de música foram
-escritas em código e ninguém as afinou de ouvido ainda.
+placas das fases, dos textos dos minijogos e das curiosidades dos fragmentos. As
+faixas de música foram escritas em código e ninguém as afinou de ouvido ainda. O
+chefão ainda não é uma arena de plataforma (D77), e os 18 sprites de personagem
+(`npc-*.png`) ficaram sem uso desde a D73.
 
 Uma regra de animação, explicada no topo de `src/styles/fx.css`: nenhuma
 animação em laço mexe em `transform` ou tamanho de **botão** (botão chama
@@ -166,9 +179,11 @@ atenção com brilho). Não há ajuste de reduzir animações (D68).
 ## 8. Mapa rápido do projeto
 
 ```
-src/core/      regra pura: rng, rpg, powers, scoring, world, quiz, items, boss, registry
+src/core/      regra pura: stage (fase), gadgets (portões), campaign (mapa), progress,
+               boss, powers, scoring, rng, registry
 src/minigames/ <era>/logic.ts (puro) + Screen.tsx + index.ts + logic.test.ts
-src/ui/        MainMenu, WorldScreen (mapa em canvas), Quiz, Tutorial, Hud, MissionRunner, BossScreen
+src/ui/        MainMenu, OverworldScreen (mapa), StageScreen + stageArt + GatePanel (fase),
+               MissionRunner, MissionResult, BossScreen
 src/fx/        som e música sintetizados (Web Audio) e efeitos de tela; nada de regra de jogo
 src/store/     Zustand com persistência local
 src/data/      JSON gerado + módulos que o tipam

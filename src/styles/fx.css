@@ -85,12 +85,17 @@
 }
 
 @keyframes glow-pulse {
+  /* --depth: o volume do botao (pixel.css), que o brilho nao pode apagar. */
   0%,
   100% {
-    box-shadow: 0 0 0 0 var(--glow, var(--accent-glow));
+    box-shadow:
+      var(--depth, 0 0 0 0 transparent),
+      0 0 0 0 var(--glow, var(--accent-glow));
   }
   50% {
-    box-shadow: 0 0 0 6px transparent;
+    box-shadow:
+      var(--depth, 0 0 0 0 transparent),
+      0 0 0 6px transparent;
   }
 }
 

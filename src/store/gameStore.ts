@@ -1,18 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { EraId, Evaluation, PlayerState } from '@/core/types';
-import type { QuizInstance, QuizResult } from '@/core/quiz';
+import type { Evaluation, GameDifficulty, PlayerState } from '@/core/types';
 import { STORAGE } from '@/core/constants';
-import {
-  applyMissionResult,
-  applyQuizResult,
-  collectFragment,
-  consumeItem,
-  initialState,
-} from '@/core/rpg';
-import { ERAS, eraUnlocked } from '@/core/powers';
-import { buildQuiz, gradeQuiz } from '@/core/quiz';
-import { QUIZ_BANK } from '@/data/quizzes';
+import { applyMissionResult, initialState } from '@/core/progress';
+import { BOSS_STAGE, stageUnlocked } from '@/core/campaign';
 
 export interface Settings {
   vibration: boolean;
@@ -20,75 +11,96 @@ export interface Settings {
   /** Musica de fundo. So toca com o som ligado (`muted` falso). */
   music: boolean;
   /**
-   * Modo desenvolvedor: destranca as seis zonas, as portas das provas e o
-   * chefao, para dar para testar uma fase sem jogar as anteriores.
-   *
-   * Nao mexe no progresso salvo -- so deixa de cobrar os pre-requisitos na hora
-   * de abrir a tela. O que foi concluido de verdade continua sendo o que esta em
-   * `clearedEras` e em `player.missions`.
+   * Modo desenvolvedor (D53): abre todas as fases e o chefao, e na fase mostra
+   * "Ir ao terminal", para dar para testar uma fase sem jogar as anteriores.
+   * Nao mexe no progresso salvo.
    */
   devMode: boolean;
+  /** Dificuldade das fases e do chefao (D82). Save antigo nao tem: vale 'normal'. */
+  difficulty: GameDifficulty;
+}
+
+/** A dificuldade escolhida, com reserva para save gravado antes dela existir. */
+export function difficultyOf(settings: Partial<Settings> | undefined): GameDifficulty {
+  const d = settings?.difficulty;
+  return d === 'facil' || d === 'dificil' ? d : 'normal';
 }
 
 interface GameStore {
+  /** Estrelas e melhor pontuacao de cada fase. E tudo o que o progresso guarda. */
   player: PlayerState;
-  /** Eras ja concluidas: duas missoes feitas e prova passada. */
-  clearedEras: EraId[];
   /** O BUG Day 0 ja foi corrigido ao menos uma vez. */
   bossDefeated: boolean;
   /** Melhor pontuacao no chefao. */
   bossBestScore: number;
-  /** Fragmentos de memoria ja recolhidos, por id ("<zona>:<indice>"). */
+  /** Fragmentos de memoria ja recolhidos, por id ("<fase>:<indice>"). */
   fragments: string[];
-  /** Prova em andamento, se houver. Nao e salva de proposito. */
-  quiz: QuizInstance | null;
   settings: Settings;
-  tutorialDone: boolean;
 
   // --- acoes ---
   resetGame(): void;
   completeMission(missionId: string, evaluation: Evaluation): void;
-  /** Recolhe um fragmento do mapa. Devolve false se ele ja tinha sido recolhido. */
+  /** Recolhe um fragmento. Devolve false se ele ja tinha sido recolhido. */
   collectFragment(id: string): boolean;
-  /** Grava no save o estado do jogador que o combate devolveu. */
-  syncPlayer(player: PlayerState): void;
   /** Registra o fim de uma luta contra o chefao. */
   finishBoss(won: boolean, score: number): void;
-  /** O chefao abre quando as seis eras estao concluidas. */
+  /** O chefao abre com as 12 fases concluidas (ou no modo desenvolvedor). */
   canFaceBoss(): boolean;
-  openQuiz(era: EraId): void;
-  finishQuiz(answers: readonly number[]): QuizResult | null;
-  closeQuiz(): void;
-  spendItem(id: string): boolean;
-  isEraUnlocked(era: EraId): boolean;
-  isEraCleared(era: EraId): boolean;
   setSettings(patch: Partial<Settings>): void;
-  finishTutorial(): void;
   hasProgress(): boolean;
+}
+
+/**
+ * Save antigo (versao 1, do RPG): guarda as estrelas das missoes -- cada
+ * missao virou o minijogo do fim de uma fase com o mesmo id -- e os ajustes. O
+ * resto (XP, vida, itens, eras pela prova, fragmentos da zona) nao tem lugar no
+ * jogo de fases e fica para tras (D78).
+ */
+export function migrateSave(persisted: unknown, version: number): Partial<GameStore> {
+  const old = (persisted ?? {}) as {
+    player?: { missions?: PlayerState['missions'] };
+    settings?: Partial<Settings>;
+    bossDefeated?: boolean;
+    bossBestScore?: number;
+    fragments?: string[];
+  };
+  if (version >= STORAGE.VERSION) return old as Partial<GameStore>;
+  return {
+    player: { missions: { ...(old.player?.missions ?? {}) } },
+    bossDefeated: false,
+    bossBestScore: 0,
+    fragments: [],
+    ...(old.settings
+      ? {
+          settings: {
+            vibration: old.settings.vibration !== false,
+            muted: old.settings.muted !== false,
+            music: old.settings.music !== false,
+            devMode: old.settings.devMode === true,
+            difficulty: 'normal',
+          },
+        }
+      : {}),
+  };
 }
 
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       player: initialState(),
-      clearedEras: [],
       bossDefeated: false,
       bossBestScore: 0,
       fragments: [],
-      quiz: null,
-      settings: { vibration: true, muted: true, music: true, devMode: false },
-      tutorialDone: false,
+      settings: {
+        vibration: true,
+        muted: true,
+        music: true,
+        devMode: false,
+        difficulty: 'normal',
+      },
 
       resetGame() {
-        set({
-          player: initialState(),
-          clearedEras: [],
-          bossDefeated: false,
-          bossBestScore: 0,
-          fragments: [],
-          quiz: null,
-          tutorialDone: false,
-        });
+        set({ player: initialState(), bossDefeated: false, bossBestScore: 0, fragments: [] });
       },
 
       completeMission(missionId, evaluation) {
@@ -96,14 +108,10 @@ export const useGameStore = create<GameStore>()(
       },
 
       collectFragment(id) {
-        // `?? []`: save antigo foi gravado antes de existir esta lista.
-        const result = collectFragment(get().player, get().fragments ?? [], id);
-        if (result.gained) set({ player: result.player, fragments: result.collected });
-        return result.gained;
-      },
-
-      syncPlayer(player) {
-        set({ player });
+        const found = get().fragments ?? [];
+        if (found.includes(id)) return false;
+        set({ fragments: [...found, id] });
+        return true;
       },
 
       finishBoss(won, score) {
@@ -114,64 +122,19 @@ export const useGameStore = create<GameStore>()(
       },
 
       canFaceBoss() {
-        if (get().settings.devMode) return true;
-        return ERAS.every((era) => get().clearedEras.includes(era));
-      },
-
-      openQuiz(era) {
-        set({ quiz: buildQuiz(era, `quiz-${era}-v1`, QUIZ_BANK) });
-      },
-
-      finishQuiz(answers) {
-        const quiz = get().quiz;
-        if (!quiz) return null;
-        const result = gradeQuiz(quiz, answers);
-        set((s) => ({
-          player: applyQuizResult(s.player, quiz.era, result),
-          clearedEras:
-            result.passed && !s.clearedEras.includes(quiz.era)
-              ? [...s.clearedEras, quiz.era]
-              : s.clearedEras,
-        }));
-        return result;
-      },
-
-      closeQuiz() {
-        set({ quiz: null });
-      },
-
-      spendItem(id) {
-        const { player, used } = consumeItem(get().player, id);
-        if (used) set({ player });
-        return used;
-      },
-
-      isEraUnlocked(era) {
-        if (get().settings.devMode) return true;
-        return eraUnlocked(era, get().clearedEras);
-      },
-
-      isEraCleared(era) {
-        return get().clearedEras.includes(era);
+        return stageUnlocked(BOSS_STAGE, get().player.missions, get().settings.devMode === true);
       },
 
       setSettings(patch) {
         set((s) => ({ settings: { ...s.settings, ...patch } }));
       },
 
-      finishTutorial() {
-        set({ tutorialDone: true });
-      },
-
       hasProgress() {
         const s = get();
         return (
-          s.clearedEras.length > 0 ||
           (s.fragments ?? []).length > 0 ||
           s.bossDefeated ||
-          Object.keys(s.player.missions).length > 0 ||
-          s.player.xp > 0 ||
-          s.tutorialDone
+          Object.keys(s.player.missions).length > 0
         );
       },
     }),
@@ -179,19 +142,13 @@ export const useGameStore = create<GameStore>()(
       name: STORAGE.KEY,
       version: STORAGE.VERSION,
       storage: createJSONStorage(() => globalThis.localStorage),
-      /*
-       * Campos novos (bossDefeated, bossBestScore, fragments) nao invalidam save antigo:
-       * o que falta no armazenamento fica com o valor inicial, entao a versao
-       * do save nao sobe e ninguem perde progresso.
-       */
+      migrate: (persisted, version) => migrateSave(persisted, version) as GameStore,
       partialize: (s) => ({
         player: s.player,
-        clearedEras: s.clearedEras,
         bossDefeated: s.bossDefeated,
         bossBestScore: s.bossBestScore,
         fragments: s.fragments,
         settings: s.settings,
-        tutorialDone: s.tutorialDone,
       }),
     },
   ),
